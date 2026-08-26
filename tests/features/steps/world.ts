@@ -17,6 +17,8 @@ export class BoardWorld extends World {
   lastCard?: import('../../../src/shared/types.js').Card;
   /** Id of a Jira-sourced card seeded directly, for rules that protect them. */
   seededJiraCardId?: string;
+  events?: import('../../../src/shared/types.js').CardEvent[];
+  rememberedEvent?: import('../../../src/shared/types.js').CardEvent;
 
   async start(): Promise<void> {
     const connectionString =

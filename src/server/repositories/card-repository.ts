@@ -4,6 +4,7 @@ import { isOverdue } from '../../domain/overdue.js';
 import type { CreateCardInput, MoveCardInput, UpdateCardInput } from '../../domain/validation.js';
 import { planMove, type ColumnOrder } from '../../domain/ordering.js';
 import { TagRepository } from './tag-repository.js';
+import { EventRepository } from './event-repository.js';
 
 /** Backlog. New cards land here (FR-009). */
 const BACKLOG_COLUMN_ID = 1;
@@ -29,6 +30,7 @@ export class CardRepository {
   constructor(
     private readonly pool: pg.Pool,
     private readonly tags = new TagRepository(pool),
+    private readonly events = new EventRepository(pool),
   ) {}
 
   /**
@@ -139,6 +141,18 @@ export class CardRepository {
           plan.assignments.map((a) => a.position),
         ],
       );
+
+      // Inside the same transaction as the move it describes (FR-026), and only
+      // for a genuine column change — a reorder writes nothing (FR-028), so an
+      // event always represents real progress rather than tidying.
+      if (plan.columnChanged) {
+        await this.events.append(client, {
+          cardId: id,
+          fromColumnId: plan.fromColumnId,
+          toColumnId: plan.toColumnId,
+          actor: 'user',
+        });
+      }
 
       await client.query('COMMIT');
       const card = await this.findById(id, today);

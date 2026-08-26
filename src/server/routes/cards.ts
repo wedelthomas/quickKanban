@@ -2,8 +2,13 @@ import type { FastifyInstance } from 'fastify';
 import { createCardSchema, moveCardSchema, updateCardSchema } from '../../domain/validation.js';
 import { titleRequired, validationFailed } from '../errors.js';
 import type { CardService } from '../services/card-service.js';
+import type { EventRepository } from '../repositories/event-repository.js';
 
-export const registerCardRoutes = (app: FastifyInstance, cards: CardService): void => {
+export const registerCardRoutes = (
+  app: FastifyInstance,
+  cards: CardService,
+  events: EventRepository,
+): void => {
   app.post('/api/cards', async (request, reply) => {
     const parsed = createCardSchema.safeParse(request.body);
     if (!parsed.success) {
@@ -37,4 +42,11 @@ export const registerCardRoutes = (app: FastifyInstance, cards: CardService): vo
     // assuming the move landed where it drew it.
     return cards.move(request.params.id, parsed.data);
   });
+
+  // Exists so the movement history can be asserted without reading the
+  // database directly. Nothing in slice 1 displays it; slice 4's archive and
+  // summary are what eventually read it.
+  app.get<{ Params: { id: string } }>('/api/cards/:id/events', async (request) => ({
+    events: await events.listForCard(request.params.id),
+  }));
 };

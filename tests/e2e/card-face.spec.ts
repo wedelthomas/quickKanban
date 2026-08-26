@@ -69,8 +69,24 @@ test.describe('card face', () => {
 
   test('a card in Done stays visible and offers no archive action (BH-028)', async ({ page }) => {
     await page.goto('/');
-    // Archival arrives in slice 4; nothing in this slice may offer it.
+    await page.locator('body').click();
+
+    // Put a card genuinely in Done rather than asserting against an empty
+    // column: the behaviour is about what happens to finished work.
+    await page.keyboard.press('n');
+    await page.keyboard.type('Finished work');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await page.keyboard.press('j');
+    await page.keyboard.press('6');
+
+    await expect
+      .poll(() => page.locator('[data-column-key="done"] .card-title').allTextContents())
+      .toEqual(['Finished work']);
+
+    // Still on the board, not hidden away. Archival arrives in slice 4 and
+    // nothing here may offer it.
+    await expect(page.getByTestId('card').filter({ hasText: 'Finished work' })).toBeVisible();
     await expect(page.getByRole('button', { name: /archive/i })).toHaveCount(0);
-    await expect(page.getByTestId('column').filter({ hasText: 'Done' })).toBeVisible();
   });
 });

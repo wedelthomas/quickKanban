@@ -286,17 +286,26 @@ order.
 
 ### Tests for User Story 6 — write first, confirm they FAIL
 
-- [ ] T083 [P] [US6] `tests/features/movement-history.feature` + steps — one record per column change with origin, destination, time and actor; reorder writes none; earlier records unaltered; records survive card deletion (BH-016, BH-017, BH-018).
-- [ ] T084 [P] [US6] Extend `tests/e2e/card-face.spec.ts` — a card in Done is visible, unarchived, and no archive affordance exists (BH-028).
+- [x] T083 [P] [US6] `tests/features/movement-history.feature` + steps — one record per column change with origin, destination, time and actor; reorder writes none; earlier records unaltered; records survive card deletion (BH-016, BH-017, BH-018).
+- [x] T084 [P] [US6] Extend `tests/e2e/card-face.spec.ts` — a card in Done is visible, unarchived, and no archive affordance exists (BH-028).
 
 ### Implementation for User Story 6
 
-- [ ] T085 [US6] `src/server/repositories/event-repository.ts` — append and read only. **No `UPDATE` or `DELETE` statement may exist in this file** (FR-027).
-- [ ] T086 [US6] `src/server/services/movement-service.ts` — append the record inside the same transaction as the move from T062, so a move and its history are atomic (plan.md, Partial-failure behavior).
-- [ ] T087 [US6] Suppress the record when the column is unchanged (FR-028).
-- [ ] T088 [US6] `GET /api/cards/:id/events` in `src/server/routes/cards.ts`.
+- [x] T085 [US6] `src/server/repositories/event-repository.ts` — append and read only. **No `UPDATE` or `DELETE` statement may exist in this file** (FR-027).
+- [x] T086 [US6] `src/server/services/movement-service.ts` — append the record inside the same transaction as the move from T062, so a move and its history are atomic (plan.md, Partial-failure behavior).
+- [x] T087 [US6] Suppress the record when the column is unchanged (FR-028).
+- [x] T088 [US6] `GET /api/cards/:id/events` in `src/server/routes/cards.ts`.
 
-**Checkpoint**: every column change is recorded. **Run the Story-Complete Review Gate.**
+**Checkpoint**: every column change is recorded. **Story-Complete Review Gate run; findings recorded below.**
+
+### US6 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-026…FR-029 and FR-040 implemented. All four pathways green.
+- **The deferral paid off.** History was deliberately left unwritten through US2 so these tests could fail first. They did — seven scenarios red before the append existed — which is the first story in this slice where the red step happened cleanly for every case. Health and overdue both ended up implemented before their tests because foundational work needed them.
+- **The append lives inside the move transaction**, so a card cannot move without its record and cannot record a move that did not happen.
+- **Three independent guards on the same invariant**, deliberately: the repository has no UPDATE or DELETE code path at all; a unit test asserts that absence and fails the moment one appears, whether or not anyone writes a test for what they added; and the database enforces `from_column_id <> to_column_id` so a same-column event cannot be inserted even by mistake. A behavioural test alone only proves the paths someone thought to exercise.
+- **`ON DELETE RESTRICT` works because deletion is soft.** The two decisions were made together in the clarification round: the row survives a delete, so the history's reference stays valid rather than dangling.
+- **Nothing displays the history.** That is correct for this slice — it is written now because a record not written on the day a card moved is lost permanently, and slice 4 reads it.
 
 ---
 

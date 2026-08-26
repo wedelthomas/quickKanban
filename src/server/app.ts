@@ -11,6 +11,7 @@ import { CardService } from './services/card-service.js';
 import { registerCardRoutes } from './routes/cards.js';
 import { registerTagRoutes } from './routes/tags.js';
 import { TagRepository } from './repositories/tag-repository.js';
+import { EventRepository } from './repositories/event-repository.js';
 import { CardRepository } from './repositories/card-repository.js';
 
 export interface AppOptions {
@@ -85,7 +86,7 @@ export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyI
   registerHealthRoutes(app, pool);
   const cardRepository = new CardRepository(pool);
   registerBoardRoutes(app, new BoardService(cardRepository));
-  registerCardRoutes(app, new CardService(cardRepository));
+  registerCardRoutes(app, new CardService(cardRepository), new EventRepository(pool));
   registerTagRoutes(app, new TagRepository(pool));
 
   if (webRoot && existsSync(webRoot)) {
