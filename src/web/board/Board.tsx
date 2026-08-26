@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   PointerSensor,
@@ -14,6 +14,9 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useBoard } from './use-board.js';
 import { ColumnView, columnDroppableId } from './ColumnView.js';
 import { CardDialog } from '../cards/CardDialog.js';
+import { useShortcuts } from '../keyboard/use-shortcuts.js';
+import { HelpOverlay } from '../keyboard/HelpOverlay.js';
+import type { ShortcutMatch } from '../keyboard/shortcuts.js';
 import type { Board as BoardData, Card } from '../../shared/types.js';
 
 /**
@@ -70,6 +73,11 @@ export const Board = () => {
     useBoard();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Card | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+  // Held by id rather than by element, because the board re-renders after every
+  // move and the element the user focused is gone by the time it lands.
+  const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
+  const focusRestoreRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     // A small distance so a click on a card is not read as a drag.
@@ -79,6 +87,79 @@ export const Board = () => {
     // diverging into two implementations of the same behaviour.
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
+
+  const cardElements = (): HTMLElement[] =>
+    Array.from(document.querySelectorAll<HTMLElement>('[data-testid="card"]'));
+
+  const focusCardById = useCallback((cardId: string | null): void => {
+    if (!cardId) return;
+    document.querySelector<HTMLElement>(`[data-card-id="${cardId}"]`)?.focus();
+  }, []);
+
+  // Re-focus after the board re-renders, so a keyboard move keeps its card
+  // rather than dumping focus back to the document.
+  useEffect(() => {
+    focusCardById(focusedCardId);
+  }, [board, focusedCardId, focusCardById]);
+
+  const handleShortcut = useCallback(
+    (match: ShortcutMatch): void => {
+      if (match.action === 'close') {
+        setHelpOpen(false);
+        return;
+      }
+      if (match.action === 'help') {
+        setHelpOpen((open) => !open);
+        return;
+      }
+      if (match.action === 'new-card') {
+        setCreating(true);
+        return;
+      }
+
+      const cards = cardElements();
+      if (cards.length === 0) return;
+      const active = document.activeElement as HTMLElement | null;
+      const index = cards.findIndex((el) => el === active);
+
+      if (match.action === 'focus-next' || match.action === 'focus-previous') {
+        const step = match.action === 'focus-next' ? 1 : -1;
+        // No card focused yet: j starts at the first, k at the last.
+        const next =
+          index === -1
+            ? step === 1
+              ? 0
+              : cards.length - 1
+            : Math.min(Math.max(index + step, 0), cards.length - 1);
+        const id = cards[next]?.dataset.cardId ?? null;
+        setFocusedCardId(id);
+        focusCardById(id);
+        return;
+      }
+
+      const cardId = active?.dataset.cardId;
+      if (!cardId || !board) return;
+
+      if (match.action === 'open-card') {
+        const card = board.columns.flatMap((c) => c.cards).find((c) => c.id === cardId);
+        if (card) {
+          focusRestoreRef.current = cardId;
+          setEditing(card);
+        }
+        return;
+      }
+
+      if (match.action === 'move-to-column' && match.columnPosition) {
+        const column = board.columns.find((c) => c.position === match.columnPosition);
+        if (!column) return;
+        setFocusedCardId(cardId);
+        void moveCard(cardId, column.id, column.cards.length + 1);
+      }
+    },
+    [board, moveCard, focusCardById],
+  );
+
+  useShortcuts(handleShortcut);
 
   if (error) return <p className="board-message board-message--error">{error}</p>;
   if (!board) return <p className="board-message">Loading the board…</p>;
@@ -124,13 +205,18 @@ export const Board = () => {
           }}
         />
       )}
+      {helpOpen && <HelpOverlay onClose={() => setHelpOpen(false)} />}
       {editing && (
         <CardDialog
           initial={editing}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setEditing(null);
+            focusCardById(focusRestoreRef.current);
+          }}
           onSubmit={async (input) => {
             await updateCard(editing.id, input);
             setEditing(null);
+            focusCardById(focusRestoreRef.current);
           }}
           onDelete={async () => {
             await deleteCard(editing.id);

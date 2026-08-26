@@ -64,12 +64,17 @@ The board is built to be driven without a mouse.
 
 | Key | Action |
 |---|---|
-| `n` | New card |
-| `/` | Search |
-| `j` / `k` | Move focus between cards |
+| `n` | Create a new card |
+| `j` / `k` | Focus the next / previous card |
+| `Enter` | Open the focused card |
 | `1`–`6` | Send the focused card to that column |
-| `?` | Show all shortcuts |
+| `?` | Show this list |
 | `Esc` | Close a dialog |
+
+Press `?` in the board for the same list. It is generated from the shortcut
+registry the key handler reads, so it cannot fall out of date.
+
+Search (`/`) arrives with filtering in slice 4.
 
 ## Development
 

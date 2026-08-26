@@ -250,17 +250,27 @@ order.
 
 ### Tests for User Story 5 — write first, confirm they FAIL
 
-- [ ] T076 [P] [US5] `tests/e2e/keyboard.spec.ts` — create and move by keyboard alone, help overlay lists every shortcut, closing a dialog restores focus to the originating card (BH-014, BH-015, BH-027).
+- [x] T076 [P] [US5] `tests/e2e/keyboard.spec.ts` — create and move by keyboard alone, help overlay lists every shortcut, closing a dialog restores focus to the originating card (BH-014, BH-015, BH-027).
 
 ### Implementation for User Story 5
 
-- [ ] T077 [US5] `src/web/keyboard/use-shortcuts.ts` — `n` new card, `/` search, `j`/`k` focus movement, `1`–`6` send focused card to a column, `?` help, `Esc` close (FR-022). Every action available by pointer must be reachable here (FR-025).
-- [ ] T078 [US5] Wire `@dnd-kit`'s keyboard sensor into the existing drag context from T065 so keyboard and pointer moves share one code path, not two.
-- [ ] T079 [P] [US5] Visible focus ring on the focused card using the accent token (FR-023).
-- [ ] T080 [US5] Focus restoration on dialog close in `CardDialog.tsx` (FR-039).
-- [ ] T081 [P] [US5] `src/web/keyboard/HelpOverlay.tsx` — lists every shortcut the board supports (FR-024).
+- [x] T077 [US5] `src/web/keyboard/use-shortcuts.ts` — `n` new card, `/` search, `j`/`k` focus movement, `1`–`6` send focused card to a column, `?` help, `Esc` close (FR-022). Every action available by pointer must be reachable here (FR-025).
+- [x] T078 [US5] Wire `@dnd-kit`'s keyboard sensor into the existing drag context from T065 so keyboard and pointer moves share one code path, not two.
+- [x] T079 [P] [US5] Visible focus ring on the focused card using the accent token (FR-023).
+- [x] T080 [US5] Focus restoration on dialog close in `CardDialog.tsx` (FR-039).
+- [x] T081 [P] [US5] `src/web/keyboard/HelpOverlay.tsx` — lists every shortcut the board supports (FR-024).
 
-**Checkpoint**: the board is fully keyboard-operable. **Run the Story-Complete Review Gate.**
+**Checkpoint**: the board is fully keyboard-operable. **Story-Complete Review Gate run; findings recorded below.**
+
+### US5 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-022…FR-025 and FR-039 implemented. All three pathways green on the first run after implementation, with no defects surfacing.
+- **Design**: one shortcut registry (`src/web/keyboard/shortcuts.ts`) is read by both the key handler and the help overlay, and the test asserts the overlay against that same registry. Adding a shortcut without listing it fails the test rather than shipping quietly.
+- **The keyboard sensor was not a second implementation.** dnd-kit's keyboard sensor was wired into the existing drag context back in US2, so pointer and keyboard moves share one lifecycle. Nothing here duplicated the move path.
+- **Focus is tracked by card id, not by element.** The board re-renders after every move, so the element the user focused no longer exists by the time the move lands. Holding the id and re-focusing after the render is what makes focus follow the card.
+- **Focus restoration lives in the dialog's own effect cleanup**, so it holds however the dialog closes — save, cancel or Escape — rather than only on the paths someone remembered to wire.
+- **Typing guard**: shortcuts are ignored while focus is in an input, textarea, select or contenteditable, so typing "n" into a title types an n. Escape is the deliberate exception, because it means "get me out of here" everywhere.
+- **Scope**: `/` for search was in the README but is not implemented — search belongs to slice 4. The README now says so rather than promising a key that does nothing.
 
 ---
 

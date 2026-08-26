@@ -31,7 +31,16 @@ export const CardDialog = ({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const titleRef = useRef<HTMLInputElement>(null);
-  useEffect(() => titleRef.current?.focus(), []);
+
+  useEffect(() => {
+    // Remember where focus came from so closing can put it back, rather than
+    // stranding the user at the top of the document (FR-039).
+    const opener = document.activeElement as HTMLElement | null;
+    titleRef.current?.focus();
+    return () => {
+      if (opener && document.contains(opener)) opener.focus();
+    };
+  }, []);
 
   const submit = async (event: React.FormEvent): Promise<void> => {
     event.preventDefault();
