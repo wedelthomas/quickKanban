@@ -34,10 +34,27 @@ export class BoardWorld extends World {
     await this.app.ready();
   }
 
+  /** Rebuilds the app with no Jira port at all, for the not-configured state. */
+  async restartWithoutJira(): Promise<void> {
+    await this.app.close();
+    this.app = buildApp({ pool: this.pool, logger: false, jira: null });
+    await this.app.ready();
+  }
+
   /** Truncate rather than re-migrate: scenarios need isolation, not a fresh schema. */
   async reset(): Promise<void> {
     await this.pool.query(
       'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, cards RESTART IDENTITY CASCADE',
+    );
+    // Settings are restored, not truncated — the rows are seeded by migration.
+    // Without this a scenario that changes the query leaks it into every
+    // scenario that runs after it, which is exactly what happened.
+    await this.pool.query(
+      `UPDATE settings SET value = '"assignee = currentUser() AND statusCategory != Done"'::jsonb
+        WHERE key = 'jira.jql'`,
+    );
+    await this.pool.query(
+      `UPDATE settings SET value = '300'::jsonb WHERE key = 'sync.interval_seconds'`,
     );
   }
 

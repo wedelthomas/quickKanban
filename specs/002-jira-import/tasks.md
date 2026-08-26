@@ -224,14 +224,14 @@ Stories are ordered by dependency, then priority:
 
 ### Tests — write first, confirm they FAIL
 
-- [ ] T251 [P] [US4] `tests/features/sync-status.feature` + steps — success then failure then cleared, last-success retained through failure, rejected credentials read differently from connectivity loss, and a failed sync leaves no partial change and blocks nothing (BH-118, BH-119, BH-121).
-- [ ] T252 [P] [US4] `tests/e2e/sync-status.spec.ts` — the pill through all three states, and the board interactive throughout (BH-119, BH-120).
+- [x] T251 [P] [US4] `tests/features/sync-status.feature` + steps — success then failure then cleared, last-success retained through failure, rejected credentials read differently from connectivity loss, and a failed sync leaves no partial change and blocks nothing (BH-118, BH-119, BH-121).
+- [x] T252 [P] [US4] `tests/e2e/sync-status.spec.ts` — the pill through all three states, and the board interactive throughout (BH-119, BH-120).
 
 ### Implementation
 
-- [ ] T253 [US4] `src/server/routes/sync.ts` — `POST /api/sync/run`, which runs a sync on demand rather than waiting for the interval (FR-127), and `GET /api/sync/status`.
-- [ ] T254 [P] [US4] `src/web/sync/use-sync.ts` — status polling and manual refresh; a failure indication clears once a sync succeeds (FR-137).
-- [ ] T255 [P] [US4] `src/web/sync/SyncStatus.tsx` — the header pill, showing the time of the last successful sync (FR-133). Non-blocking by construction: it is a pill, never an overlay (FR-134).
+- [x] T253 [US4] `src/server/routes/sync.ts` — `POST /api/sync/run`, which runs a sync on demand rather than waiting for the interval (FR-127), and `GET /api/sync/status`.
+- [x] T254 [P] [US4] `src/web/sync/use-sync.ts` — status polling and manual refresh; a failure indication clears once a sync succeeds (FR-137).
+- [x] T255 [P] [US4] `src/web/sync/SyncStatus.tsx` — the header pill, showing the time of the last successful sync (FR-133). Non-blocking by construction: it is a pill, never an overlay (FR-134).
 
 **Checkpoint**: sync is legible. **Run the Story-Complete Review Gate.**
 
@@ -249,14 +249,14 @@ Stories are ordered by dependency, then priority:
 
 ### Tests — write first, confirm they FAIL
 
-- [ ] T257 [P] [US6] `tests/unit/credential-redaction.test.ts` — no error the adapter can produce contains the token, across every failure mode (BH-122).
-- [ ] T258 [P] [US6] Extend `tests/features/sync-status.feature` — unconfigured Jira is reported as such and the ad-hoc board still works (BH-123).
-- [ ] T259 [P] [US6] `tests/e2e/settings.spec.ts` assertion — no credential in any browser payload during a full sync cycle (BH-122).
+- [x] T257 [P] [US6] `tests/unit/credential-redaction.test.ts` — no error the adapter can produce contains the token, across every failure mode (BH-122).
+- [x] T258 [P] [US6] Extend `tests/features/sync-status.feature` — unconfigured Jira is reported as such and the ad-hoc board still works (BH-123).
+- [x] T259 [P] [US6] `tests/e2e/settings.spec.ts` assertion — no credential in any browser payload during a full sync cycle (BH-122).
 
 ### Implementation
 
-- [ ] T260 [US6] Audit and harden `credentials.ts` and `jira-adapter.ts` against the redaction tests: no error carries the request, the header, or the token, and nothing reaches logs or diagnostic output (FR-103).
-- [ ] T261 [US6] Unconfigured Jira reports cleanly from `GET /api/sync/status` and `POST /api/sync/run` (FR-105).
+- [x] T260 [US6] Audit and harden `credentials.ts` and `jira-adapter.ts` against the redaction tests: no error carries the request, the header, or the token, and nothing reaches logs or diagnostic output (FR-103).
+- [x] T261 [US6] Unconfigured Jira reports cleanly from `GET /api/sync/status` and `POST /api/sync/run` (FR-105).
 
 **Checkpoint**: the credential is provably nowhere. **Run the Story-Complete Review Gate.**
 
@@ -264,8 +264,8 @@ Stories are ordered by dependency, then priority:
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T262 Update `docs/external-interactions.md`: Jira moves from "planned" to a real entry with contract, failure modes, timeout and retry policy.
-- [ ] T263 Update `README.md`: connecting to Jira, the three new variables, and what this slice deliberately does not do (dragging a Jira card does not tell Jira — that is slice 3).
+- [x] T262 Update `docs/external-interactions.md`: Jira moves from "planned" to a real entry with contract, failure modes, timeout and retry policy.
+- [x] T263 Update `README.md`: connecting to Jira, the three new variables, and what this slice deliberately does not do (dragging a Jira card does not tell Jira — that is slice 3).
 - [ ] T264 Verify plan.md's diagrams still match the as-built system; update if they drifted.
 - [ ] T265 Verify all 16 test files named in plan.md exist and pass.
 - [ ] T266 Verify SC-101…SC-109, including the two that are absence claims: zero writes to Jira and zero credential occurrences across the whole suite.

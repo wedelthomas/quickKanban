@@ -21,15 +21,36 @@ flags the need for integration tests in `tasks.md`.
 | **Failure mode — while running** | `GET /api/health` reports `degraded`; mutations return 503 with a typed code; the board stays interactive and reverts failed changes |
 | **Data classification** | No PII, no account-critical data. Card titles and descriptions are the user's own notes about their own work. |
 
-## Planned touchpoints
+### Jira Cloud REST API — read only
 
-Not yet present. Listed so the register shows the intended shape, and to be
-filled in properly by the slice that introduces each.
+| Field | Value |
+|---|---|
+| **Direction** | Outbound HTTPS, from the app container |
+| **Introduced in** | Slice 2 (`specs/002-jira-import/`) |
+| **Contract** | `GET {JIRA_BASE_URL}/rest/api/3/search/jql?jql=…&maxResults=…&fields=summary,status,updated&nextPageToken=…`. Paginated by opaque token, not offset: the response carries `nextPageToken` and `isLast`. **`/rest/api/3/search` was removed by Atlassian and answers 410 Gone** — verified against tsgjira.atlassian.net on 2026-08-26. |
+| **Methods used** | `GET` only. A unit test asserts the adapter's source contains no other verb and that the port exposes no write operation. |
+| **Authentication** | HTTP Basic, `email:api-token` from environment, built at call time. Never persisted, never sent to the browser, never logged. |
+| **Timeout** | 10s per request (`AbortSignal.timeout`) |
+| **Retries** | Bounded exponential backoff, 3 attempts at 500/1000/2000ms, honouring `Retry-After` on 429. Not retried on 401/403 — a rejected credential will be rejected again. |
+| **Failure — rejected credentials** | `JiraUnauthorized` → recorded as `failure_kind: credentials`, worded distinctly in the interface from a connectivity failure |
+| **Failure — unreachable, timeout, 5xx** | `JiraUnreachable` → retried, then `failure_kind: connectivity`. The board stays fully usable. |
+| **Failure — rate limited past retries** | `failure_kind: rate_limit` |
+| **Failure — unexpected response shape** | `JiraMalformedResponse` → nothing is applied |
+| **Partial failure** | Impossible by construction: issues are fetched in full, then applied in one transaction |
+| **Data classification** | Issue keys, summaries and statuses for the user's own assigned work. No PII. The credential is the sensitive item and is never stored. |
+
+**TLS note.** On a network that intercepts TLS, the container must trust the
+interceptor's root CA or every call fails with
+`UNABLE_TO_GET_ISSUER_CERT_LOCALLY`. `NODE_EXTRA_CA_CERTS` adds that CA
+*alongside* the normal trust store. `NODE_TLS_REJECT_UNAUTHORIZED=0` must never
+be used: it disables verification entirely and would make the token
+interceptable by anyone on the path.
+
+## Planned touchpoints
 
 | Touchpoint | Arrives in | Shape |
 |---|---|---|
-| Jira Cloud REST API (read) | Slice 2 | Outbound HTTPS, Basic auth with an Atlassian account email plus API token from env. Rate-limited; bounded backoff and retry. Never reaches the browser. |
-| Jira Cloud REST API (write) | Slice 3 | Status transitions only. No other field is ever modified. |
+| Jira Cloud REST API (write) | Slice 3 | Status transitions only, via `POST /rest/api/3/issue/{key}/transitions`. No other field is ever modified. |
 
 ## Touchpoints deliberately absent
 

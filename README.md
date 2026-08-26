@@ -9,7 +9,7 @@ record for your day. Requests arrive by chat, email and hallway conversation;
 they take real hours and compete with everything else, but no Jira board shows
 them. This board does.
 
-> **Current state: slice 1 (board foundation), complete.**
+> **Current state: slice 2 (Jira import), complete.**
 
 ## What it does today
 
@@ -22,8 +22,49 @@ them. This board does.
 - Deletion is soft and asks first
 - Every column change is recorded in an append-only history
 
-**Not yet:** Jira import and two-way sync (slices 2 and 3), search, the dated
-archive and standup summaries (slice 4). See [`docs/brd.md`](docs/brd.md).
+- **Your assigned Jira issues appear automatically**, placed in the column
+  their Jira status maps to, refreshed on a configurable interval and on demand
+- Jira cards carry their issue key as a link and resist local edits to what
+  Jira owns
+- Issues that leave your query are archived with a reason, never deleted, and
+  restored if they come back
+- Sync status is always visible, and a failure never blocks the board
+
+**Not yet:** dragging a Jira card does not tell Jira — that is slice 3. Search,
+the dated archive and standup summaries are slice 4. See
+[`docs/brd.md`](docs/brd.md).
+
+## Connecting to Jira
+
+Generate a token at <https://id.atlassian.com/manage-profile/security/api-tokens>
+— no administrator approval needed — and add three lines to `.env`:
+
+```bash
+JIRA_BASE_URL=https://tsgjira.atlassian.net
+JIRA_EMAIL=you@tradestation.com
+JIRA_API_TOKEN=<the token>
+```
+
+**Without them the board still runs**, reports Jira as not configured, and
+works with ad-hoc cards exactly as before. That is a supported state, not a
+broken one.
+
+### If your network intercepts TLS
+
+Symptom: every sync fails with `connectivity`, and the container logs
+`UNABLE_TO_GET_ISSUER_CERT_LOCALLY`. Export your corporate root CA and point
+Node at it:
+
+```bash
+mkdir -p certs
+security find-certificate -c "Zscaler Root CA" -p /Library/Keychains/System.keychain > certs/corporate-root-ca.pem
+echo 'NODE_EXTRA_CA_CERTS=/certs/corporate-root-ca.pem' >> .env
+docker compose up -d
+```
+
+This *adds* to the trust store; verification stays on. **Never set
+`NODE_TLS_REJECT_UNAUTHORIZED=0`** — it turns verification off entirely and
+makes your token interceptable by anyone on the path.
 
 ## Getting started
 

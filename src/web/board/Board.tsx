@@ -17,6 +17,8 @@ import { CardDialog } from '../cards/CardDialog.js';
 import { useShortcuts } from '../keyboard/use-shortcuts.js';
 import { HelpOverlay } from '../keyboard/HelpOverlay.js';
 import { SettingsDialog } from '../settings/SettingsDialog.js';
+import { useSync } from '../sync/use-sync.js';
+import { SyncStatusPill } from '../sync/SyncStatus.js';
 import type { ShortcutMatch } from '../keyboard/shortcuts.js';
 import type { Board as BoardData, Card } from '../../shared/types.js';
 
@@ -70,8 +72,9 @@ const collisionDetection: CollisionDetection = (args) => {
 };
 
 export const Board = () => {
-  const { board, error, moveError, dismissMoveError, createCard, moveCard, updateCard, deleteCard } =
+  const { board, error, moveError, dismissMoveError, refresh, createCard, moveCard, updateCard, deleteCard } =
     useBoard();
+  const { status: syncStatus, syncNow } = useSync(refresh);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Card | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -191,6 +194,7 @@ export const Board = () => {
             </button>
           </p>
         )}
+        <SyncStatusPill status={syncStatus} onRefresh={() => void syncNow()} />
         <button className="button" onClick={() => setSettingsOpen(true)}>
           Settings
         </button>
