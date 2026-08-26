@@ -307,3 +307,37 @@ Then('exactly {int} card exists for issue {string}', async function (
   );
   assert.equal(Number(rows[0]!.count), count);
 });
+
+When('{int} refreshes are requested at once', async function (this: BoardWorld, count: number) {
+  await Promise.all(
+    Array.from({ length: count }, () => this.request('POST', '/api/sync/run')),
+  );
+});
+
+Then('Jira was queried fewer than {int} times', function (this: BoardWorld, ceiling: number) {
+  assert.ok(
+    this.jira.callCount < ceiling,
+    `expected fewer than ${ceiling} calls, saw ${this.jira.callCount}`,
+  );
+});
+
+When('the settings are read', async function (this: BoardWorld) {
+  await this.request('GET', '/api/settings');
+});
+
+When('the sync interval is set to {int} seconds', async function (this: BoardWorld, seconds: number) {
+  await this.request('PUT', '/api/settings', { syncIntervalSeconds: seconds });
+});
+
+Then('the sync interval is {int} seconds', async function (this: BoardWorld, seconds: number) {
+  const res = await this.request('GET', '/api/settings');
+  assert.equal((res.body as { syncIntervalSeconds: number }).syncIntervalSeconds, seconds);
+});
+
+When('the query is set to {string}', async function (this: BoardWorld, jql: string) {
+  await this.request('PUT', '/api/settings', { jiraJql: jql });
+});
+
+Then('Jira was asked {string}', function (this: BoardWorld, jql: string) {
+  assert.ok(this.jira.queries.includes(jql), `queries: ${this.jira.queries.join(' | ')}`);
+});

@@ -16,6 +16,7 @@ import { ColumnView, columnDroppableId } from './ColumnView.js';
 import { CardDialog } from '../cards/CardDialog.js';
 import { useShortcuts } from '../keyboard/use-shortcuts.js';
 import { HelpOverlay } from '../keyboard/HelpOverlay.js';
+import { SettingsDialog } from '../settings/SettingsDialog.js';
 import type { ShortcutMatch } from '../keyboard/shortcuts.js';
 import type { Board as BoardData, Card } from '../../shared/types.js';
 
@@ -74,6 +75,7 @@ export const Board = () => {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Card | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   // Held by id rather than by element, because the board re-renders after every
   // move and the element the user focused is gone by the time it lands.
   const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
@@ -161,7 +163,9 @@ export const Board = () => {
 
   // Suspended while a dialog owns the screen, so the board's shortcuts cannot
   // reach past it and claim keys the dialog's own controls need.
-  useShortcuts(handleShortcut, { suspended: creating || editing !== null });
+  useShortcuts(handleShortcut, {
+    suspended: creating || editing !== null || settingsOpen,
+  });
 
   if (error) return <p className="board-message board-message--error">{error}</p>;
   if (!board) return <p className="board-message">Loading the board…</p>;
@@ -187,6 +191,9 @@ export const Board = () => {
             </button>
           </p>
         )}
+        <button className="button" onClick={() => setSettingsOpen(true)}>
+          Settings
+        </button>
         <button className="button button--primary" onClick={() => setCreating(true)}>
           New card
         </button>
@@ -208,6 +215,7 @@ export const Board = () => {
         />
       )}
       {helpOpen && <HelpOverlay onClose={() => setHelpOpen(false)} />}
+      {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
       {editing && (
         <CardDialog
           initial={editing}

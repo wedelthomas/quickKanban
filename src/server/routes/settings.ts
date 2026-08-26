@@ -18,6 +18,8 @@ const updateSchema = z
 export const registerSettingsRoutes = (
   app: FastifyInstance,
   settings: SettingsRepository,
+  /** Re-armed when the cadence changes, so it takes effect now, not next tick. */
+  onIntervalChanged: () => void = () => {},
 ): void => {
   // Returns the query and the interval. There is no credential here and no
   // field for one — anything the interface can display, it can leak (FR-102).
@@ -31,6 +33,8 @@ export const registerSettingsRoutes = (
       const check = validateJql(parsed.data.jiraJql);
       if (!check.ok) throw validationFailed(check.reason!);
     }
-    return settings.write(parsed.data);
+    const updated = await settings.write(parsed.data);
+    if (parsed.data.syncIntervalSeconds !== undefined) onIntervalChanged();
+    return updated;
   });
 };

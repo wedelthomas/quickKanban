@@ -36,6 +36,8 @@ export interface AppOptions {
   jira?: JiraPort | null;
   /** Exposed so the scheduler can share the lock the routes use. */
   lock?: SyncLock;
+  /** Called when the poll interval changes, so the scheduler can re-arm. */
+  onIntervalChanged?: () => void;
 }
 
 /**
@@ -49,6 +51,7 @@ export const buildApp = ({
   logger = true,
   jira = null,
   lock = new SyncLock(),
+  onIntervalChanged = () => {},
 }: AppOptions): FastifyInstance => {
   // Typed separately: inlining a `false | object` union makes TypeScript
   // resolve Fastify's HTTP/2 overload instead of the HTTP/1 one.
@@ -123,7 +126,7 @@ export const buildApp = ({
     ? new SyncService(pool, jira, cardRepository, new JiraLinkRepository(pool), runs, settings)
     : null;
   registerSyncRoutes(app, { sync, lock, runs });
-  registerSettingsRoutes(app, settings);
+  registerSettingsRoutes(app, settings, onIntervalChanged);
   registerTagRoutes(app, new TagRepository(pool));
 
   if (webRoot && existsSync(webRoot)) {

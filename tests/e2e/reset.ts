@@ -16,7 +16,15 @@ export const resetBoard = async (): Promise<void> => {
     'compose', 'exec', '-T', 'db',
     'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',
     '-d', process.env.POSTGRES_DB ?? 'kanban',
-    '-c', 'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, cards RESTART IDENTITY CASCADE',
+    '-c',
+    // Settings are restored rather than truncated: the rows are seeded by
+    // migration, so dropping them would leave the app with no query at all.
+    // Resetting them matters — a test that changes the query would otherwise
+    // leak it into every test that runs after it.
+    `TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, cards RESTART IDENTITY CASCADE;
+     UPDATE settings SET value = '"assignee = currentUser() AND statusCategory != Done"'::jsonb
+      WHERE key = 'jira.jql';
+     UPDATE settings SET value = '300'::jsonb WHERE key = 'sync.interval_seconds';`,
   ]);
 };
 

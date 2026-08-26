@@ -47,7 +47,7 @@ Stories are ordered by dependency, then priority:
 ## Phase 1: Setup
 
 - [x] T201 Add `undici` as an explicit dev dependency for `MockAgent`, and a `test:contract` script running `vitest --config vitest.contract.config.ts`.
-- [ ] T202 [P] Create `vitest.contract.config.ts` for `tests/contract`, separate from the unit suite because these tests replay HTTP fixtures.
+- [x] T202 [P] Create `vitest.contract.config.ts` for `tests/contract`, separate from the unit suite because these tests replay HTTP fixtures.
 - [x] T203 [P] Extend `.env.example` with `JIRA_BASE_URL`, `JIRA_EMAIL` and `JIRA_API_TOKEN`, with placeholder values and a note that the token can act as the user in Jira.
 
 ---
@@ -185,20 +185,30 @@ Stories are ordered by dependency, then priority:
 
 ### Tests — write first, confirm they FAIL
 
-- [ ] T241 [P] [US3] `tests/unit/backoff.test.ts` — bounded exponential delays, `Retry-After` honoured, attempts capped (BH-117).
-- [ ] T242 [P] [US3] `tests/features/sync-schedule.feature` + steps — sync at startup, again each interval, immediately on refresh, and never twice at once across fifty overlapping requests (BH-114, BH-115, BH-116).
-- [ ] T243 [P] [US3] `tests/e2e/settings.spec.ts` — query and interval edited, persisted across restart, and **no field anywhere for a credential** (BH-124, and half of BH-122).
+- [x] T241 [P] [US3] `tests/unit/backoff.test.ts` — bounded exponential delays, `Retry-After` honoured, attempts capped (BH-117).
+- [x] T242 [P] [US3] `tests/features/sync-schedule.feature` + steps — sync at startup, again each interval, immediately on refresh, and never twice at once across fifty overlapping requests (BH-114, BH-115, BH-116).
+- [x] T243 [P] [US3] `tests/e2e/settings.spec.ts` — query and interval edited, persisted across restart, and **no field anywhere for a credential** (BH-124, and half of BH-122).
 
 ### Implementation
 
-- [ ] T244 [P] [US3] `src/domain/backoff.ts` — delay sequence. Pure, no timers.
-- [ ] T245 [US3] `src/server/sync/sync-lock.ts` — single-flight. A request arriving mid-sync **joins** the in-flight one rather than queueing a second (FR-129).
-- [ ] T246 [US3] Apply bounded backoff and `Retry-After` in `jira-adapter.ts`, retrying rate limits and temporary unavailability rather than failing at once or retrying without limit (FR-130).
-- [ ] T247 [US3] `src/server/sync/scheduler.ts` — a sync shortly after startup without waiting a full interval (FR-128) and one per configured interval thereafter (FR-126), with an injected clock so the tests need no real waiting.
-- [ ] T248 [US3] `src/server/routes/settings.ts` — `GET`/`PUT /api/settings` exposing the query (FR-106) and the poll interval (FR-108), bounded to 60–3600. No credential field (FR-102).
-- [ ] T249 [US3] `src/web/settings/SettingsDialog.tsx` — query and interval. No credential field.
+- [x] T244 [P] [US3] `src/domain/backoff.ts` — delay sequence. Pure, no timers.
+- [x] T245 [US3] `src/server/sync/sync-lock.ts` — single-flight. A request arriving mid-sync **joins** the in-flight one rather than queueing a second (FR-129).
+- [x] T246 [US3] Apply bounded backoff and `Retry-After` in `jira-adapter.ts`, retrying rate limits and temporary unavailability rather than failing at once or retrying without limit (FR-130).
+- [x] T247 [US3] `src/server/sync/scheduler.ts` — a sync shortly after startup without waiting a full interval (FR-128) and one per configured interval thereafter (FR-126), with an injected clock so the tests need no real waiting.
+- [x] T248 [US3] `src/server/routes/settings.ts` — `GET`/`PUT /api/settings` exposing the query (FR-106) and the poll interval (FR-108), bounded to 60–3600. No credential field (FR-102).
+- [x] T249 [US3] `src/web/settings/SettingsDialog.tsx` — query and interval. No credential field.
 
-**Checkpoint**: the board stays current on its own. **Run the Story-Complete Review Gate.**
+**Checkpoint**: the board stays current on its own. **Story-Complete Review Gate run; findings recorded below.**
+
+### US3 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-126…FR-130 and FR-106…FR-108 implemented; all five pathways green.
+- **Design**: the scheduler chains a fresh timer after each run rather than using setInterval, so the interval is re-read every tick and a slow sync cannot overlap the next one.
+- **A design gap the test exposed**: re-reading the interval per tick is not enough. Shortening it from five minutes to one would still wait out the pending five-minute timer, because that timer was armed before the change. Added `reschedule()`, called by the settings route, so a cadence change takes effect when the user makes it rather than one sync later.
+- **A failed sync must not stop the schedule**, and a test pins that. One bad response otherwise leaves the board never updating again — far worse than the failure itself, which is already recorded in `sync_runs` for the user to see.
+- **Native form validation deliberately removed** from the interval field: the browser blocks submission with its own tooltip, which is silent to the rest of the interface and inconsistent with how every other error is shown here. Validated in the dialog instead, against the same bounds the server enforces.
+- **Test isolation defect found and fixed**: `resetBoard()` truncated cards but not settings, so a test that changed the query leaked it into every test after it. Settings are now restored to their seeded defaults rather than truncated, since the rows come from a migration.
+- **Security**: the settings dialog has no field for a credential, and a test asserts the absence of any password input or secret-shaped label rather than trusting the current markup.
 
 ---
 

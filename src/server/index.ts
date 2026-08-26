@@ -4,6 +4,9 @@ import { buildApp, defaultWebRoot } from './app.js';
 import { readJiraCredentials } from './jira/credentials.js';
 import { JiraAdapter } from './jira/jira-adapter.js';
 import { SyncRunRepository } from './repositories/sync-run-repository.js';
+import { SettingsRepository } from './repositories/settings-repository.js';
+import { SyncLock } from './sync/sync-lock.js';
+import { Scheduler } from './sync/scheduler.js';
 
 /**
  * Process entry: migrate, then serve. In that order and never concurrently —
@@ -40,7 +43,31 @@ const main = async (): Promise<void> => {
       : 'Jira not configured — the board will run with ad-hoc cards only.',
   );
 
-  const app = buildApp({ pool, webRoot: defaultWebRoot(), jira });
+  // The scheduler shares the routes' lock, so a scheduled sync and a manual
+  // refresh cannot both run — the second joins the first (FR-129).
+  const lock = new SyncLock();
+  const settings = new SettingsRepository(pool);
+  let scheduler: Scheduler | null = null;
+
+  const app = buildApp({
+    pool,
+    webRoot: defaultWebRoot(),
+    jira,
+    lock,
+    onIntervalChanged: () => scheduler?.reschedule(),
+  });
+
+  if (jira) {
+    scheduler = new Scheduler(
+      async () => {
+        const res = await app.inject({ method: 'POST', url: '/api/sync/run' });
+        if (res.statusCode >= 400) throw new Error(`scheduled sync failed: ${res.statusCode}`);
+      },
+      async () => (await settings.read()).syncIntervalSeconds,
+    );
+    scheduler.start();
+    console.error('Sync scheduler started.');
+  }
 
   // FR-034 restricts the board to the host's loopback interface, but the
   // mechanism is the compose publish spec (`127.0.0.1:3000:3000`), NOT this
@@ -55,6 +82,7 @@ const main = async (): Promise<void> => {
   await app.listen({ host, port });
 
   const shutdown = async (): Promise<void> => {
+    scheduler?.stop();
     await app.close();
     await pool.end();
     process.exit(0);
