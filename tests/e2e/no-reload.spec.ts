@@ -38,6 +38,37 @@ test.describe('a full working cycle', () => {
     expect(survived, 'the page reloaded at some point in the cycle').toBe(true);
   });
 
+  test('a save that the server refuses is explained, not silent', async ({ page }) => {
+    // Found by review: only move failures were surfaced. A failed create left
+    // the dialog open with no explanation, and the rejection unhandled — the
+    // user could not tell a failed save from one still in flight.
+    await page.goto('/');
+    await page.route('**/api/cards', (route) =>
+      route.request().method() === 'POST'
+        ? route.fulfill({
+            status: 503,
+            contentType: 'application/problem+json',
+            body: JSON.stringify({
+              type: 'about:blank',
+              title: 'The board could not reach its data store',
+              status: 503,
+              code: 'DATABASE_UNAVAILABLE',
+              detail: 'The change was not saved.',
+            }),
+          })
+        : route.continue(),
+    );
+
+    await page.getByRole('button', { name: 'New card' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Title').fill('Will not save');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page.getByTestId('title-error')).toBeVisible();
+    await expect(page.getByTestId('title-error')).toContainText(/not saved/i);
+    await expect(dialog).toBeVisible();
+  });
+
   test('an edit persists across a reload (BH-012)', async ({ page }) => {
     await page.goto('/');
     await createCard(page, 'Before');

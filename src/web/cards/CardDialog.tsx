@@ -48,13 +48,23 @@ export const CardDialog = ({
       setError('A card must have a title that is not only whitespace.');
       return;
     }
-    await onSubmit({
-      title,
-      description: description.trim() === '' ? null : description,
-      priority,
-      dueDate: dueDate === '' ? null : dueDate,
-      tags,
-    });
+    try {
+      setError(null);
+      await onSubmit({
+        title,
+        description: description.trim() === '' ? null : description,
+        priority,
+        dueDate: dueDate === '' ? null : dueDate,
+        tags,
+      });
+    } catch (failure) {
+      // Without this the dialog sits open with no explanation and the
+      // rejection goes unhandled — the user has no way to tell a save that
+      // failed from one that is still in flight.
+      setError(
+        failure instanceof Error ? failure.message : 'The card could not be saved.',
+      );
+    }
   };
 
   return (
@@ -140,7 +150,15 @@ export const CardDialog = ({
                 type="button"
                 className="button button--danger"
                 data-testid="confirm-delete"
-                onClick={() => void onDelete()}
+                onClick={() => {
+                  onDelete().catch((failure: unknown) =>
+                    setError(
+                      failure instanceof Error
+                        ? failure.message
+                        : 'The card could not be deleted.',
+                    ),
+                  );
+                }}
               >
                 Delete
               </button>

@@ -159,7 +159,9 @@ export const Board = () => {
     [board, moveCard, focusCardById],
   );
 
-  useShortcuts(handleShortcut);
+  // Suspended while a dialog owns the screen, so the board's shortcuts cannot
+  // reach past it and claim keys the dialog's own controls need.
+  useShortcuts(handleShortcut, { suspended: creating || editing !== null });
 
   if (error) return <p className="board-message board-message--error">{error}</p>;
   if (!board) return <p className="board-message">Loading the board…</p>;

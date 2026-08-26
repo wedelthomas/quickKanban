@@ -74,6 +74,25 @@ test.describe('keyboard operation', () => {
     await expect(help).toBeHidden();
   });
 
+  test('board shortcuts do not reach past an open dialog', async ({ page }) => {
+    // Regression: the global handler claimed Enter as "open the focused card"
+    // even while a dialog was open, so Enter on a focused Save button was
+    // swallowed and the form never submitted. Found by review, not by the
+    // tests above — they all submit from the title field, where the typing
+    // guard already stands aside.
+    await page.keyboard.press('n');
+    const dialog = page.getByRole('dialog');
+    await page.keyboard.type('Submitted from the button');
+
+    await dialog.getByRole('button', { name: 'Save' }).focus();
+    await page.keyboard.press('Enter');
+
+    await expect(dialog).toBeHidden();
+    await expect.poll(() => cardTitlesIn(page, 'backlog')).toEqual([
+      'Submitted from the button',
+    ]);
+  });
+
   test('closing a dialog restores focus to the card it opened from (BH-027)', async ({ page }) => {
     await page.keyboard.press('n');
     await page.keyboard.type('Focus me');
