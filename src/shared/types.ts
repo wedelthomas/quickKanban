@@ -49,8 +49,41 @@ export interface Card {
   columnId: number;
   position: number;
   tags: string[];
+  /** Present only when source is 'jira'. */
+  issueKey: string | null;
+  issueUrl: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export type SyncFailureKind = 'credentials' | 'connectivity' | 'rate_limit' | 'malformed';
+
+export interface SyncRun {
+  id: number;
+  startedAt: string;
+  finishedAt: string | null;
+  outcome: 'succeeded' | 'failed' | null;
+  failureKind: SyncFailureKind | null;
+  counts: {
+    issuesSeen: number;
+    created: number;
+    updated: number;
+    archived: number;
+    restored: number;
+  };
+}
+
+export interface SyncStatus {
+  /** False is a normal state, not an error: the board works without Jira. */
+  configured: boolean;
+  running: boolean;
+  lastSuccessAt: string | null;
+  lastRun: SyncRun | null;
+}
+
+export interface Settings {
+  jiraJql: string;
+  syncIntervalSeconds: number;
 }
 
 export interface BoardColumn extends Column {
@@ -81,7 +114,9 @@ export type ProblemCode =
   | 'DELETE_FORBIDDEN_NON_LOCAL'
   | 'DATABASE_UNAVAILABLE'
   | 'BAD_REQUEST'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_ERROR'
+  | 'JIRA_NOT_CONFIGURED'
+  | 'EDIT_FORBIDDEN_JIRA_OWNED';
 
 export interface Problem {
   type: string;

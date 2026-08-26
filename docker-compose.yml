@@ -13,6 +13,23 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-kanban}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-kanban}
       PORT: '3000'
+      # Optional. Absent or blank means Jira is simply not configured, and the
+      # board runs with ad-hoc cards only — a supported state, not a failure.
+      # The token is passed through from .env and never baked into the image.
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+      # On a network that intercepts TLS, the container must trust the
+      # interceptor's root CA or every outbound HTTPS call fails with
+      # UNABLE_TO_GET_ISSUER_CERT_LOCALLY. This adds that CA *in addition to*
+      # the normal trust store — verification stays on. Never set
+      # NODE_TLS_REJECT_UNAUTHORIZED=0 here; that turns verification off
+      # entirely and would make the token interceptable by anyone.
+      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS:-}
+    volumes:
+      # Present only on networks that need it; the bind is optional because
+      # the file is gitignored and may not exist.
+      - ./certs:/certs:ro
     depends_on:
       db:
         condition: service_healthy

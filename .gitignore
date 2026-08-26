@@ -14,3 +14,8 @@ node_modules/
 dist/
 playwright-report/
 test-results/
+
+# Corporate TLS-interception root CA, exported from the local machine.
+# Not a secret (a root certificate is public), but machine- and
+# network-specific, so it is regenerated rather than committed.
+certs/

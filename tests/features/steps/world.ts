@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import pg from 'pg';
 import { buildApp } from '../../../src/server/app.js';
 import { runMigrations } from '../../../src/server/db/migrate.js';
+import { FakeJiraAdapter } from '../../../src/server/jira/fake-jira-adapter.js';
 
 /**
  * The acceptance suite runs against the real API and a real database. No
@@ -12,6 +13,8 @@ import { runMigrations } from '../../../src/server/db/migrate.js';
 export class BoardWorld extends World {
   app!: FastifyInstance;
   pool!: pg.Pool;
+  /** Staged by the Jira steps; the app is built against this, never live Jira. */
+  jira!: FakeJiraAdapter;
   response!: { status: number; body: unknown };
   /** The card produced by the most recent creating step, for later assertions. */
   lastCard?: import('../../../src/shared/types.js').Card;
@@ -26,14 +29,15 @@ export class BoardWorld extends World {
       'postgres://kanban:test-only-not-a-secret@127.0.0.1:5433/kanban_test';
     this.pool = new pg.Pool({ connectionString, statement_timeout: 5_000 });
     await runMigrations(this.pool);
-    this.app = buildApp({ pool: this.pool, logger: false });
+    this.jira = new FakeJiraAdapter();
+    this.app = buildApp({ pool: this.pool, logger: false, jira: this.jira });
     await this.app.ready();
   }
 
   /** Truncate rather than re-migrate: scenarios need isolation, not a fresh schema. */
   async reset(): Promise<void> {
     await this.pool.query(
-      'TRUNCATE card_events, card_tags, tags, cards RESTART IDENTITY CASCADE',
+      'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, cards RESTART IDENTITY CASCADE',
     );
   }
 

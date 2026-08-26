@@ -1,6 +1,9 @@
 import { createPool } from './db/pool.js';
 import { runMigrations } from './db/migrate.js';
 import { buildApp, defaultWebRoot } from './app.js';
+import { readJiraCredentials } from './jira/credentials.js';
+import { JiraAdapter } from './jira/jira-adapter.js';
+import { SyncRunRepository } from './repositories/sync-run-repository.js';
 
 /**
  * Process entry: migrate, then serve. In that order and never concurrently —
@@ -23,7 +26,21 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
-  const app = buildApp({ pool, webRoot: defaultWebRoot() });
+  // A run left unfinished by a crash would otherwise hold the in-flight slot
+  // forever and make every later sync look like a duplicate.
+  await new SyncRunRepository(pool).abandonUnfinished();
+
+  // Null when Jira is not configured — a supported state, not a failure
+  // (FR-105). The board serves ad-hoc cards exactly as it did in slice 1.
+  const credentials = readJiraCredentials();
+  const jira = credentials ? new JiraAdapter(credentials) : null;
+  console.error(
+    jira
+      ? `Jira configured: ${credentials!.baseUrl}`
+      : 'Jira not configured — the board will run with ad-hoc cards only.',
+  );
+
+  const app = buildApp({ pool, webRoot: defaultWebRoot(), jira });
 
   // FR-034 restricts the board to the host's loopback interface, but the
   // mechanism is the compose publish spec (`127.0.0.1:3000:3000`), NOT this

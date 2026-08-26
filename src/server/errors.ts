@@ -54,3 +54,19 @@ export const databaseUnavailable = (): DomainError =>
     'The board could not reach its data store',
     'The change was not saved. The board has reverted it rather than show you a state it could not store.',
   );
+
+export const jiraNotConfigured = (): DomainError =>
+  new DomainError(
+    'JIRA_NOT_CONFIGURED',
+    409,
+    'Jira is not configured',
+    'Set JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN in .env, then restart. The board works without them.',
+  );
+
+export const editForbiddenJiraOwned = (field: string): DomainError =>
+  new DomainError(
+    'EDIT_FORBIDDEN_JIRA_OWNED',
+    409,
+    `${field} comes from Jira`,
+    `This card's ${field} is owned by Jira and changes there, not here.`,
+  );

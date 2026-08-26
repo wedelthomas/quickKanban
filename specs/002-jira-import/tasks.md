@@ -40,9 +40,9 @@ Stories are ordered by dependency, then priority:
 
 ## Phase 1: Setup
 
-- [ ] T201 Add `undici` as an explicit dev dependency for `MockAgent`, and a `test:contract` script running `vitest --config vitest.contract.config.ts`.
+- [x] T201 Add `undici` as an explicit dev dependency for `MockAgent`, and a `test:contract` script running `vitest --config vitest.contract.config.ts`.
 - [ ] T202 [P] Create `vitest.contract.config.ts` for `tests/contract`, separate from the unit suite because these tests replay HTTP fixtures.
-- [ ] T203 [P] Extend `.env.example` with `JIRA_BASE_URL`, `JIRA_EMAIL` and `JIRA_API_TOKEN`, with placeholder values and a note that the token can act as the user in Jira.
+- [x] T203 [P] Extend `.env.example` with `JIRA_BASE_URL`, `JIRA_EMAIL` and `JIRA_API_TOKEN`, with placeholder values and a note that the token can act as the user in Jira.
 
 ---
 
@@ -50,16 +50,16 @@ Stories are ordered by dependency, then priority:
 
 **No story work begins until this phase is complete.**
 
-- [ ] T204 [P] `src/server/db/migrations/005_jira_links.sql` — per data-model.md, with `issue_key` UNIQUE so no-duplicate-per-issue is enforced by the database rather than only by the upsert.
-- [ ] T205 [P] `src/server/db/migrations/006_sync_runs.sql` — outcome and failure-kind CHECK constraints; counts default 0.
-- [ ] T206 [P] `src/server/db/migrations/007_settings.sql` — key/value, seeded with the default query and a 300-second interval.
-- [ ] T207 [P] `src/server/db/migrations/008_cards_archive_reason.sql` — add `archived_reason`.
-- [ ] T208 `src/server/jira/jira-port.ts` — the interface and the issue shape it returns. Read-only: `searchIssues` and nothing else.
-- [ ] T209 [P] `src/server/jira/fake-jira-adapter.ts` — in-memory, controllable from step definitions: issues, pagination, and each failure mode.
-- [ ] T210 [P] Extend `src/shared/types.ts` with `issueKey`, `issueUrl`, `SyncRun`, `SyncStatus`, and the two new problem codes.
-- [ ] T211 [P] Extend `src/server/errors.ts` with `JIRA_NOT_CONFIGURED` and `EDIT_FORBIDDEN_JIRA_OWNED`.
-- [ ] T212 [P] `src/server/repositories/settings-repository.ts` — typed read and write over the key/value table.
-- [ ] T213 `tests/features/steps/jira.steps.ts` — harness wiring the fake adapter into the acceptance world.
+- [x] T204 [P] `src/server/db/migrations/005_jira_links.sql` — per data-model.md, with `issue_key` UNIQUE so no-duplicate-per-issue is enforced by the database rather than only by the upsert.
+- [x] T205 [P] `src/server/db/migrations/006_sync_runs.sql` — outcome and failure-kind CHECK constraints; counts default 0.
+- [x] T206 [P] `src/server/db/migrations/007_settings.sql` — key/value, seeded with the default query and a 300-second interval.
+- [x] T207 [P] `src/server/db/migrations/008_cards_archive_reason.sql` — add `archived_reason`.
+- [x] T208 `src/server/jira/jira-port.ts` — the interface and the issue shape it returns. Read-only: `searchIssues` and nothing else.
+- [x] T209 [P] `src/server/jira/fake-jira-adapter.ts` — in-memory, controllable from step definitions: issues, pagination, and each failure mode.
+- [x] T210 [P] Extend `src/shared/types.ts` with `issueKey`, `issueUrl`, `SyncRun`, `SyncStatus`, and the two new problem codes.
+- [x] T211 [P] Extend `src/server/errors.ts` with `JIRA_NOT_CONFIGURED` and `EDIT_FORBIDDEN_JIRA_OWNED`.
+- [x] T212 [P] `src/server/repositories/settings-repository.ts` — typed read and write over the key/value table.
+- [x] T213 `tests/features/steps/jira.steps.ts` — harness wiring the fake adapter into the acceptance world.
 
 **Checkpoint**: the schema exists, the port is defined, and a scenario can stage Jira issues.
 
@@ -77,23 +77,23 @@ Stories are ordered by dependency, then priority:
 
 ### Tests — write first, confirm they FAIL
 
-- [ ] T215 [P] [US1] `tests/unit/jql.test.ts` — default query shape; empty query rejected (BH-124's unit half).
-- [ ] T216 [P] [US1] `tests/unit/no-jira-writes.test.ts` — the adapter's source contains no POST, PUT, PATCH or DELETE (BH-109, by absence of capability rather than by behaviour).
+- [x] T215 [P] [US1] `tests/unit/jql.test.ts` — default query shape; empty query rejected (BH-124's unit half).
+- [x] T216 [P] [US1] `tests/unit/no-jira-writes.test.ts` — the adapter's source contains no POST, PUT, PATCH or DELETE (BH-109, by absence of capability rather than by behaviour).
 - [ ] T217 [P] [US1] `tests/contract/jira-adapter.test.ts` — real adapter against recorded fixtures: pagination across pages, 401, 429, 5xx, malformed body (BH-102).
-- [ ] T218 [P] [US1] `tests/features/jira-import.feature` + steps — import into Backlog, no duplicates across twenty syncs, summary updates, empty result is a success (BH-101, BH-103, BH-105, BH-125).
-- [ ] T219 [P] [US1] `tests/features/sync-non-interference.feature` + steps — sync never moves a user-placed card, never touches ad-hoc cards, never issues a write (BH-106, BH-108, BH-109).
-- [ ] T220 [P] [US1] `tests/features/jira-snapshot.feature` + steps — recorded status and Jira's own last-updated value match what Jira returned (BH-107).
+- [x] T218 [P] [US1] `tests/features/jira-import.feature` + steps — import into Backlog, no duplicates across twenty syncs, summary updates, empty result is a success (BH-101, BH-103, BH-105, BH-125).
+- [x] T219 [P] [US1] `tests/features/sync-non-interference.feature` + steps — sync never moves a user-placed card, never touches ad-hoc cards, never issues a write (BH-106, BH-108, BH-109).
+- [x] T220 [P] [US1] `tests/features/jira-snapshot.feature` + steps — recorded status and Jira's own last-updated value match what Jira returned (BH-107).
 
 ### Implementation
 
-- [ ] T221 [P] [US1] `src/domain/jql.ts` — default query selecting the user's unfinished assigned issues (FR-107), and validation of a user-supplied one. Pure.
-- [ ] T222 [US1] `src/server/jira/credentials.ts` — read connection details and credentials from environment only (FR-101), report configured/not-configured, and build the auth header at call time. **Never returns the token to a caller that might render or log it** (FR-104).
-- [ ] T223 [US1] `src/server/jira/jira-adapter.ts` — `searchIssues` over `GET /rest/api/3/search/jql`, paginating to exhaustion so results beyond one page are imported (FR-109), 10s timeout, typed failures. GET only (FR-118).
-- [ ] T224 [US1] `src/server/repositories/jira-link-repository.ts` — upsert a link recording the issue's status and Jira's own last-updated value (FR-116), read links, list issue keys currently on the board.
-- [ ] T225 [US1] Extend `card-repository.ts` with `upsertFromJira`: create exactly one card per matching issue and no second card for one already present (FR-110), carrying the issue key, summary as title and link (FR-114), updating the title when the summary changes (FR-115). Places new cards at the top of Backlog (FR-112) and **never changes an existing card's column** (FR-113).
-- [ ] T226 [US1] Extend `board-row.ts` and the board query so `Card` carries `issueKey` and `issueUrl`.
-- [ ] T227 [US1] `src/server/sync/sync-service.ts` — fetch every page, then apply in one transaction, recording a `sync_run`. Ad-hoc cards are never altered, moved or removed by a sync (FR-117).
-- [ ] T228 [US1] `src/server/repositories/sync-run-repository.ts` — start, finish, read latest, read last success.
+- [x] T221 [P] [US1] `src/domain/jql.ts` — default query selecting the user's unfinished assigned issues (FR-107), and validation of a user-supplied one. Pure.
+- [x] T222 [US1] `src/server/jira/credentials.ts` — read connection details and credentials from environment only (FR-101), report configured/not-configured, and build the auth header at call time. **Never returns the token to a caller that might render or log it** (FR-104).
+- [x] T223 [US1] `src/server/jira/jira-adapter.ts` — `searchIssues` over `GET /rest/api/3/search/jql`, paginating to exhaustion so results beyond one page are imported (FR-109), 10s timeout, typed failures. GET only (FR-118).
+- [x] T224 [US1] `src/server/repositories/jira-link-repository.ts` — upsert a link recording the issue's status and Jira's own last-updated value (FR-116), read links, list issue keys currently on the board.
+- [x] T225 [US1] Extend `card-repository.ts` with `upsertFromJira`: create exactly one card per matching issue and no second card for one already present (FR-110), carrying the issue key, summary as title and link (FR-114), updating the title when the summary changes (FR-115). Places new cards at the top of Backlog (FR-112) and **never changes an existing card's column** (FR-113).
+- [x] T226 [US1] Extend `board-row.ts` and the board query so `Card` carries `issueKey` and `issueUrl`.
+- [x] T227 [US1] `src/server/sync/sync-service.ts` — fetch every page, then apply in one transaction, recording a `sync_run`. Ad-hoc cards are never altered, moved or removed by a sync (FR-117).
+- [x] T228 [US1] `src/server/repositories/sync-run-repository.ts` — start, finish, read latest, read last success.
 
 **Checkpoint**: Jira work appears on the board. **Run the Story-Complete Review Gate.**
 

@@ -12,6 +12,14 @@ import { registerCardRoutes } from './routes/cards.js';
 import { registerTagRoutes } from './routes/tags.js';
 import { TagRepository } from './repositories/tag-repository.js';
 import { EventRepository } from './repositories/event-repository.js';
+import { SettingsRepository } from './repositories/settings-repository.js';
+import { JiraLinkRepository } from './repositories/jira-link-repository.js';
+import { SyncRunRepository } from './repositories/sync-run-repository.js';
+import { SyncService } from './sync/sync-service.js';
+import { SyncLock } from './sync/sync-lock.js';
+import { registerSyncRoutes } from './routes/sync.js';
+import { registerSettingsRoutes } from './routes/settings.js';
+import type { JiraPort } from './jira/jira-port.js';
 import { CardRepository } from './repositories/card-repository.js';
 import { BoardRepository } from './repositories/board-repository.js';
 
@@ -20,6 +28,14 @@ export interface AppOptions {
   /** Absolute path to the built SPA. Omitted in tests, which never need it. */
   webRoot?: string;
   logger?: boolean;
+  /**
+   * How this app reaches Jira. Null means Jira is not configured, which is a
+   * supported state. Tests pass a fake; nothing in the standard suite is ever
+   * given the real adapter.
+   */
+  jira?: JiraPort | null;
+  /** Exposed so the scheduler can share the lock the routes use. */
+  lock?: SyncLock;
 }
 
 /**
@@ -27,7 +43,13 @@ export interface AppOptions {
  * an app against their own pool without going near process startup, migrations
  * or the loopback binding.
  */
-export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyInstance => {
+export const buildApp = ({
+  pool,
+  webRoot,
+  logger = true,
+  jira = null,
+  lock = new SyncLock(),
+}: AppOptions): FastifyInstance => {
   // Typed separately: inlining a `false | object` union makes TypeScript
   // resolve Fastify's HTTP/2 overload instead of the HTTP/1 one.
   const loggerOption: FastifyServerOptions['logger'] = logger
@@ -94,6 +116,14 @@ export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyI
   const cardRepository = new CardRepository(pool);
   registerBoardRoutes(app, new BoardService(new BoardRepository(pool)));
   registerCardRoutes(app, new CardService(cardRepository), new EventRepository(pool));
+
+  const settings = new SettingsRepository(pool);
+  const runs = new SyncRunRepository(pool);
+  const sync = jira
+    ? new SyncService(pool, jira, cardRepository, new JiraLinkRepository(pool), runs, settings)
+    : null;
+  registerSyncRoutes(app, { sync, lock, runs });
+  registerSettingsRoutes(app, settings);
   registerTagRoutes(app, new TagRepository(pool));
 
   if (webRoot && existsSync(webRoot)) {

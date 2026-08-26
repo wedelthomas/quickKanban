@@ -3,11 +3,15 @@ import type { Card } from '../../shared/types.js';
 import { type BoardRow, toCard } from './board-row.js';
 import type { CreateCardInput, MoveCardInput, UpdateCardInput } from '../../domain/validation.js';
 import { planMove, type ColumnOrder } from '../../domain/ordering.js';
+import type { JiraIssue } from '../jira/jira-port.js';
 import { TagRepository } from './tag-repository.js';
 import { EventRepository } from './event-repository.js';
 
 /** Backlog. New cards land here (FR-009). */
 const BACKLOG_COLUMN_ID = 1;
+
+/** Done. Where issues that leave the query are parked. */
+const DONE_COLUMN_ID = 6;
 
 export class CardRepository {
   constructor(
@@ -265,6 +269,94 @@ export class CardRepository {
     }
   }
 
+  /**
+   * Creates a card for a Jira issue, or updates the one that already exists.
+   *
+   * Never changes an existing card's column (FR-113): the board is the user's
+   * own arrangement in this slice, and sync records what Jira said without
+   * acting on it.
+   */
+  async upsertFromJira(
+    client: pg.PoolClient,
+    issue: JiraIssue,
+    knownCardId: string | null,
+  ): Promise<'created' | 'updated'> {
+    if (knownCardId) {
+      await client.query(
+        `UPDATE cards SET title = $2, updated_at = now() WHERE id = $1 AND title <> $2`,
+        [knownCardId, issue.summary],
+      );
+      return 'updated';
+    }
+
+    await client.query(
+      `SELECT id FROM cards
+        WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL
+        FOR UPDATE`,
+      [BACKLOG_COLUMN_ID],
+    );
+    await client.query(
+      `UPDATE cards SET position = position + 1
+        WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL`,
+      [BACKLOG_COLUMN_ID],
+    );
+    await client.query(
+      `INSERT INTO cards (source, title, priority, column_id, position)
+       VALUES ('jira', $1, 'medium', $2, 1)`,
+      [issue.summary, BACKLOG_COLUMN_ID],
+    );
+    return 'created';
+  }
+
+  async cardIdForIssue(client: pg.PoolClient, issueKey: string): Promise<string | null> {
+    const { rows } = await client.query<{ id: string }>(
+      `SELECT c.id FROM cards c
+         LEFT JOIN jira_links jl ON jl.card_id = c.id
+        WHERE (jl.issue_key = $1 OR (jl.issue_key IS NULL AND c.source = 'jira'))
+          AND c.deleted_at IS NULL
+        ORDER BY (jl.issue_key = $1) DESC NULLS LAST, c.created_at DESC
+        LIMIT 1`,
+      [issueKey],
+    );
+    return rows[0]?.id ?? null;
+  }
+
+  /** Moves a card to Done and archives it, attributing the movement to sync. */
+  async archiveBySync(client: pg.PoolClient, cardId: string, reason: string): Promise<void> {
+    const { rows } = await client.query<{ column_id: number }>(
+      'SELECT column_id FROM cards WHERE id = $1 FOR UPDATE',
+      [cardId],
+    );
+    const from = rows[0]?.column_id;
+    if (from === undefined) return;
+
+    if (from !== DONE_COLUMN_ID) {
+      // Through the event repository, not an inline INSERT: it is the only
+      // writer of the movement log, and a unit test enforces that. Slice 1's
+      // guard caught this the first time it was written inline.
+      await this.events.append(client, {
+        cardId,
+        fromColumnId: from,
+        toColumnId: DONE_COLUMN_ID,
+        actor: 'sync',
+      });
+    }
+    await client.query(
+      `UPDATE cards
+          SET column_id = $2, archived_at = now(), archived_reason = $3, updated_at = now()
+        WHERE id = $1`,
+      [cardId, DONE_COLUMN_ID, reason],
+    );
+  }
+
+  async restoreFromArchive(client: pg.PoolClient, cardId: string): Promise<void> {
+    await client.query(
+      `UPDATE cards SET archived_at = NULL, archived_reason = NULL, updated_at = now()
+        WHERE id = $1`,
+      [cardId],
+    );
+  }
+
   /** Live card ids of a column, in order, locked for the rest of the transaction. */
   private async lockedOrder(client: pg.PoolClient, columnId: number): Promise<ColumnOrder> {
     const { rows } = await client.query<{ id: string }>(
@@ -290,8 +382,11 @@ export class CardRepository {
               FROM card_tags ct JOIN tags t ON t.id = ct.tag_id
              WHERE ct.card_id = c.id),
            ARRAY[]::text[]
-         ) AS tags
-       FROM cards c JOIN columns col ON col.id = c.column_id
+         ) AS tags,
+         jl.issue_key, jl.url AS issue_url
+       FROM cards c
+       JOIN columns col ON col.id = c.column_id
+       LEFT JOIN jira_links jl ON jl.card_id = c.id
        WHERE c.id = $1 AND c.deleted_at IS NULL`,
       [id],
     );

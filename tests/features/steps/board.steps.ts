@@ -110,7 +110,7 @@ Then('the board has no cards', async function (this: BoardWorld) {
   assert.deepEqual(allCards(board(this)), []);
 });
 
-Then('the board has {int} cards', async function (this: BoardWorld, count: number) {
+Then('the board has {int} card(s)', async function (this: BoardWorld, count: number) {
   await this.request('GET', '/api/board');
   assert.equal(allCards(board(this)).length, count);
 });

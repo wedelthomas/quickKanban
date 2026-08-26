@@ -82,13 +82,18 @@ hour the board is stale enough to mislead.
 
 Consumed, not offered. Recorded here because the register points at it.
 
-`GET {JIRA_BASE_URL}/rest/api/3/search/jql?jql=…&startAt=…&maxResults=…&fields=summary,status,updated`
+`GET {JIRA_BASE_URL}/rest/api/3/search/jql?jql=…&maxResults=…&fields=summary,status,updated&nextPageToken=…`
+
+Pagination is by opaque token, not offset: the response carries `nextPageToken`
+and `isLast`, and there is no total to compare a cursor against. The older
+`/rest/api/3/search` was removed by Atlassian and now answers **410 Gone** —
+verified against tsgjira.atlassian.net on 2026-08-26.
 
 Authenticated with `Authorization: Basic base64(email:token)`.
 
 | Response | Meaning to us |
 |---|---|
-| `200` | Issues, plus `total` for pagination |
+| `200` | Issues, plus `nextPageToken` and `isLast` for pagination |
 | `401` / `403` | `JiraUnauthorized` — reported as a credential problem, distinctly from connectivity |
 | `429` | `JiraRateLimited` — backoff honouring `Retry-After` |
 | `5xx`, timeout, DNS failure | `JiraUnreachable` — retried, then reported as connectivity |

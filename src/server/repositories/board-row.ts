@@ -6,6 +6,8 @@ import { isOverdue } from '../../domain/overdue.js';
  * with the same projection — not to make either file shorter.
  */
 export interface BoardRow {
+  issue_key?: string | null;
+  issue_url?: string | null;
   column_id: number;
   column_key: ColumnKey;
   column_name: string;
@@ -33,6 +35,8 @@ export const toCard = (row: BoardRow, today: Date): Card => ({
   columnId: row.column_id,
   position: row.position!,
   tags: row.tags ?? [],
+  issueKey: row.issue_key ?? null,
+  issueUrl: row.issue_url ?? null,
   createdAt: row.created_at!.toISOString(),
   updatedAt: row.updated_at!.toISOString(),
 });
