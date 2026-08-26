@@ -1,0 +1,49 @@
+name: quick-kanban-wall
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      # Loopback only. Widening this to 3000:3000 would expose an
+      # unauthenticated board to the network and invalidate BRD decision D-11 —
+      # the no-login choice is defensible *because* of this line.
+      - '127.0.0.1:3000:3000'
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-kanban}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-kanban}
+      PORT: '3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Reads the real endpoint, which reports ok only when the database is
+      # genuinely reachable — not merely when the process is alive.
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  db:
+    image: postgres:17.2-alpine
+    # Deliberately no `ports:` entry. The database is reachable only over the
+    # compose network, never from the host.
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kanban}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-kanban}
+    volumes:
+      - kanban_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-kanban} -d ${POSTGRES_DB:-kanban}']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  # Everything lives here. Removing this volume deletes every ad-hoc card, and
+  # ad-hoc cards exist nowhere else. See README's Reset section.
+  kanban_data:

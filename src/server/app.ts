@@ -1,0 +1,111 @@
+import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
+import fastifyStatic from '@fastify/static';
+import type pg from 'pg';
+import { fileURLToPath, URL } from 'node:url';
+import { existsSync } from 'node:fs';
+import { DomainError, databaseUnavailable } from './errors.js';
+import { registerHealthRoutes } from './routes/health.js';
+import { registerBoardRoutes } from './routes/board.js';
+import { BoardService } from './services/board-service.js';
+import { CardRepository } from './repositories/card-repository.js';
+
+export interface AppOptions {
+  pool: pg.Pool;
+  /** Absolute path to the built SPA. Omitted in tests, which never need it. */
+  webRoot?: string;
+  logger?: boolean;
+}
+
+/**
+ * Builds the Fastify instance. Kept separate from `index.ts` so tests can start
+ * an app against their own pool without going near process startup, migrations
+ * or the loopback binding.
+ */
+export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyInstance => {
+  // Typed separately: inlining a `false | object` union makes TypeScript
+  // resolve Fastify's HTTP/2 overload instead of the HTTP/1 one.
+  const loggerOption: FastifyServerOptions['logger'] = logger
+    ? {
+        level: process.env.LOG_LEVEL ?? 'info',
+        // No credential ever reaches a log line: only the fields named here
+        // are serialised, and none of them can carry one.
+        serializers: {
+          req: (req) => ({ method: req.method, url: req.url, id: req.id }),
+        },
+      }
+    : false;
+
+  const app = Fastify({
+    logger: loggerOption,
+    genReqId: () => crypto.randomUUID(),
+  });
+
+  app.setErrorHandler((error, request, reply) => {
+    const domain =
+      error instanceof DomainError
+        ? error
+        : isConnectionFailure(error)
+          ? databaseUnavailable()
+          : null;
+
+    if (!domain) {
+      request.log.error({ err: error }, 'unhandled error');
+      return reply.status(500).type('application/problem+json').send({
+        type: 'about:blank',
+        title: 'Something went wrong',
+        status: 500,
+        code: 'VALIDATION_FAILED',
+        detail: 'The request could not be completed.',
+      });
+    }
+
+    return reply.status(domain.status).type('application/problem+json').send({
+      type: 'about:blank',
+      title: domain.title,
+      status: domain.status,
+      code: domain.code,
+      detail: domain.message,
+    });
+  });
+
+  registerHealthRoutes(app, pool);
+  registerBoardRoutes(app, new BoardService(new CardRepository(pool)));
+
+  if (webRoot && existsSync(webRoot)) {
+    app.register(fastifyStatic, { root: webRoot });
+    // The SPA owns its routing; anything not under /api falls through to it.
+    app.setNotFoundHandler((request, reply) => {
+      if (request.url.startsWith('/api')) {
+        return reply.status(404).type('application/problem+json').send({
+          type: 'about:blank',
+          title: 'Not found',
+          status: 404,
+          code: 'CARD_NOT_FOUND',
+          detail: `No route matches ${request.url}.`,
+        });
+      }
+      return reply.sendFile('index.html');
+    });
+  }
+
+  return app;
+};
+
+/**
+ * `pg` surfaces an unreachable server as a plain Error with one of these
+ * codes. Mapping them here means every route gets the revert-worthy 503
+ * without each one remembering to catch.
+ */
+const isConnectionFailure = (error: unknown): boolean => {
+  const code = (error as { code?: string })?.code;
+  return (
+    code === 'ECONNREFUSED' ||
+    code === 'ENOTFOUND' ||
+    code === 'ETIMEDOUT' ||
+    code === 'ECONNRESET' ||
+    code === '57P01'
+  );
+};
+
+export const defaultWebRoot = (): string =>
+  fileURLToPath(new URL('../web', import.meta.url));

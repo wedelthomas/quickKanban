@@ -1,0 +1,74 @@
+/*
+ * Dark only, by decision recorded in docs/design/visual-language.md. Derived
+ * from the TradeStation AI Portal, with the density tightened because this
+ * board must show roughly 50 cards at once where the reference shows a dozen
+ * rows.
+ *
+ * Colour is rationed on purpose: one accent for anything actionable, one coral
+ * for anything destructive or late. An interface where six things are blue has
+ * taught the reader that blue means nothing.
+ */
+
+:root {
+  --canvas: #0b0e14;
+  --surface: #161b26;
+  --surface-raised: #1b2130;
+  --border: #252b3a;
+
+  --text: #e6e9ef;
+  --text-muted: #8b93a7;
+
+  --accent: #3b5bfd;
+  --accent-soft: #3b5bfd28;
+  --destructive: #e04b4b;
+
+  --priority-high: #e0894b;
+  --priority-medium: #8b93a7;
+  --priority-low: #4b7fe0;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  /* Tighter than the reference: density is a requirement here (NFR-13). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-lg: 15px;
+  --text-title: 28px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The board is keyboard-driven, so the focus ring is a primary interface
+ * element rather than an accessibility afterthought. It must read clearly
+ * against --surface.
+ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

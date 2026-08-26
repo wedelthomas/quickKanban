@@ -32,18 +32,26 @@ order.
 
 ---
 
+> **TestRail sync status**: all 30 cases were synced up front to project 115
+> (`twedel-quick-kanban-wall`), suite 32733, cases 19999940–19999969, each
+> marked *To Be Automated*. The per-story sync tasks (T016, T032, T056, T067,
+> T075, T082) are therefore complete. Syncing the whole spec at once is a
+> superset of the per-story rule — every case exists and is un-run before any
+> implementation task begins, which is what the ordering rule protects.
+> Mapping: `testrail-mapping.json`.
+
 ## Phase 1: Setup
 
 **Purpose**: An empty project that compiles, lints and can run four test suites.
 
-- [ ] T001 Create `package.json`, `tsconfig.json` and the `src/`, `tests/`, `docker/` tree per plan.md's Project Structure. Six runtime dependencies only, per research.md.
-- [ ] T002 [P] Configure Vite in `vite.config.ts` with root `src/web` and build output the server will serve.
-- [ ] T003 [P] Configure ESLint and Prettier; add `npm run lint`.
-- [ ] T004 [P] Configure Vitest in `vitest.config.ts` for `tests/unit`.
-- [ ] T005 [P] Configure cucumber-js in `cucumber.cjs` for `tests/features`.
-- [ ] T006 [P] Configure Playwright in `playwright.config.ts` for `tests/e2e`, targeting `127.0.0.1:3000`.
-- [ ] T007 [P] Add `.env.example` with `POSTGRES_PASSWORD` and `DATABASE_URL` placeholders; confirm `.env` is gitignored. **No real value may be committed** (Principle I).
-- [ ] T008 Add `npm run test:unit`, `test:acceptance`, `test:e2e`, `test:ops` scripts.
+- [x] T001 Create `package.json`, `tsconfig.json` and the `src/`, `tests/`, `docker/` tree per plan.md's Project Structure. Six runtime dependencies only, per research.md.
+- [x] T002 [P] Configure Vite in `vite.config.ts` with root `src/web` and build output the server will serve.
+- [x] T003 [P] Configure ESLint and Prettier; add `npm run lint`.
+- [x] T004 [P] Configure Vitest in `vitest.config.ts` for `tests/unit`.
+- [x] T005 [P] Configure cucumber-js in `cucumber.cjs` for `tests/features`.
+- [x] T006 [P] Configure Playwright in `playwright.config.ts` for `tests/e2e`, targeting `127.0.0.1:3000`.
+- [x] T007 [P] Add `.env.example` with `POSTGRES_PASSWORD` and `DATABASE_URL` placeholders; confirm `.env` is gitignored. **No real value may be committed** (Principle I).
+- [x] T008 Add `npm run test:unit`, `test:acceptance`, `test:e2e`, `test:ops` scripts.
 
 ---
 
@@ -51,13 +59,13 @@ order.
 
 **Purpose**: The shared spine every story needs. **No story work begins until this phase is complete.**
 
-- [ ] T009 [P] Define `Card`, `Column`, `Priority`, `CardSource`, `Actor` in `src/shared/types.ts` from contracts/api.md.
-- [ ] T010 [P] Implement typed domain errors and their `problem+json` mapping in `src/server/errors.ts` — one code per row of contracts/api.md's error table.
-- [ ] T011 Implement the connection pool in `src/server/db/pool.ts` with a 5s statement timeout and 10s acquisition timeout (plan.md, Architecture Review).
-- [ ] T012 Build the Fastify instance in `src/server/app.ts`: structured JSON logging with request ids, `@fastify/static` for the built SPA, and the error hook from T010.
-- [ ] T013 Build the acceptance-test harness in `tests/features/steps/world.ts` — starts the app against a real database, resets state between scenarios, exposes an HTTP client to step definitions.
-- [ ] T014 [P] Write the dark palette as custom properties in `src/web/styles/tokens.css`, from `docs/design/visual-language.md`.
-- [ ] T015 [P] Create the SPA entry `src/web/main.tsx` and `src/web/App.tsx` shell with the top navigation treatment.
+- [x] T009 [P] Define `Card`, `Column`, `Priority`, `CardSource`, `Actor` in `src/shared/types.ts` from contracts/api.md.
+- [x] T010 [P] Implement typed domain errors and their `problem+json` mapping in `src/server/errors.ts` — one code per row of contracts/api.md's error table.
+- [x] T011 Implement the connection pool in `src/server/db/pool.ts` with a 5s statement timeout and 10s acquisition timeout (plan.md, Architecture Review).
+- [x] T012 Build the Fastify instance in `src/server/app.ts`: structured JSON logging with request ids, `@fastify/static` for the built SPA, and the error hook from T010.
+- [x] T013 Build the acceptance-test harness in `tests/features/steps/world.ts` — starts the app against a real database, resets state between scenarios, exposes an HTTP client to step definitions.
+- [x] T014 [P] Write the dark palette as custom properties in `src/web/styles/tokens.css`, from `docs/design/visual-language.md`.
+- [x] T015 [P] Create the SPA entry `src/web/main.tsx` and `src/web/App.tsx` shell with the top navigation treatment.
 
 **Checkpoint**: the project compiles, the app boots against a database, and a Gherkin scenario can execute.
 
@@ -71,30 +79,41 @@ order.
 
 ### TestRail sync
 
-- [ ] T016 [US3] Author or sync TestRail cases for BH-019, BH-020, BH-021, BH-022, BH-024 and BH-026 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
+- [x] T016 [US3] Author or sync TestRail cases for BH-019, BH-020, BH-021, BH-022, BH-024 and BH-026 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 3 — write first, confirm they FAIL
 
-- [ ] T017 [P] [US3] `tests/ops/startup.test.ts` — first start against empty storage creates the schema and serves a six-column board; the documented single command brings both containers to healthy (BH-020, BH-024).
-- [ ] T018 [P] [US3] `tests/ops/persistence.test.ts` — cards in four columns survive destroying and recreating both containers (BH-019).
-- [ ] T019 [P] [US3] `tests/features/health.feature` + steps — health reports unhealthy when the data store is unreachable (BH-021).
-- [ ] T020 [P] [US3] `tests/ops/loopback.test.ts` — serves on loopback with no authentication challenge, refuses non-loopback (BH-022).
-- [ ] T021 [P] [US3] `tests/ops/docs.test.ts` — README covers start, stop and reset, and names the data volume (BH-026).
+- [x] T017 [P] [US3] `tests/ops/startup.test.ts` — first start against empty storage creates the schema and serves a six-column board; the documented single command brings both containers to healthy (BH-020, BH-024).
+- [~] T018 [P] [US3] `tests/ops/persistence.test.ts` — cards in four columns survive destroying and recreating both containers (BH-019). **Written, not yet runnable**: it needs card creation (US1) and movement (US2). Runs at the US2 checkpoint — see T031a.
+- [x] T019 [P] [US3] `tests/features/health.feature` + steps — health reports unhealthy when the data store is unreachable (BH-021).
+- [x] T020 [P] [US3] `tests/ops/loopback.test.ts` — serves on loopback with no authentication challenge, refuses non-loopback (BH-022).
+- [x] T021 [P] [US3] `tests/ops/docs.test.ts` — README covers start, stop and reset, and names the data volume (BH-026).
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Implement the migration runner in `src/server/db/migrate.ts`: numbered `.sql` applied in order inside a transaction before any request is served (FR-031), tracked in `schema_migrations`, forward-only (research.md).
-- [ ] T023 [P] [US3] `src/server/db/migrations/001_columns.sql` — create `columns` and seed exactly the six rows in order (FR-001, data-model.md).
-- [ ] T024 [P] [US3] `src/server/db/migrations/002_cards.sql` — `cards` with its CHECK constraints, `archived_at`, `deleted_at`, and the partial index on `(column_id, position)`.
-- [ ] T025 [P] [US3] `src/server/db/migrations/003_tags.sql` — enable `citext`; create `tags` and `card_tags`.
-- [ ] T026 [P] [US3] `src/server/db/migrations/004_card_events.sql` — `card_events` with `ON DELETE RESTRICT` on `card_id` and the actor CHECK.
-- [ ] T027 [US3] Implement `GET /api/health` in `src/server/routes/health.ts` — reports healthy **only** when the database is genuinely reachable, never on process liveness alone (FR-032).
-- [ ] T028 [US3] Implement `src/server/index.ts`: run migrations, then listen on `127.0.0.1` only; fail loudly and refuse to serve if the database is unreachable at start (FR-034, FR-037).
-- [ ] T029 [US3] Write `docker/Dockerfile` — multi-stage, no build toolchain in the runtime image, base images pinned by digest (Principle IX).
-- [ ] T030 [US3] Write `docker-compose.yml` — app and db only, named volume `kanban_data` so data survives container recreation and image rebuild (FR-030), app published to `127.0.0.1:3000`, db port unpublished, healthcheck reading T027.
-- [ ] T031 [US3] Write `README.md`: start, stop, reset, and **the name of the volume whose deletion loses every ad-hoc card** (FR-038, risk R-7).
+- [x] T022 [US3] Implement the migration runner in `src/server/db/migrate.ts`: numbered `.sql` applied in order inside a transaction before any request is served (FR-031), tracked in `schema_migrations`, forward-only (research.md).
+- [x] T023 [P] [US3] `src/server/db/migrations/001_columns.sql` — create `columns` and seed exactly the six rows in order (FR-001, data-model.md).
+- [x] T024 [P] [US3] `src/server/db/migrations/002_cards.sql` — `cards` with its CHECK constraints, `archived_at`, `deleted_at`, and the partial index on `(column_id, position)`.
+- [x] T025 [P] [US3] `src/server/db/migrations/003_tags.sql` — enable `citext`; create `tags` and `card_tags`.
+- [x] T026 [P] [US3] `src/server/db/migrations/004_card_events.sql` — `card_events` with `ON DELETE RESTRICT` on `card_id` and the actor CHECK.
+- [x] T027 [US3] Implement `GET /api/health` in `src/server/routes/health.ts` — reports healthy **only** when the database is genuinely reachable, never on process liveness alone (FR-032).
+- [x] T028 [US3] Implement `src/server/index.ts`: run migrations, then listen on `127.0.0.1` only; fail loudly and refuse to serve if the database is unreachable at start (FR-034, FR-037).
+- [x] T029 [US3] Write `docker/Dockerfile` — multi-stage, no build toolchain in the runtime image, base images pinned by digest (Principle IX).
+- [x] T030 [US3] Write `docker-compose.yml` — app and db only, named volume `kanban_data` so data survives container recreation and image rebuild (FR-030), app published to `127.0.0.1:3000`, db port unpublished, healthcheck reading T027.
+- [x] T031 [US3] Write `README.md`: start, stop, reset, and **the name of the volume whose deletion loses every ad-hoc card** (FR-038, risk R-7).
 
-**Checkpoint**: `docker compose up` yields a working, durable, loopback-only board. **Run the Story-Complete Review Gate.**
+- [ ] T031a [US3] **Remediation, deferred to the US2 checkpoint**: run `tests/ops/persistence.test.ts` (TEST-019/BH-019) once card creation and movement exist, and record the result to TestRail run 51174. Raised by the US3 Story-Complete Review Gate: BH-019 is expressed in terms of cards on the board, so US3 can build durable storage but cannot prove it at the board level alone. The storage layer itself is proven now by TEST-020 (schema creation) and the volume configuration.
+
+**Checkpoint**: `docker compose up` yields a working, durable, loopback-only board — with TEST-019 outstanding per T031a. **Story-Complete Review Gate run; findings recorded below.**
+
+### US3 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-030…FR-038 all implemented. Four of the story's six pathways verified green against real containers; BH-019 deferred to T031a with the reason recorded.
+- **Design**: `buildApp` is separated from process startup so tests construct an app without going near migrations or the port binding. No abstraction introduced without a caller.
+- **Defect found and fixed during the story**: the server bound `127.0.0.1` *inside* the container, which Docker cannot forward a published port to — the board would have been unreachable despite every container reporting healthy. The loopback guarantee now comes from the compose publish spec, where it belongs, and `tests/ops/loopback.test.ts` holds it there.
+- **Process deviation, recorded rather than hidden**: `routes/health.ts` was written during Phase 2 (T012 could not compile without it), so for TEST-021 the implementation preceded the test rather than following it. The test was still authored before being run, and it exercises a genuinely unreachable data store, but the strict red-then-green order was not observed for this one case.
+- **Tests**: assertions are behavioural. The loopback negative case runs against a real external address and fails loudly if the host has none, rather than passing vacuously.
+- **Security**: no credential in the diff; `.env` confirmed gitignored before any commit; the test database's password is a literal marked as test-only and grants access to a tmpfs database with no real data.
 
 ---
 
@@ -106,7 +125,7 @@ order.
 
 ### TestRail sync
 
-- [ ] T032 [US1] Author or sync TestRail cases for BH-001 through BH-006, BH-029 and BH-030 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
+- [x] T032 [US1] Author or sync TestRail cases for BH-001 through BH-006, BH-029 and BH-030 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 1 — write first, confirm they FAIL
 
@@ -149,7 +168,7 @@ order.
 
 ### TestRail sync
 
-- [ ] T056 [US2] Author or sync TestRail cases for BH-007 through BH-011 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
+- [x] T056 [US2] Author or sync TestRail cases for BH-007 through BH-011 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 2 — write first, confirm they FAIL
 
@@ -179,7 +198,7 @@ order.
 
 ### TestRail sync
 
-- [ ] T067 [US4] Author or sync TestRail cases for BH-012, BH-013, BH-023 and BH-025 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
+- [x] T067 [US4] Author or sync TestRail cases for BH-012, BH-013, BH-023 and BH-025 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 4 — write first, confirm they FAIL
 
@@ -206,7 +225,7 @@ order.
 
 ### TestRail sync
 
-- [ ] T075 [US5] Author or sync TestRail cases for BH-014, BH-015 and BH-027 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
+- [x] T075 [US5] Author or sync TestRail cases for BH-014, BH-015 and BH-027 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 5 — write first, confirm they FAIL
 
@@ -232,7 +251,7 @@ order.
 
 ### TestRail sync
 
-- [ ] T082 [US6] Author or sync TestRail cases for BH-016, BH-017, BH-018 and BH-028 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
+- [x] T082 [US6] Author or sync TestRail cases for BH-016, BH-017, BH-018 and BH-028 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 6 — write first, confirm they FAIL
 

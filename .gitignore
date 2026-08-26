@@ -7,3 +7,10 @@
 
 # sdd-preset machine-specific install metadata
 .specify/presets/bdd-tdd-workflow/.install-meta.json
+
+# application
+.env
+node_modules/
+dist/
+playwright-report/
+test-results/
