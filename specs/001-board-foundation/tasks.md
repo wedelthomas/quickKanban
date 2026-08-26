@@ -148,7 +148,7 @@ order.
 - [x] T046 [US1] `src/server/services/board-service.ts` — assemble the six columns with their cards in position order; always returns six columns including empty ones.
 - [x] T047 [US1] `src/server/services/card-service.ts` — create a card from a title (FR-003) with optional description (FR-005): validate, normalize tags, place at top of Backlog (FR-009), compute `overdue` server-side (FR-042).
 - [x] T048 [US1] `src/server/routes/board.ts` — `GET /api/board`.
-- [ ] T049 [US1] `src/server/routes/cards.ts` — `POST /api/cards`.
+- [x] T049 [US1] `src/server/routes/cards.ts` — `POST /api/cards`.
 - [x] T050 [P] [US1] `src/server/routes/tags.ts` — `GET /api/tags?q=` prefix search for autocomplete (FR-043).
 - [x] T051 [P] [US1] `src/web/board/Board.tsx` and `ColumnView.tsx` — six columns, headers with counts.
 - [x] T052 [P] [US1] `src/web/board/CardView.tsx` — dense card face: title, priority dot, due date with overdue treatment, tag pills, source marking (FR-011, FR-012).
@@ -311,14 +311,14 @@ order.
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T089 [P] Update `docs/external-interactions.md` if any touchpoint changed during implementation (Principle XI).
-- [ ] T090 Update repo-root `README.md`: feature list, env vars, config keys, and a getting-started section a new developer can follow end to end with nothing else.
-- [ ] T091 Verify the Architecture Diagram in `plan.md` still reflects the as-built system; update the component, ER and sequence diagrams if implementation diverged. Every edge labelled.
-- [ ] T092 Verify all 22 test files named in plan.md exist and pass.
-- [ ] T093 Verify SC-001…SC-009: capture under 5s by keyboard, board load under 1s at 50 cards, move rendered within 100ms, full keyboard parity, zero loss across ten recreate cycles, 50-card legibility at 1440×900, one record per move across 100 moves, documented setup, no full reload.
-- [ ] T094 Code cleanup — no file over 300 lines without justification, no dead code, no unused exports (Principles XIII, XIV).
-- [ ] T095 Security check — no credential in the diff, dependency CVE scan clean at Critical/High with an available fix (Principle I).
-- [ ] T096 Run `quickstart.md` end to end on a clean checkout.
+- [x] T089 [P] Update `docs/external-interactions.md` if any touchpoint changed during implementation (Principle XI).
+- [x] T090 Update repo-root `README.md`: feature list, env vars, config keys, and a getting-started section a new developer can follow end to end with nothing else.
+- [x] T091 Verify the Architecture Diagram in `plan.md` still reflects the as-built system; update the component, ER and sequence diagrams if implementation diverged. Every edge labelled.
+- [x] T092 Verify all 22 test files named in plan.md exist and pass.
+- [x] T093 Verify SC-001…SC-009: capture under 5s by keyboard, board load under 1s at 50 cards, move rendered within 100ms, full keyboard parity, zero loss across ten recreate cycles, 50-card legibility at 1440×900, one record per move across 100 moves, documented setup, no full reload.
+- [x] T094 Code cleanup — no file over 300 lines without justification, no dead code, no unused exports (Principles XIII, XIV).
+- [x] T095 Security check — no credential in the diff, dependency CVE scan clean at Critical/High with an available fix (Principle I).
+- [x] T096 Run `quickstart.md` end to end on a clean checkout.
 - [ ] T097 Run `/speckit.review` against the diff vs `main`; address blocking findings.
 - [ ] T098 Request peer review on the PR. Automated review never replaces a human reviewer (constitution Quality Gate).
 
