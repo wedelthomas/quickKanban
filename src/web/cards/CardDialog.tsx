@@ -15,8 +15,11 @@ export const CardDialog = ({
   onSubmit,
   onCancel,
   onDelete,
+  jiraOwned = false,
 }: {
   initial?: Partial<CardDraft>;
+  /** True when Jira owns this card's title, so the field is shown read-only. */
+  jiraOwned?: boolean;
   onSubmit: (draft: CardDraft) => Promise<void>;
   onCancel: () => void;
   /** Absent when creating — there is nothing to delete yet. */
@@ -78,8 +81,15 @@ export const CardDialog = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             aria-invalid={error !== null}
+            readOnly={jiraOwned}
           />
         </label>
+        {jiraOwned && (
+          <p className="field-note" data-testid="jira-owned-note">
+            The title comes from Jira and changes there. Priority, due date and
+            tags are yours.
+          </p>
+        )}
         {error && (
           <p className="field-error" role="alert" data-testid="title-error">
             {error}
@@ -126,7 +136,7 @@ export const CardDialog = ({
         </div>
 
         <div className="dialog-actions">
-          {onDelete && !confirmingDelete && (
+          {onDelete && !jiraOwned && !confirmingDelete && (
             <button
               type="button"
               className="button button--danger"
@@ -135,7 +145,7 @@ export const CardDialog = ({
               Delete
             </button>
           )}
-          {onDelete && confirmingDelete && (
+          {onDelete && !jiraOwned && confirmingDelete && (
             <div className="confirm" role="group" aria-label="Confirm deletion">
               <span className="confirm-text">Delete this card?</span>
               <button

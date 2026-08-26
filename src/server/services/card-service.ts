@@ -5,7 +5,7 @@ import type {
   UpdateCardInput,
 } from '../../domain/validation.js';
 import type { CardRepository } from '../repositories/card-repository.js';
-import { cardNotFound, deleteForbiddenNonLocal } from '../errors.js';
+import { cardNotFound, deleteForbiddenNonLocal, editForbiddenJiraOwned } from '../errors.js';
 
 export class CardService {
   constructor(
@@ -18,9 +18,12 @@ export class CardService {
   }
 
   async update(id: string, input: UpdateCardInput): Promise<Card> {
-    const card = await this.cards.update(id, input, this.now());
-    if (!card) throw cardNotFound(id);
-    return card;
+    const result = await this.cards.update(id, input, this.now());
+    if (result === 'not-found') throw cardNotFound(id);
+    // The title comes from Jira and changes there, not here (FR-121). The
+    // card's own fields — priority, due date, tags — remain the user's.
+    if (result === 'jira-owned') throw editForbiddenJiraOwned('The title');
+    return result;
   }
 
   async delete(id: string): Promise<void> {

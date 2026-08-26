@@ -351,3 +351,20 @@ kbd {
   font-family: inherit;
   font-size: var(--text-sm);
 }
+
+.badge--link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge--link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.field-note {
+  margin: calc(var(--space-1) * -1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}

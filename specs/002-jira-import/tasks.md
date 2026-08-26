@@ -120,16 +120,24 @@ Stories are ordered by dependency, then priority:
 
 ### Tests — write first, confirm they FAIL
 
-- [ ] T230 [P] [US2] `tests/features/jira-card-identity.feature` + steps — key shown, marked Jira-sourced, delete and title edit refused with stated reasons (BH-104, BH-110).
-- [ ] T231 [P] [US2] `tests/e2e/jira-card.spec.ts` — the card face carries the key and a working link; refusals surface in the interface (BH-104, BH-110).
+- [x] T230 [P] [US2] `tests/features/jira-card-identity.feature` + steps — key shown, marked Jira-sourced, delete and title edit refused with stated reasons (BH-104, BH-110).
+- [x] T231 [P] [US2] `tests/e2e/jira-card.spec.ts` — the card face carries the key and a working link; refusals surface in the interface (BH-104, BH-110).
 
 ### Implementation
 
-- [ ] T232 [US2] Extend `card-service.ts`: refuse edits to Jira-owned fields with `EDIT_FORBIDDEN_JIRA_OWNED` (FR-121). Deletion of an imported card is refused with a stated reason (FR-120) by slice 1's `DELETE_FORBIDDEN_NON_LOCAL`.
-- [ ] T233 [P] [US2] `CardView.tsx` — issue-key badge and link, making an imported card distinguishable from an ad-hoc one without opening it (FR-119).
-- [ ] T234 [P] [US2] `CardDialog.tsx` — Jira-owned fields shown read-only rather than editable-then-refused, so the interface does not invite a rejection.
+- [x] T232 [US2] Extend `card-service.ts`: refuse edits to Jira-owned fields with `EDIT_FORBIDDEN_JIRA_OWNED` (FR-121). Deletion of an imported card is refused with a stated reason (FR-120) by slice 1's `DELETE_FORBIDDEN_NON_LOCAL`.
+- [x] T233 [P] [US2] `CardView.tsx` — issue-key badge and link, making an imported card distinguishable from an ad-hoc one without opening it (FR-119).
+- [x] T234 [P] [US2] `CardDialog.tsx` — Jira-owned fields shown read-only rather than editable-then-refused, so the interface does not invite a rejection.
 
-**Checkpoint**: the two kinds of card are unmistakable. **Run the Story-Complete Review Gate.**
+**Checkpoint**: the two kinds of card are unmistakable. **Story-Complete Review Gate run; findings recorded below.**
+
+### US2 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-119, FR-120, FR-121 implemented; both pathways green.
+- **Design**: the issue key doubles as the source marker rather than a separate "Jira" badge. It says both *this is Jira's* and *which issue*, in the space a generic badge would have used to say only the first.
+- **The refusal is checked inside the transaction holding the row lock**, so a card's source cannot change between the check and the write.
+- **Defect found by the browser test**: the dialog submitted the full draft, so changing a Jira card's *priority* also sent its title and the server correctly refused. A user editing only the priority would have seen their save rejected for a field they never touched. The dialog now omits fields it shows read-only.
+- **Interface avoids inviting refusals**: Jira-owned fields are read-only and no Delete button is offered, rather than presenting an action that will be rejected. The server still enforces both — the interface is a courtesy, not the control.
 
 ---
 

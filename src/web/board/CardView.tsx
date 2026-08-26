@@ -54,7 +54,21 @@ export const CardView = ({ card, onOpen }: { card: Card; onOpen: (card: Card) =>
             {formatDue(card.dueDate)}
           </span>
         )}
-        {card.source === 'jira' && <span className="badge" data-testid="card-source">Jira</span>}
+        {card.issueKey && (
+          // The key doubles as the source marker: it says both "this is Jira's"
+          // and which issue, in the space a generic badge would have used to
+          // say only the first.
+          <a
+            className="badge badge--link"
+            data-testid="issue-link"
+            href={card.issueUrl ?? undefined}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span data-testid="card-source">{card.issueKey}</span>
+          </a>
+        )}
         {card.tags.map((tag) => (
           <span className="tag" data-testid="card-tag" key={tag}>
             {tag}

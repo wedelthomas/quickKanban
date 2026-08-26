@@ -16,6 +16,40 @@ export const resetBoard = async (): Promise<void> => {
     'compose', 'exec', '-T', 'db',
     'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',
     '-d', process.env.POSTGRES_DB ?? 'kanban',
-    '-c', 'TRUNCATE card_events, card_tags, tags, cards RESTART IDENTITY CASCADE',
+    '-c', 'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, cards RESTART IDENTITY CASCADE',
+  ]);
+};
+
+/**
+ * Puts a Jira-sourced card on the board without going near live Jira.
+ *
+ * The browser tests must not depend on what happens to be assigned to the user
+ * today, and must not be able to disturb a real backlog. Seeding is the only
+ * honest way to get a deterministic Jira card in front of the interface.
+ */
+export const seedJiraCard = async (opts: {
+  key: string;
+  summary: string;
+  status?: string;
+  columnId?: number;
+}): Promise<void> => {
+  const { key, summary, status = 'Open', columnId = 1 } = opts;
+  const sql = `
+    WITH new_card AS (
+      INSERT INTO cards (source, title, priority, column_id, position)
+      VALUES ('jira', $$${summary}$$, 'medium', ${columnId},
+              COALESCE((SELECT max(position) FROM cards WHERE column_id = ${columnId}), 0) + 1)
+      RETURNING id
+    )
+    INSERT INTO jira_links
+      (card_id, issue_key, issue_id, url, status_name, status_id, jira_updated_at)
+    SELECT id, $$${key}$$, '1',
+           $$https://tsgjira.atlassian.net/browse/${key}$$,
+           $$${status}$$, '10000', now()
+      FROM new_card;`;
+  await run('docker', [
+    'compose', 'exec', '-T', 'db',
+    'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',
+    '-d', process.env.POSTGRES_DB ?? 'kanban', '-c', sql,
   ]);
 };

@@ -163,18 +163,30 @@ export class CardRepository {
    * rather than merged, because `tags: []` has to be able to mean "no tags" —
    * a merge would make clearing them impossible.
    */
-  async update(id: string, input: UpdateCardInput, today: Date): Promise<Card | null> {
+  async update(
+    id: string,
+    input: UpdateCardInput,
+    today: Date,
+  ): Promise<Card | 'not-found' | 'jira-owned'> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
 
-      const { rows } = await client.query<{ id: string }>(
-        'SELECT id FROM cards WHERE id = $1 AND deleted_at IS NULL FOR UPDATE',
+      const { rows } = await client.query<{ id: string; source: string }>(
+        'SELECT id, source FROM cards WHERE id = $1 AND deleted_at IS NULL FOR UPDATE',
         [id],
       );
-      if (rows.length === 0) {
+      const card = rows[0];
+      if (!card) {
         await client.query('ROLLBACK');
-        return null;
+        return 'not-found';
+      }
+
+      // Checked inside the transaction that holds the row lock, so the source
+      // cannot change between the check and the write (FR-121).
+      if (card.source !== 'local' && input.title !== undefined) {
+        await client.query('ROLLBACK');
+        return 'jira-owned';
       }
 
       const sets: string[] = [];
@@ -209,7 +221,7 @@ export class CardRepository {
       }
 
       await client.query('COMMIT');
-      return this.findById(id, today);
+      return (await this.findById(id, today)) ?? 'not-found';
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

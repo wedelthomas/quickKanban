@@ -211,12 +211,17 @@ export const Board = () => {
       {editing && (
         <CardDialog
           initial={editing}
+          jiraOwned={editing.source === 'jira'}
           onCancel={() => {
             setEditing(null);
             focusCardById(focusRestoreRef.current);
           }}
           onSubmit={async (input) => {
-            await updateCard(editing.id, input);
+            // Omit the title when Jira owns it: the dialog shows it read-only,
+            // and sending an unchanged value would still be refused, so a user
+            // editing only the priority would see their save rejected.
+            const { title, ...rest } = input;
+            await updateCard(editing.id, editing.source === 'jira' ? rest : input);
             setEditing(null);
             focusCardById(focusRestoreRef.current);
           }}

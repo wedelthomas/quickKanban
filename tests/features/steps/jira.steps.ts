@@ -194,3 +194,59 @@ Then('the ad-hoc card {string} is in the {string} column', async function (
   const column = b.columns.find((c) => c.cards.some((card) => card.title === title));
   assert.equal(column?.key, columnKey, `"${title}" should be in ${columnKey}`);
 });
+
+Then('the card for issue {string} has source {string}', async function (
+  this: BoardWorld,
+  key: string,
+  source: string,
+) {
+  assert.equal((await cardFor(this, key)).source, source);
+});
+
+Then('the card for issue {string} links to Jira', async function (this: BoardWorld, key: string) {
+  const card = await cardFor(this, key);
+  assert.ok(card.issueUrl?.includes(`/browse/${key}`), `expected a browse link, got ${card.issueUrl}`);
+});
+
+Then('the card has no issue key', function (this: BoardWorld) {
+  assert.equal(this.lastCard!.issueKey, null);
+});
+
+When('the card for issue {string} is deleted', async function (this: BoardWorld, key: string) {
+  const card = await cardFor(this, key);
+  await this.request('DELETE', `/api/cards/${card.id}`);
+});
+
+When('the card for issue {string} is retitled locally to {string}', async function (
+  this: BoardWorld,
+  key: string,
+  title: string,
+) {
+  const card = await cardFor(this, key);
+  await this.request('PATCH', `/api/cards/${card.id}`, { title });
+});
+
+When('the card for issue {string} is given priority {string} and tags {string}', async function (
+  this: BoardWorld,
+  key: string,
+  priority: string,
+  tags: string,
+) {
+  const card = await cardFor(this, key);
+  await this.request('PATCH', `/api/cards/${card.id}`, { priority, tags: list(tags) });
+});
+
+Then('the request succeeded', function (this: BoardWorld) {
+  assert.ok(
+    this.response.status >= 200 && this.response.status < 300,
+    `expected success, got ${this.response.status}: ${JSON.stringify(this.response.body)}`,
+  );
+});
+
+Then('the card for issue {string} has priority {string}', async function (
+  this: BoardWorld,
+  key: string,
+  priority: string,
+) {
+  assert.equal((await cardFor(this, key)).priority, priority);
+});
