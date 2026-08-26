@@ -1,0 +1,9 @@
+
+# sdd-preset machine-specific install metadata
+.specify/presets/tradestation-sdd/.install-meta.json
+
+# sdd-preset script bytecode
+.specify/presets/tradestation-sdd/scripts/__pycache__/
+
+# sdd-preset machine-specific install metadata
+.specify/presets/bdd-tdd-workflow/.install-meta.json
