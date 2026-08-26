@@ -1,6 +1,7 @@
 # scripts/test_doctor.py
 import json
 import pathlib
+import ssl
 import sys
 import time
 import urllib.error
@@ -170,6 +171,19 @@ def test_telemetry_info_when_disabled():
 def test_telemetry_warns_when_portal_unreachable():
     r = doctor.check_telemetry(_FakePF(token="t", response=urllib.error.URLError("down")))
     assert r["status"] == doctor.WARN
+    assert "down" in r["detail"]
+
+
+def test_telemetry_unreachable_detail_distinguishes_cert_errors():
+    """A cert-verification failure must be distinguishable from a generic
+    outage in the detail message -- collapsing every URLError/OSError into
+    the same "portal unreachable" text (with no reason) is exactly what
+    cost real debugging time in Slack (AIP-248): a local machine's missing
+    CA bundle looked identical to an actual portal outage."""
+    cert_err = ssl.SSLCertVerificationError("certificate verify failed")
+    r = doctor.check_telemetry(_FakePF(token="t", response=cert_err))
+    assert r["status"] == doctor.WARN
+    assert "SSLCertVerificationError" in r["detail"]
 
 
 def _good_checks():

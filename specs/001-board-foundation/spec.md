@@ -13,6 +13,24 @@ cross-cutting and apply here as they do to every slice.
 
 ---
 
+## Clarifications
+
+### Session 2026-08-26
+
+- Q: How accessible must drag-and-drop be? → A: Keyboard parity and focus
+  management; no screen-reader announcement or WCAG conformance target
+- Q: What should Slice 1 do about the ever-growing Done column? → A: Carry an
+  archived-at attribute from the start, unused and unexposed, so Slice 4 adds
+  the archive with no data migration
+- Q: Is a deleted card recoverable? → A: Soft delete — the card is hidden from
+  the board but retained in storage
+- Q: Due date granularity and the definition of overdue? → A: Calendar date
+  with no time component; overdue once the current local date is past it
+- Q: Are tags free text per card or a shared vocabulary? → A: A shared
+  board-wide vocabulary with autocomplete on entry
+
+---
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Capture ad-hoc work before it is forgotten (Priority: P1)
@@ -213,6 +231,12 @@ and actor, with no record rewritten by later moves.
   deduplicated case-insensitively, so "Ops", "ops " and "ops" become one tag.
 - **Due date in the past** — permitted and visually distinguished as overdue.
   Refusing it would prevent recording work that is genuinely late.
+- **Due date is today** — shown as due, not overdue. The card becomes overdue
+  only once the local date advances past it.
+- **A tag entered with different case or padding than an existing one** —
+  resolves to the existing tag; the vocabulary does not gain a near-duplicate.
+- **Deleting a card that carries tags** — the card leaves the board; its tags
+  remain in the shared vocabulary for other cards to use.
 - **Dropping a card in the position it already occupies** — treated as no
   change: nothing is written, no history record appended.
 - **Two moves of the same card in quick succession** — the later move wins and
@@ -249,9 +273,12 @@ and actor, with no record rewritten by later moves.
 - **FR-005**: A card MUST support an optional free-text description. *(BR-02)*
 - **FR-006**: A card MUST carry exactly one priority from the fixed set High,
   Medium, Low, defaulting to Medium when unspecified. *(BR-03)*
-- **FR-007**: A card MUST support an optional due date. *(BR-03)*
-- **FR-008**: A card MUST support zero or more free-form tags, trimmed of
-  surrounding whitespace and deduplicated case-insensitively within a card. *(BR-04)*
+- **FR-007**: A card MUST support an optional due date, expressed as a calendar
+  date with no time component. *(BR-03)*
+- **FR-008**: A card MUST support zero or more tags drawn from a shared,
+  board-wide tag vocabulary. Tag text MUST be trimmed of surrounding whitespace
+  and matched case-insensitively, so a tag differing only in case or padding
+  resolves to the existing tag rather than creating a new one. *(BR-04)*
 - **FR-009**: A newly created card MUST be placed at the top of the Backlog
   column. *(BR-02)*
 - **FR-010**: Every card MUST record its source as either local or
@@ -260,6 +287,12 @@ and actor, with no record rewritten by later moves.
   opening the card. *(BR-05)*
 - **FR-012**: Card faces MUST display title, priority, due date when set, and
   tags, without requiring the card to be opened. *(NFR-13)*
+- **FR-040**: Every card MUST carry an archived-at attribute. It MUST be unset
+  for every card created in this feature, and no interface may expose it. *(BR-32)*
+- **FR-042**: A card MUST be shown as overdue when the current local date is
+  later than its due date. A card due today MUST NOT be shown as overdue. *(BR-03)*
+- **FR-043**: While a tag is being entered, System MUST suggest existing tags
+  from the shared vocabulary matching what has been typed. *(BR-04)*
 
 **Card modification**
 
@@ -267,6 +300,8 @@ and actor, with no record rewritten by later moves.
   due date and tags. *(BR-08)*
 - **FR-014**: Users MUST be able to delete a local card, and deletion MUST
   require an explicit confirmation. *(BR-08)*
+- **FR-041**: Deleting a card MUST remove it from the board while retaining it
+  in storage; deletion MUST NOT erase the card's stored record. *(BR-08, BR-31)*
 - **FR-015**: System MUST restrict deletion to cards whose source is local; a request to delete a Jira-sourced card MUST be refused. No such
   cards exist in this feature; the rule is stated here because the delete path
   is built here. *(BR-09)*
@@ -294,6 +329,8 @@ and actor, with no record rewritten by later moves.
   keyboard shortcut. *(NFR-12)*
 - **FR-025**: Every action available by pointing device MUST also be reachable
   by keyboard. *(NFR-12)*
+- **FR-039**: When a dialog closes, focus MUST return to the element that
+  opened it. *(NFR-12)*
 
 **Movement history**
 
@@ -332,10 +369,12 @@ and actor, with no record rewritten by later moves.
   display name, and an ordinal position. Not user-editable.
 - **Card**: A unit of work. Carries a title, optional description, priority,
   optional due date, tags, a source (local or Jira-sourced), the column it
-  occupies, its position within that column, and creation and modification
-  times. In this feature every card is local.
-- **Tag**: A free-form label attached to a card. A card holds zero or more;
-  the same label may appear on many cards.
+  occupies, its position within that column, an archived-at time (always unset
+  in this feature), a deleted marker, and creation and modification times. In
+  this feature every card is local.
+- **Tag**: A label in a shared, board-wide vocabulary. A card holds zero or
+  more; the same tag is reused across cards rather than duplicated per card.
+  Matched case-insensitively, so casing and padding never fork a tag.
 - **Card Movement**: An immutable record that a card changed column — the card,
   origin column, destination column, time, and actor (user or automated
   process). Append-only. Retained after the card itself is deleted.
@@ -388,6 +427,16 @@ and actor, with no record rewritten by later moves.
   migration.
 - Movement history is written but never displayed in this feature; the archive
   and summary views that read it arrive in Slice 4.
+- The archived-at attribute and the soft-delete marker are carried from the
+  start for the same reason as the card source attribute: Slice 4 reads them,
+  and adding them now avoids a data migration later.
+- Due dates are calendar dates interpreted in the user's local timezone. The
+  system runs on one machine for one person, so a single local timezone is
+  sufficient and no per-user timezone handling is needed.
+- The interface follows the visual language recorded in
+  `docs/design/visual-language.md`, derived from the TradeStation AI Portal.
+  That document is a plan-level input; nothing in this specification depends
+  on it.
 
 ---
 
@@ -402,6 +451,12 @@ Deferred deliberately, with the slice that owns each:
 - The generated standup and weekly summary *(Slice 4)*.
 - Any user interface for viewing movement history — it is written here and read
   in Slice 4.
+- Screen-reader announcements of card movement, and formal WCAG conformance
+  with automated accessibility checks. Keyboard parity and focus management
+  (FR-022…FR-025, FR-039) are required; a screen-reader experience is not a
+  target for a single-user tool.
+- Undo of a deletion. Cards are soft-deleted (FR-041) so an undo remains
+  possible later, but no undo affordance is built here.
 - Authentication, user accounts, and multi-user access *(non-goal, BRD §3)*.
 - Attachments, file uploads, and comment threads *(non-goal, BRD §5.2)*.
 
@@ -480,11 +535,12 @@ Deferred deliberately, with the slice that owns each:
     tags, saves, and reloads the board
   - **Then** all five changes are present
 
-- **BH-013** (satisfies FR-014): Deletion requires confirmation
+- **BH-013** (satisfies FR-014, FR-041): Deletion requires confirmation and
+  retains the record
   - **Given** an existing card
   - **When** the user deletes it and cancels at the confirmation
   - **Then** the card remains on the board; and when the user deletes it and
-    confirms, the card is gone
+    confirms, the card leaves the board while its stored record is retained
 
 - **BH-014** (satisfies FR-022, FR-023): A card is created and moved by keyboard
   - **Given** the board has focus and no pointing device is used
@@ -565,6 +621,29 @@ Deferred deliberately, with the slice that owns each:
   - **Then** it states how to start, stop and reset the system, and names the
     storage volume whose deletion would lose data
 
+- **BH-027** (satisfies FR-039): Focus returns to where it came from
+  - **Given** the user opens the edit dialog from a focused card
+  - **When** the dialog is closed by saving or cancelling
+  - **Then** focus returns to that card rather than to the top of the board
+
+- **BH-028** (satisfies FR-040): Done cards stay visible and unarchived
+  - **Given** a card is moved to Done
+  - **When** the board is displayed
+  - **Then** the card is shown in the Done column, is not archived, and no
+    interface presents an archive action
+
+- **BH-029** (satisfies FR-042): Overdue begins the day after the due date
+  - **Given** one card due today and one due yesterday
+  - **When** the board is displayed
+  - **Then** the card due yesterday is shown as overdue and the card due today
+    is not
+
+- **BH-030** (satisfies FR-043, FR-008): Tags reuse the shared vocabulary
+  - **Given** a card already carries the tag "ops"
+  - **When** the user types "Op" into the tag field of a second card
+  - **Then** the existing "ops" tag is suggested, and choosing it attaches the
+    same tag rather than creating a near-duplicate
+
 ## Verification
 
 | ID | Test name | Pins |
@@ -595,3 +674,7 @@ Deferred deliberately, with the slice that owns each:
 | TEST-024 | Documented single command brings both containers to healthy | BH-024 |
 | TEST-025 | Create-move-edit-delete cycle triggers no full page reload | BH-025 |
 | TEST-026 | Documentation covers start, stop, reset and names the data volume | BH-026 |
+| TEST-027 | Closing a dialog restores focus to the originating card | BH-027 |
+| TEST-028 | Card in Done is visible, unarchived, with no archive affordance | BH-028 |
+| TEST-029 | Card due today is not overdue; card due yesterday is | BH-029 |
+| TEST-030 | Tag entry suggests and reuses an existing vocabulary tag | BH-030 |

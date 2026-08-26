@@ -2,7 +2,10 @@
 import pathlib
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
-TEMPLATE = REPO / "templates" / "plan-template.md"
+# plan-addendum.md is what actually gets composed into plan.md (preset.yml's
+# plan-template entry points here, not at templates/plan-template.md, which
+# is a leftover pre-wrap-refactor file no longer resolved by anything).
+TEMPLATE = REPO / "templates" / "plan-addendum.md"
 
 ROW = "| Integration | Cross-repo contract surface (dependency manifest) | |"
 NA_WORDING = "N/A — no dependency manifest (single-codebase feature)"
@@ -31,9 +34,10 @@ def test_template_has_cross_repo_context_section():
     assert "possible, unconfirmed" in lower, "trust rules: medium/low rendering missing"
     assert "scanned_at" in text, "contract citations must carry scanned_at"
     assert "upgrade a confidence tier" in lower, "trust rules: tier-upgrade prohibition missing"
-    # Section sits after Technical Context and before the Architecture
-    # Review table whose cross-repo row points at it
-    assert text.index("## Technical Context") < text.index("## Cross-Repo Context") < text.index("## Architecture Review")
+    # Section sits after the wrapped core content (which carries Technical
+    # Context) and before the Architecture Review table whose cross-repo
+    # row points at it
+    assert text.index("{CORE_TEMPLATE}") < text.index("## Cross-Repo Context") < text.index("## Architecture Review")
 
 
 SPECIFY_CMD = REPO / "commands" / "speckit.specify.md"

@@ -278,6 +278,19 @@ def _load_pf():
     return mod
 
 
+def _describe_connection_error(e: Exception) -> str:
+    """Short, distinguishing description of a URLError/OSError for R7's
+    detail field. Collapsing every network failure into "portal
+    unreachable" with no reason is what cost real debugging time in
+    Slack (AIP-248) -- a local cert/proxy/DNS issue looked identical to an
+    actual portal outage. URLError wraps the real cause in `.reason`
+    (often itself an OSError subclass, e.g. ssl.SSLCertVerificationError
+    or socket.gaierror); a bare OSError has no `.reason`."""
+    reason = getattr(e, "reason", e)
+    text = str(reason)
+    return f"{type(reason).__name__}: {text}" if text else type(reason).__name__
+
+
 def check_telemetry(pf):
     """Check portal-telemetry auth. `pf` is the module returned by _load_pf()."""
     AUTH_FIX = ("bash .specify/presets/tradestation-sdd/scripts/"
@@ -291,8 +304,9 @@ def check_telemetry(pf):
     headers = {"Authorization": "Bearer " + token}
     try:
         status, body = pf._http_request("GET", base + "/api/telemetry/status", headers, None)
-    except (urllib.error.URLError, OSError):
-        return _result("R7", "Portal telemetry", WARN, "portal unreachable (will retry later)")
+    except (urllib.error.URLError, OSError) as e:
+        return _result("R7", "Portal telemetry", WARN,
+                        f"portal unreachable (will retry later) — {_describe_connection_error(e)}")
     if status == 401:
         return _result("R7", "Portal telemetry", WARN, "token expired", AUTH_FIX)
     if status != 200:

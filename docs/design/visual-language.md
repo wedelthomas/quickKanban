@@ -1,0 +1,137 @@
+# Visual Language
+
+**References**, both observed 2026-08-26 and both liked by the user:
+
+1. **TradeStation AI Portal** (`portal.ai.tradestation.io`), Skills & Plugins
+   page — palette, component treatment, header navigation.
+2. **ABS Team Reports** dashboard (`localhost:8080`), Compare All view —
+   density, left sidebar, statistic strip, table treatment.
+
+Neither screenshot could be preserved: macOS deletes the screenshot temporary
+file as soon as its capture window closes, so this document records the
+observed design decisions rather than the images.
+
+**Status**: Design input for `plan.md`. The feature specification stays
+technology-agnostic; this is where the visual decisions live.
+
+---
+
+## Overall character
+
+Dark-first, calm, information-dense. Content sits centred in a column of about
+1200px on a near-black canvas. Panels are quiet — a slightly lighter surface
+with a hairline border rather than shadows. Colour is used sparingly and
+therefore carries meaning: one saturated indigo for anything actionable, one
+coral for anything destructive, everything else in greys.
+
+## Palette
+
+| Role | Value | Use |
+|---|---|---|
+| Canvas | `#0B0E14` | Page background |
+| Surface | `#161B26` | Panels, cards, inputs |
+| Surface raised | `#1B2130` | Input fills, hover states |
+| Border | `#252B3A` | Hairline panel and input borders |
+| Text primary | `#E6E9EF` | Titles, card titles, body |
+| Text muted | `#8B93A7` | Metadata, helper text, inactive nav |
+| Accent | `#3B5BFD` | Primary buttons, active nav underline, focus rings, links |
+| Accent gradient | `#4B4EF0` → `#7B3FE4` | Hero banner only |
+| Destructive | `#E04B4B` | Sign-out, delete, overdue |
+
+Colour carries meaning, so it stays rationed: an interface where six things are
+blue teaches the user that blue means nothing.
+
+## Structure
+
+- **Header bar** — wordmark on the left, horizontal navigation of icon + label
+  pairs in the centre, controls on the right. The active nav item is brighter
+  and carries a 2px accent underline.
+- **Theme control** — a tri-state segmented control (light / system / dark) in
+  the header.
+- **Page heading** — large bold title (~34px) with a muted one-line
+  description beneath, and a secondary action button aligned right.
+- **Panels** — 10px corner radius, hairline border, generous internal padding.
+- **Inputs** — dark filled, hairline border, 8px radius, leading icon for
+  search. Labels sit above the control in muted text.
+- **Badges** — small outlined pills in muted text for classification.
+- **Metadata rows** — tiny icon plus muted text, set well below body size.
+
+## Applying it to the Kanban board
+
+| Portal element | Board equivalent |
+|---|---|
+| Header nav | Board · Archive · Summary · Settings, icon + label, accent underline on active |
+| Page heading + Refresh button | Board title with the sync status pill alongside (Slice 2) |
+| Panel | A column: header with column name and card count, cards stacked beneath |
+| List item card | A work card: title in primary text, metadata row beneath |
+| Outlined badge | Tags, and the Jira issue key on Jira-sourced cards (Slice 2) |
+| Accent | Focus ring, active drop target, primary button |
+| Destructive coral | Overdue due dates, delete confirmation |
+
+**Priority** reads as a small coloured dot or a left edge on the card, not a
+word — it must survive being scanned rather than read.
+
+**Source** (local vs Jira-sourced, BR-05/FR-011) reads as the presence or
+absence of an issue-key badge, which is legible at a glance without adding a
+second colour dimension competing with priority.
+
+**Focus** (FR-023) uses the accent ring. Because the board is keyboard-driven,
+the focus ring is a primary interface element here, not an accessibility
+afterthought — it must be clearly visible against the card surface.
+
+## Density
+
+The reference is generous with whitespace because it lists a handful of items.
+The board must show around 50 cards at once (NFR-14, SC-006), so vertical
+rhythm tightens: card padding roughly halves, and the metadata row sits on a
+single line. The palette, border treatment and radius carry the family
+resemblance; the spacing scale does not.
+
+---
+
+## What the reports dashboard adds
+
+The second reference is denser and more data-forward, and contributes four
+things the portal does not.
+
+**Left sidebar navigation.** A fixed rail carrying the product name and a
+subtitle, then grouped navigation under tiny uppercase section labels. Each
+entry pairs an initial-chip with a count badge, and the active entry is marked
+by a lighter fill rather than an underline.
+
+**A statistic strip.** A horizontal band of figures above the main content —
+large numeral, tiny uppercase caption beneath, thin vertical rules between
+cells. Numbers carry semantic colour: green for gain, coral for loss. For the
+board this becomes counts per column, cards overdue, and cards moved this week.
+
+**Magnitude built into the number.** Table figures sit above a short coloured
+underline whose length encodes the value relative to its column, so the shape
+of the data is readable without a separate chart. This belongs in Slice 4's
+summary, not on the board.
+
+**Per-entity accent colours.** Each person carries a consistent colour across
+their chip and their bars. The board's equivalent is tags, which is the only
+dimension with enough cardinality to justify colour identity.
+
+## Reconciling the two references
+
+They disagree about navigation, and the disagreement matters.
+
+The portal uses a top bar; the dashboard uses a 250px left sidebar. **A
+sidebar costs the board horizontal space it cannot spare**: six columns at a
+readable ~280px need roughly 1680px, which already exceeds a 1440px display.
+Surrendering 250px of that to navigation makes the board scroll horizontally
+before a single card is added.
+
+Recommended resolution: **top navigation on the board view**, taking the
+portal's header treatment, and the dashboard's sidebar pattern for the
+Archive and Summary views in Slice 4, where vertical lists benefit from it and
+horizontal space is not contested. The statistic strip sits directly beneath
+the board header, where it costs vertical space only.
+
+## Open question
+
+Both references are dark. The portal additionally offers a light/system/dark
+control. The board is specified dark-first; whether a light theme is in scope
+is a plan-level decision, since it roughly doubles both the palette work and
+the visual review surface.
