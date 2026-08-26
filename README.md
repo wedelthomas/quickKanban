@@ -9,9 +9,21 @@ record for your day. Requests arrive by chat, email and hallway conversation;
 they take real hours and compete with everything else, but no Jira board shows
 them. This board does.
 
-> **Current state: slice 1 (board foundation).** Local ad-hoc cards, six
-> columns, movement history and durable storage. Jira integration arrives in
-> slices 2 and 3 — see [`docs/brd.md`](docs/brd.md) for the full plan.
+> **Current state: slice 1 (board foundation), complete.**
+
+## What it does today
+
+- Six fixed columns: Backlog, In Progress, Blocked, Test, PO Review, Done
+- Cards with a title, description, priority, due date and tags
+- Tags come from a shared vocabulary with autocomplete, so they cannot drift
+- Drag between columns or reorder within one; the move applies instantly and
+  reverts with a reason if it cannot be saved
+- Full keyboard operation — press `?` for the list
+- Deletion is soft and asks first
+- Every column change is recorded in an append-only history
+
+**Not yet:** Jira import and two-way sync (slices 2 and 3), search, the dated
+archive and standup summaries (slice 4). See [`docs/brd.md`](docs/brd.md).
 
 ## Getting started
 

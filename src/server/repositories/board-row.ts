@@ -1,0 +1,38 @@
+import type { Card, CardSource, ColumnKey, Priority } from '../../shared/types.js';
+import { isOverdue } from '../../domain/overdue.js';
+
+/**
+ * How a card comes back from either repository. Shared because both read it
+ * with the same projection — not to make either file shorter.
+ */
+export interface BoardRow {
+  column_id: number;
+  column_key: ColumnKey;
+  column_name: string;
+  column_position: number;
+  card_id: string | null;
+  source: CardSource | null;
+  title: string | null;
+  description: string | null;
+  priority: Priority | null;
+  due_date: string | null;
+  position: number | null;
+  tags: string[] | null;
+  created_at: Date | null;
+  updated_at: Date | null;
+}
+
+export const toCard = (row: BoardRow, today: Date): Card => ({
+  id: row.card_id!,
+  source: row.source!,
+  title: row.title!,
+  description: row.description,
+  priority: row.priority!,
+  dueDate: row.due_date,
+  overdue: isOverdue(row.due_date, today),
+  columnId: row.column_id,
+  position: row.position!,
+  tags: row.tags ?? [],
+  createdAt: row.created_at!.toISOString(),
+  updatedAt: row.updated_at!.toISOString(),
+});

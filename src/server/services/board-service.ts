@@ -1,13 +1,13 @@
 import type { Board } from '../../shared/types.js';
-import type { CardRepository } from '../repositories/card-repository.js';
+import type { BoardRepository } from '../repositories/board-repository.js';
 
 export class BoardService {
   constructor(
-    private readonly cards: CardRepository,
+    private readonly board: BoardRepository,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
   async read(): Promise<Board> {
-    return { columns: await this.cards.readBoard(this.now()) };
+    return { columns: await this.board.readBoard(this.now()) };
   }
 }

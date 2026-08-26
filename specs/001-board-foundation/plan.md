@@ -174,6 +174,7 @@ before a second genuine consumer exists.
 | `cards.archived_at` and `cards.deleted_at` ship unused (Principle XII: do not anticipate future requirements) | `deleted_at` is genuinely used — FR-041 makes deletion soft, so it is load-bearing in this slice. `archived_at` is the real violation: nothing in Slice 1 writes or reads it. It exists so Slice 4 adds the archive without migrating a database that by then holds the user's only copy of their ad-hoc cards. | Adding it in Slice 4 means a migration against live personal data, and rewriting the Done-column semantics after cards already sit there. The cost of carrying it now is one nullable timestamp column and one line of the spec's assumptions. |
 | `cards.source` ships with only one possible value (`local`) | FR-010, FR-011 and FR-015 all reference it in this slice: the board marks source visually, and deletion is refused for non-local cards — a rule that is testable now (BH-023) by seeding a non-local row. | Not a speculative column: three requirements and one behavior pathway depend on it before Slice 2 exists. |
 | Principle V — runbooks are not published to Confluence | No on-call rotation, no operator other than the sole user, no production incident path. `README.md` carries start, stop, reset and the name of the volume whose deletion loses data (FR-038, risk R-7). | Publishing a Confluence runbook for a localhost tool one person runs would be documentation nobody reads, which Principle XI warns is worse than none. |
+| `card-repository.ts` is 302 lines, against a 300-line hygiene limit | It holds four card mutations (create, move, update, soft-delete) plus the row lock they share. Cohesive: every method mutates a card inside a transaction. The length is raw SQL and the comments explaining why each transaction locks what it locks. The board read model *was* split out of it during polish — that was a genuine seam and took it from 379 lines — but there is no second seam left. | Shaving two lines by deleting comments would trade an explanation of why the move transaction takes row locks for a number. Splitting four mutations across two classes to satisfy a threshold would create a class with no independent reason to exist, which Principle XIV forbids more strongly than the line count asks. |
 | Principle VI — no metrics or tracing backend | Structured JSON logs to stdout, read with `docker compose logs`. There is no aggregation tier to ship telemetry to and no second observer. | Standing up a metrics stack beside a two-container personal tool inverts the footprint of the thing being observed. |
 
 ## Architecture Review
@@ -212,10 +213,13 @@ flowchart LR
   Browser["Browser SPA<br/>(React, served by app)"]
   subgraph app["app container (Node 22)"]
     Static["Static handler<br/>serves built SPA"]
-    Routes["Fastify routes<br/>validate + map errors"]
-    Services["Services<br/>board · card · movement"]
-    Domain["Domain (pure)<br/>ordering · tags · overdue"]
-    Repos["Repositories<br/>raw SQL"]
+    Routes["Fastify routes<br/>board · cards · tags · health"]
+    Services["Services<br/>BoardService · CardService"]
+    Domain["Domain (pure)<br/>ordering · tags · overdue · validation"]
+    ReadRepo["BoardRepository<br/>read model"]
+    WriteRepo["CardRepository<br/>mutations in transactions"]
+    TagRepo["TagRepository<br/>shared vocabulary"]
+    EventRepo["EventRepository<br/>append-only"]
     Migrate["Migration runner<br/>runs at startup"]
   end
   DB[("db container<br/>PostgreSQL 17")]
@@ -225,8 +229,14 @@ flowchart LR
   Browser -->|"JSON over /api/*"| Routes
   Routes -->|"validated commands"| Services
   Services -->|"calls pure functions"| Domain
-  Services -->|"reads / writes"| Repos
-  Repos -->|"SQL over TCP, pooled"| DB
+  Services -->|"reads board"| ReadRepo
+  Services -->|"creates · moves · updates · soft-deletes"| WriteRepo
+  WriteRepo -->|"resolves tag names to ids"| TagRepo
+  WriteRepo -->|"appends movement, same transaction"| EventRepo
+  ReadRepo -->|"SQL over TCP, pooled"| DB
+  WriteRepo -->|"SQL over TCP, pooled"| DB
+  TagRepo -->|"SQL"| DB
+  EventRepo -->|"INSERT / SELECT only"| DB
   Migrate -->|"applies numbered .sql at boot"| DB
   DB -->|"persists data files"| Vol
 ```
@@ -282,7 +292,9 @@ erDiagram
 ### Sequence diagram — optimistic move and revert
 
 *Included because the move path spans four components and its failure branch
-is the single most likely place for the board to end up confidently wrong.*
+is the single most likely place for the board to end up confidently wrong.
+Updated after implementation: the history append is a separate branch, because
+a reorder within one column deliberately writes no record (FR-028).*
 
 ```mermaid
 sequenceDiagram
@@ -300,8 +312,13 @@ sequenceDiagram
   alt target position unchanged
     SVC->>DB: ROLLBACK (no write, no history)
     SVC-->>UI: 200 { card, moved: false }
-  else move applies
-    SVC->>DB: renumber column, update card, INSERT card_event
+  else move applies within one column
+    SVC->>DB: renumber column, update card
+    SVC->>DB: COMMIT
+    SVC-->>UI: 200 { card, moved: true }
+  else move changes column
+    SVC->>DB: renumber both columns, update card
+    SVC->>DB: INSERT card_event (from, to, actor=user)
     SVC->>DB: COMMIT
     SVC-->>UI: 200 { card, moved: true }
   end

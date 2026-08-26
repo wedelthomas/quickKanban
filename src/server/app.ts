@@ -13,6 +13,7 @@ import { registerTagRoutes } from './routes/tags.js';
 import { TagRepository } from './repositories/tag-repository.js';
 import { EventRepository } from './repositories/event-repository.js';
 import { CardRepository } from './repositories/card-repository.js';
+import { BoardRepository } from './repositories/board-repository.js';
 
 export interface AppOptions {
   pool: pg.Pool;
@@ -57,7 +58,10 @@ export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyI
       // A framework error that already knows it is the caller's fault must not
       // be reported as a server fault: a 400 dressed up as a 500 sends whoever
       // debugs it next looking in the wrong place entirely.
-      const status = (error as { statusCode?: number }).statusCode ?? 500;
+      // Fastify 5.12 types this parameter as `unknown`, so narrow it once here
+      // rather than asserting at each use.
+      const framework = error as { statusCode?: number; message?: string };
+      const status = framework.statusCode ?? 500;
       const clientFault = status >= 400 && status < 500;
 
       request.log.error({ err: error }, clientFault ? 'rejected request' : 'unhandled error');
@@ -70,7 +74,10 @@ export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyI
           title: clientFault ? 'The request could not be accepted' : 'Something went wrong',
           status,
           code: clientFault ? 'BAD_REQUEST' : 'INTERNAL_ERROR',
-          detail: clientFault ? error.message : 'The request could not be completed.',
+          detail:
+            clientFault && framework.message
+              ? framework.message
+              : 'The request could not be completed.',
         });
     }
 
@@ -85,7 +92,7 @@ export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyI
 
   registerHealthRoutes(app, pool);
   const cardRepository = new CardRepository(pool);
-  registerBoardRoutes(app, new BoardService(cardRepository));
+  registerBoardRoutes(app, new BoardService(new BoardRepository(pool)));
   registerCardRoutes(app, new CardService(cardRepository), new EventRepository(pool));
   registerTagRoutes(app, new TagRepository(pool));
 
