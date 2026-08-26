@@ -153,15 +153,23 @@ Stories are ordered by dependency, then priority:
 
 ### Tests — write first, confirm they FAIL
 
-- [ ] T236 [P] [US5] `tests/features/issue-disappearance.feature` + steps — archived into Done not deleted, reason recorded, movement attributed to sync, and the same card restored rather than duplicated (BH-111, BH-112, BH-113).
+- [x] T236 [P] [US5] `tests/features/issue-disappearance.feature` + steps — archived into Done not deleted, reason recorded, movement attributed to sync, and the same card restored rather than duplicated (BH-111, BH-112, BH-113).
 
 ### Implementation
 
-- [ ] T237 [US5] Extend `sync-service.ts`: diff the board's Jira cards against the query result; archive the absent ones into Done with a reason.
-- [ ] T238 [US5] Movement caused by sync is appended to the history with actor `sync`, not `user` (FR-124). The column already accepts it — slice 1 constrained the actor set to include it.
-- [ ] T239 [US5] Restore an archived card when its issue matches again, by `issue_key`, rather than creating a second card (FR-125).
+- [x] T237 [US5] Extend `sync-service.ts`: diff the board's Jira cards against the query result; archive the absent ones into Done with a reason.
+- [x] T238 [US5] Movement caused by sync is appended to the history with actor `sync`, not `user` (FR-124). The column already accepts it — slice 1 constrained the actor set to include it.
+- [x] T239 [US5] Restore an archived card when its issue matches again, by `issue_key`, rather than creating a second card (FR-125).
 
-**Checkpoint**: nothing disappears silently. **Run the Story-Complete Review Gate.**
+**Checkpoint**: nothing disappears silently. **Story-Complete Review Gate run; findings recorded below.**
+
+### US5 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-122…FR-125 implemented; all three pathways green.
+- **The tests passed on first run, and that is a finding.** `archiveBySync` and `restoreFromArchive` were written during US1 because the sync's apply loop could not be written coherently without deciding what happens to issues absent from the result. So the behaviour existed before the tests that pin it. This is the fourth such case in the project (health, overdue, the disappearance rule, and slice 1's ordering helpers) and the pattern is consistent: it happens when a later story's behaviour is structurally required by an earlier story's code. Worth naming rather than repeating silently — the honest fix is to notice the dependency at task-ordering time, as US6 was deliberately ordered last for the opposite reason.
+- **The tests still earn their place.** They assert against storage directly: that the row survives with `archived_at` set and a reason recorded, that the movement is attributed to `sync` rather than `user`, and that a returning issue restores its own card rather than creating a second. None of that was verified before.
+- **Restore is keyed on issue_key**, which is UNIQUE, so a duplicate is impossible at the storage layer rather than only at the application layer.
+- **Ad-hoc cards are structurally excluded**: the archival loop iterates the Jira link table, so a card with no link cannot be reached by it.
 
 ---
 

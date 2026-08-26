@@ -250,3 +250,60 @@ Then('the card for issue {string} has priority {string}', async function (
 ) {
   assert.equal((await cardFor(this, key)).priority, priority);
 });
+
+Then('the card for issue {string} is not on the board', async function (
+  this: BoardWorld,
+  key: string,
+) {
+  const b = await board(this);
+  const found = b.columns.flatMap((c) => c.cards).find((c) => c.issueKey === key);
+  assert.equal(found, undefined, `${key} should have left the active board`);
+});
+
+Then('the card for issue {string} is archived', async function (this: BoardWorld, key: string) {
+  const { rows } = await this.pool.query<{ archived_at: Date | null; column_id: number }>(
+    `SELECT c.archived_at, c.column_id FROM cards c
+       JOIN jira_links jl ON jl.card_id = c.id WHERE jl.issue_key = $1`,
+    [key],
+  );
+  assert.ok(rows[0], `${key} should still exist in storage — archived, not deleted`);
+  assert.ok(rows[0].archived_at, 'archived_at should be set');
+  assert.equal(rows[0].column_id, 6, 'an archived card belongs in Done');
+});
+
+Then('the card for issue {string} records why it left', async function (
+  this: BoardWorld,
+  key: string,
+) {
+  const { rows } = await this.pool.query<{ archived_reason: string | null }>(
+    `SELECT c.archived_reason FROM cards c
+       JOIN jira_links jl ON jl.card_id = c.id WHERE jl.issue_key = $1`,
+    [key],
+  );
+  assert.ok(rows[0]?.archived_reason, 'a reason must be recorded, not left null');
+});
+
+Then('the last movement for issue {string} was caused by sync', async function (
+  this: BoardWorld,
+  key: string,
+) {
+  const { rows } = await this.pool.query<{ actor: string }>(
+    `SELECT e.actor FROM card_events e
+       JOIN jira_links jl ON jl.card_id = e.card_id
+      WHERE jl.issue_key = $1 ORDER BY e.id DESC LIMIT 1`,
+    [key],
+  );
+  assert.equal(rows[0]?.actor, 'sync');
+});
+
+Then('exactly {int} card exists for issue {string}', async function (
+  this: BoardWorld,
+  count: number,
+  key: string,
+) {
+  const { rows } = await this.pool.query<{ count: string }>(
+    'SELECT count(*) FROM jira_links WHERE issue_key = $1',
+    [key],
+  );
+  assert.equal(Number(rows[0]!.count), count);
+});
