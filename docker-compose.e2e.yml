@@ -1,0 +1,17 @@
+# Overrides for the browser suite.
+#
+# The E2E stack runs with Jira deliberately unconfigured. With a real token the
+# scheduler imports the user's actual assigned issues at unpredictable moments,
+# which lands cards in the middle of assertions about the board's contents and
+# makes the suite flaky in a way that looks like application bugs.
+#
+# Nothing is lost: the Jira browser tests seed cards directly (see
+# tests/e2e/reset.ts) precisely so they do not depend on what happens to be
+# assigned today, and the sync-status tests intercept the status endpoint.
+
+services:
+  app:
+    environment:
+      JIRA_BASE_URL: ''
+      JIRA_EMAIL: ''
+      JIRA_API_TOKEN: ''

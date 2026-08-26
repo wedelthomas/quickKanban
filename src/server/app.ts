@@ -12,6 +12,7 @@ import { registerCardRoutes } from './routes/cards.js';
 import { registerTagRoutes } from './routes/tags.js';
 import { TagRepository } from './repositories/tag-repository.js';
 import { EventRepository } from './repositories/event-repository.js';
+import { JiraCardRepository } from './repositories/jira-card-repository.js';
 import { SettingsRepository } from './repositories/settings-repository.js';
 import { JiraLinkRepository } from './repositories/jira-link-repository.js';
 import { SyncRunRepository } from './repositories/sync-run-repository.js';
@@ -117,13 +118,21 @@ export const buildApp = ({
 
   registerHealthRoutes(app, pool);
   const cardRepository = new CardRepository(pool);
+  const events = new EventRepository(pool);
   registerBoardRoutes(app, new BoardService(new BoardRepository(pool)));
-  registerCardRoutes(app, new CardService(cardRepository), new EventRepository(pool));
+  registerCardRoutes(app, new CardService(cardRepository), events);
 
   const settings = new SettingsRepository(pool);
   const runs = new SyncRunRepository(pool);
   const sync = jira
-    ? new SyncService(pool, jira, cardRepository, new JiraLinkRepository(pool), runs, settings)
+    ? new SyncService(
+        pool,
+        jira,
+        new JiraCardRepository(events),
+        new JiraLinkRepository(pool),
+        runs,
+        settings,
+      )
     : null;
   registerSyncRoutes(app, { sync, lock, runs });
   registerSettingsRoutes(app, settings, onIntervalChanged);

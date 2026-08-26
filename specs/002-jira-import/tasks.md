@@ -87,7 +87,7 @@ Stories are ordered by dependency, then priority:
 - [x] T272 [P] [US1] `tests/unit/status-mapping.test.ts` — every status name maps to the right column, case-insensitively; an unknown status falls back to Backlog (BH-101, BH-126).
 - [x] T274 [P] [US1] Extend `tests/features/jira-import.feature` — issues in differing statuses land in their mapped columns, and an unrecognised status falls back to Backlog (BH-101, BH-126).
 - [x] T216 [P] [US1] `tests/unit/no-jira-writes.test.ts` — the adapter's source contains no POST, PUT, PATCH or DELETE (BH-109, by absence of capability rather than by behaviour).
-- [ ] T217 [P] [US1] `tests/contract/jira-adapter.test.ts` — real adapter against recorded fixtures: pagination across pages, 401, 429, 5xx, malformed body (BH-102).
+- [x] T217 [P] [US1] `tests/contract/jira-adapter.test.ts` — real adapter against recorded fixtures: pagination across pages, 401, 429, 5xx, malformed body (BH-102).
 - [x] T218 [P] [US1] `tests/features/jira-import.feature` + steps — import into Backlog, no duplicates across twenty syncs, summary updates, empty result is a success (BH-101, BH-103, BH-105, BH-125).
 - [x] T219 [P] [US1] `tests/features/sync-non-interference.feature` + steps — sync never moves a user-placed card, never touches ad-hoc cards, never issues a write (BH-106, BH-108, BH-109).
 - [x] T220 [P] [US1] `tests/features/jira-snapshot.feature` + steps — recorded status and Jira's own last-updated value match what Jira returned (BH-107).
@@ -266,12 +266,12 @@ Stories are ordered by dependency, then priority:
 
 - [x] T262 Update `docs/external-interactions.md`: Jira moves from "planned" to a real entry with contract, failure modes, timeout and retry policy.
 - [x] T263 Update `README.md`: connecting to Jira, the three new variables, and what this slice deliberately does not do (dragging a Jira card does not tell Jira — that is slice 3).
-- [ ] T264 Verify plan.md's diagrams still match the as-built system; update if they drifted.
-- [ ] T265 Verify all 16 test files named in plan.md exist and pass.
-- [ ] T266 Verify SC-101…SC-109, including the two that are absence claims: zero writes to Jira and zero credential occurrences across the whole suite.
-- [ ] T267 Code cleanup; no file over 300 lines without recorded justification.
-- [ ] T268 Security check: no credential in the diff; dependency audit clean at Critical/High.
-- [ ] T269 Run `quickstart.md` end to end — including the no-token path, which must work.
+- [x] T264 Verify plan.md's diagrams still match the as-built system; update if they drifted.
+- [x] T265 Verify all 16 test files named in plan.md exist and pass.
+- [x] T266 Verify SC-101…SC-109, including the two that are absence claims: zero writes to Jira and zero credential occurrences across the whole suite.
+- [x] T267 Code cleanup; no file over 300 lines without recorded justification.
+- [x] T268 Security check: no credential in the diff; dependency audit clean at Critical/High.
+- [x] T269 Run `quickstart.md` end to end — including the no-token path, which must work.
 - [ ] T270 Run `/speckit.review` against the diff; address blocking findings.
 - [ ] T271 Request peer review.
 

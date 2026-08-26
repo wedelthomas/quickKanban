@@ -37,6 +37,16 @@ export class JiraAdapter implements JiraPort {
     private readonly credentials: JiraCredentials,
     private readonly sleep: (ms: number) => Promise<void> = (ms) =>
       new Promise((r) => setTimeout(r, ms)),
+    /**
+     * Injected so contract tests can substitute an intercepted client.
+     *
+     * Not a nicety: Node's built-in `fetch` uses its own bundled undici, which
+     * `setGlobalDispatcher` from the standalone package does not affect. A
+     * contract test that relies on that silently talks to the real internet
+     * instead — which NFR-23 forbids and which is exactly what happened before
+     * this seam existed.
+     */
+    private readonly fetchImpl: typeof fetch = globalThis.fetch,
   ) {}
 
   async searchIssues(jql: string): Promise<JiraIssue[]> {
@@ -73,7 +83,7 @@ export class JiraAdapter implements JiraPort {
 
       let response: Response;
       try {
-        response = await fetch(url, {
+        response = await this.fetchImpl(url, {
           method: 'GET',
           headers: {
             Authorization: this.credentials.authorization,

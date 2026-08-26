@@ -4,7 +4,7 @@ import { JiraError, type JiraIssue, type JiraPort } from '../jira/jira-port.js';
 import type { JiraLinkRepository } from '../repositories/jira-link-repository.js';
 import type { SyncRunRepository } from '../repositories/sync-run-repository.js';
 import type { SettingsRepository } from '../repositories/settings-repository.js';
-import type { CardRepository } from '../repositories/card-repository.js';
+import type { JiraCardRepository } from '../repositories/jira-card-repository.js';
 
 /**
  * One sync: fetch everything, then apply it atomically.
@@ -21,7 +21,7 @@ export class SyncService {
   constructor(
     private readonly pool: pg.Pool,
     private readonly jira: JiraPort,
-    private readonly cards: CardRepository,
+    private readonly cards: JiraCardRepository,
     private readonly links: JiraLinkRepository,
     private readonly runs: SyncRunRepository,
     private readonly settings: SettingsRepository,
