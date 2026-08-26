@@ -1,3 +1,4 @@
+import { Board } from './board/Board.js';
 import './App.css';
 
 /**
@@ -16,6 +17,8 @@ export const App = () => (
         </a>
       </nav>
     </header>
-    <main className="app-main" id="board" />
+    <main className="app-main" id="board">
+      <Board />
+    </main>
   </div>
 );

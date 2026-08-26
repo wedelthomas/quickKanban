@@ -13,6 +13,8 @@ export class BoardWorld extends World {
   app!: FastifyInstance;
   pool!: pg.Pool;
   response!: { status: number; body: unknown };
+  /** The card produced by the most recent creating step, for later assertions. */
+  lastCard?: import('../../../src/shared/types.js').Card;
 
   async start(): Promise<void> {
     const connectionString =

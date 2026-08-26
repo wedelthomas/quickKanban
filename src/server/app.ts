@@ -7,6 +7,10 @@ import { DomainError, databaseUnavailable } from './errors.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerBoardRoutes } from './routes/board.js';
 import { BoardService } from './services/board-service.js';
+import { CardService } from './services/card-service.js';
+import { registerCardRoutes } from './routes/cards.js';
+import { registerTagRoutes } from './routes/tags.js';
+import { TagRepository } from './repositories/tag-repository.js';
 import { CardRepository } from './repositories/card-repository.js';
 
 export interface AppOptions {
@@ -69,7 +73,10 @@ export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyI
   });
 
   registerHealthRoutes(app, pool);
-  registerBoardRoutes(app, new BoardService(new CardRepository(pool)));
+  const cardRepository = new CardRepository(pool);
+  registerBoardRoutes(app, new BoardService(cardRepository));
+  registerCardRoutes(app, new CardService(cardRepository));
+  registerTagRoutes(app, new TagRepository(pool));
 
   if (webRoot && existsSync(webRoot)) {
     app.register(fastifyStatic, { root: webRoot });

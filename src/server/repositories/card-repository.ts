@@ -1,6 +1,11 @@
 import type pg from 'pg';
 import type { BoardColumn, Card, ColumnKey, Priority, CardSource } from '../../shared/types.js';
 import { isOverdue } from '../../domain/overdue.js';
+import type { CreateCardInput } from '../../domain/validation.js';
+import { TagRepository } from './tag-repository.js';
+
+/** Backlog. New cards land here (FR-009). */
+const BACKLOG_COLUMN_ID = 1;
 
 interface BoardRow {
   column_id: number;
@@ -20,7 +25,83 @@ interface BoardRow {
 }
 
 export class CardRepository {
-  constructor(private readonly pool: pg.Pool) {}
+  constructor(
+    private readonly pool: pg.Pool,
+    private readonly tags = new TagRepository(pool),
+  ) {}
+
+  /**
+   * Creates a card at the top of Backlog. The whole thing is one transaction:
+   * shifting the existing cards down, inserting, and attaching tags either all
+   * happen or none do, so the column's positions are never left with a gap or
+   * a duplicate.
+   */
+  async create(input: CreateCardInput, today: Date): Promise<Card> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Lock the column's live rows before renumbering so two concurrent
+      // creates cannot both claim position 1.
+      await client.query(
+        `SELECT id FROM cards
+          WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL
+          FOR UPDATE`,
+        [BACKLOG_COLUMN_ID],
+      );
+      await client.query(
+        `UPDATE cards SET position = position + 1
+          WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL`,
+        [BACKLOG_COLUMN_ID],
+      );
+
+      const { rows } = await client.query<{ id: string }>(
+        `INSERT INTO cards (source, title, description, priority, due_date, column_id, position)
+         VALUES ('local', $1, $2, $3, $4, $5, 1)
+         RETURNING id`,
+        [input.title, input.description, input.priority, input.dueDate, BACKLOG_COLUMN_ID],
+      );
+      const id = rows[0]!.id;
+
+      const tags = await this.tags.getOrCreate(client, input.tags);
+      if (tags.length > 0) {
+        await client.query(
+          `INSERT INTO card_tags (card_id, tag_id) SELECT $1, unnest($2::int[])`,
+          [id, tags.map((t) => t.id)],
+        );
+      }
+
+      await client.query('COMMIT');
+      return (await this.findById(id, today))!;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async findById(id: string, today: Date): Promise<Card | null> {
+    const { rows } = await this.pool.query<BoardRow>(
+      `SELECT
+         col.id AS column_id, col.key AS column_key, col.name AS column_name,
+         col.position AS column_position,
+         c.id AS card_id, c.source, c.title, c.description, c.priority,
+         to_char(c.due_date, 'YYYY-MM-DD') AS due_date,
+         c.position, c.created_at, c.updated_at,
+         COALESCE(
+           (SELECT array_agg(t.name::text ORDER BY t.name)
+              FROM card_tags ct JOIN tags t ON t.id = ct.tag_id
+             WHERE ct.card_id = c.id),
+           ARRAY[]::text[]
+         ) AS tags
+       FROM cards c JOIN columns col ON col.id = c.column_id
+       WHERE c.id = $1 AND c.deleted_at IS NULL`,
+      [id],
+    );
+    const row = rows[0];
+    return row ? toCard(row, today) : null;
+  }
 
   /**
    * The whole board in one query. Empty columns are preserved by the LEFT JOIN

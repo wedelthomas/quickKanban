@@ -129,32 +129,32 @@ order.
 
 ### Tests for User Story 1 — write first, confirm they FAIL
 
-- [ ] T033 [P] [US1] `tests/unit/validation.test.ts` — blank and whitespace titles rejected, priority defaulting, long titles (BH-003, BH-004).
-- [ ] T034 [P] [US1] `tests/unit/tags.test.ts` — trim, case-fold, deduplicate within a card; vocabulary reuse (BH-005, BH-030).
-- [ ] T035 [P] [US1] `tests/unit/overdue.test.ts` — due today is not overdue, due yesterday is, no due date (BH-029).
-- [ ] T036 [P] [US1] `tests/features/board-structure.feature` + steps — six columns in fixed order, no column-editing affordance (BH-001).
-- [ ] T037 [P] [US1] `tests/features/card-creation.feature` + steps — creation into Backlog, blank title refused, priority default, tag normalization, card face content (BH-002…BH-006).
-- [ ] T038 [P] [US1] `tests/features/tags.feature` + steps — tag entry suggests and reuses an existing vocabulary tag (BH-030).
-- [ ] T039 [P] [US1] `tests/features/due-dates.feature` + steps — overdue begins the day after the due date (BH-029).
+- [x] T033 [P] [US1] `tests/unit/validation.test.ts` — blank and whitespace titles rejected, priority defaulting, long titles (BH-003, BH-004).
+- [x] T034 [P] [US1] `tests/unit/tags.test.ts` — trim, case-fold, deduplicate within a card; vocabulary reuse (BH-005, BH-030).
+- [x] T035 [P] [US1] `tests/unit/overdue.test.ts` — due today is not overdue, due yesterday is, no due date (BH-029).
+- [x] T036 [P] [US1] `tests/features/board-structure.feature` + steps — six columns in fixed order, no column-editing affordance (BH-001).
+- [x] T037 [P] [US1] `tests/features/card-creation.feature` + steps — creation into Backlog, blank title refused, priority default, tag normalization, card face content (BH-002…BH-006).
+- [x] T038 [P] [US1] `tests/features/tags.feature` + steps — tag entry suggests and reuses an existing vocabulary tag (BH-030).
+- [x] T039 [P] [US1] `tests/features/due-dates.feature` + steps — overdue begins the day after the due date (BH-029).
 - [ ] T040 [P] [US1] `tests/e2e/card-face.spec.ts` — title, priority, due date, tags and source all legible without opening the card (BH-006).
 
 ### Implementation for User Story 1
 
-- [ ] T041 [P] [US1] Zod schemas in `src/domain/validation.ts`, shared by the route boundary and the web form so the two cannot disagree (Principle I).
-- [ ] T042 [P] [US1] Tag normalization in `src/domain/tags.ts` — trim, case-fold, deduplicate. Pure, no I/O.
-- [ ] T043 [P] [US1] Overdue comparison in `src/domain/overdue.ts` against a supplied today. Pure — no clock read inside (Principle X).
-- [ ] T044 [US1] `src/server/repositories/tag-repository.ts` — vocabulary lookup and get-or-create, case-insensitive via `citext`.
-- [ ] T045 [US1] `src/server/repositories/card-repository.ts` — insert, read board, read one. Excludes soft-deleted and archived rows from the board query.
-- [ ] T046 [US1] `src/server/services/board-service.ts` — assemble the six columns with their cards in position order; always returns six columns including empty ones.
-- [ ] T047 [US1] `src/server/services/card-service.ts` — create a card from a title (FR-003) with optional description (FR-005): validate, normalize tags, place at top of Backlog (FR-009), compute `overdue` server-side (FR-042).
-- [ ] T048 [US1] `src/server/routes/board.ts` — `GET /api/board`.
+- [x] T041 [P] [US1] Zod schemas in `src/domain/validation.ts`, shared by the route boundary and the web form so the two cannot disagree (Principle I).
+- [x] T042 [P] [US1] Tag normalization in `src/domain/tags.ts` — trim, case-fold, deduplicate. Pure, no I/O.
+- [x] T043 [P] [US1] Overdue comparison in `src/domain/overdue.ts` against a supplied today. Pure — no clock read inside (Principle X).
+- [x] T044 [US1] `src/server/repositories/tag-repository.ts` — vocabulary lookup and get-or-create, case-insensitive via `citext`.
+- [x] T045 [US1] `src/server/repositories/card-repository.ts` — insert, read board, read one. Excludes soft-deleted and archived rows from the board query.
+- [x] T046 [US1] `src/server/services/board-service.ts` — assemble the six columns with their cards in position order; always returns six columns including empty ones.
+- [x] T047 [US1] `src/server/services/card-service.ts` — create a card from a title (FR-003) with optional description (FR-005): validate, normalize tags, place at top of Backlog (FR-009), compute `overdue` server-side (FR-042).
+- [x] T048 [US1] `src/server/routes/board.ts` — `GET /api/board`.
 - [ ] T049 [US1] `src/server/routes/cards.ts` — `POST /api/cards`.
-- [ ] T050 [P] [US1] `src/server/routes/tags.ts` — `GET /api/tags?q=` prefix search for autocomplete (FR-043).
-- [ ] T051 [P] [US1] `src/web/board/Board.tsx` and `ColumnView.tsx` — six columns, headers with counts.
-- [ ] T052 [P] [US1] `src/web/board/CardView.tsx` — dense card face: title, priority dot, due date with overdue treatment, tag pills, source marking (FR-011, FR-012).
-- [ ] T053 [US1] `src/web/cards/CardDialog.tsx` — create form with inline validation from T041.
-- [ ] T054 [US1] `src/web/cards/TagInput.tsx` — autocomplete against `GET /api/tags`.
-- [ ] T055 [US1] `src/web/board/use-board.ts` — board fetch and creation, no full page reload (FR-036).
+- [x] T050 [P] [US1] `src/server/routes/tags.ts` — `GET /api/tags?q=` prefix search for autocomplete (FR-043).
+- [x] T051 [P] [US1] `src/web/board/Board.tsx` and `ColumnView.tsx` — six columns, headers with counts.
+- [x] T052 [P] [US1] `src/web/board/CardView.tsx` — dense card face: title, priority dot, due date with overdue treatment, tag pills, source marking (FR-011, FR-012).
+- [x] T053 [US1] `src/web/cards/CardDialog.tsx` — create form with inline validation from T041.
+- [x] T054 [US1] `src/web/cards/TagInput.tsx` — autocomplete against `GET /api/tags`.
+- [x] T055 [US1] `src/web/board/use-board.ts` — board fetch and creation, no full page reload (FR-036).
 
 **Checkpoint**: cards can be captured and read at a glance. **Run the Story-Complete Review Gate.**
 

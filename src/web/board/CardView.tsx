@@ -1,0 +1,49 @@
+import type { Card } from '../../shared/types.js';
+
+const PRIORITY_LABEL: Record<Card['priority'], string> = {
+  high: 'High priority',
+  medium: 'Medium priority',
+  low: 'Low priority',
+};
+
+const formatDue = (iso: string): string => {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year!, month! - 1, day!).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+  });
+};
+
+/**
+ * Dense by requirement, not by taste: roughly 50 of these must be legible at
+ * once (NFR-13, SC-006). Priority is a coloured dot rather than a word because
+ * the card is scanned, not read.
+ */
+export const CardView = ({ card }: { card: Card }) => (
+  <article className="card" data-testid="card" data-card-id={card.id} tabIndex={0}>
+    <div className="card-title">{card.title}</div>
+    <div className="card-meta">
+      <span
+        className={`priority priority--${card.priority}`}
+        data-testid="card-priority"
+        title={PRIORITY_LABEL[card.priority]}
+        aria-label={PRIORITY_LABEL[card.priority]}
+      />
+      {card.dueDate && (
+        <span
+          className={`due${card.overdue ? ' due--overdue' : ''}`}
+          data-testid="card-due"
+          data-overdue={card.overdue}
+        >
+          {formatDue(card.dueDate)}
+        </span>
+      )}
+      {card.source === 'jira' && <span className="badge" data-testid="card-source">Jira</span>}
+      {card.tags.map((tag) => (
+        <span className="tag" data-testid="card-tag" key={tag}>
+          {tag}
+        </span>
+      ))}
+    </div>
+  </article>
+);
