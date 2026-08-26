@@ -36,6 +36,16 @@ export class ConflictRepository {
     );
   }
 
+  /** Keeps an open conflict's view of Jira current without moving the card. */
+  async refreshJiraStatus(cardId: string, statusName: string, client?: pg.PoolClient): Promise<void> {
+    const runner = client ?? this.pool;
+    await runner.query(
+      `UPDATE conflicts SET jira_status_current = $2
+        WHERE card_id = $1 AND resolved_at IS NULL`,
+      [cardId, statusName],
+    );
+  }
+
   async openCardIds(client?: pg.PoolClient): Promise<Set<string>> {
     const runner = client ?? this.pool;
     const { rows } = await runner.query<{ card_id: string }>(

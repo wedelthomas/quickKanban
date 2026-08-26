@@ -49,7 +49,7 @@ tidy up later.
 
 - [x] T306 [US5] Author or sync TestRail cases for BH-223 and BH-224 via `spec-testrail-sync`.
 - [x] T307 [P] [US5] `tests/unit/mapping.test.ts` — lookup both directions, unmapped columns, two columns sharing a status resolving by board order (BH-224).
-- [ ] T308 [P] [US5] `tests/features/mapping-settings.feature` — set, remove, persist across restart (BH-223).
+- [x] T308 [P] [US5] `tests/features/mapping-settings.feature` — set, remove, persist across restart (BH-223).
 - [ ] T309 [P] [US5] `tests/e2e/mapping.spec.ts` — mapping chosen from Jira's own statuses, not typed.
 - [x] T310 [US5] `src/domain/column-mapping.ts` — pure lookup both ways, first-in-board-order for a shared status (FR-201, FR-205).
 - [x] T311 [US5] `src/server/repositories/mapping-repository.ts` — mappings persist across restarts (FR-203).
@@ -64,9 +64,9 @@ tidy up later.
 
 - [x] T314 [US1] Author or sync TestRail cases for BH-201, BH-203, BH-204, BH-209, BH-211, BH-225, BH-226.
 - [x] T315 [P] [US1] `tests/unit/reconcile.test.ts` — the full decision table, every combination of the three inputs (BH-209, BH-211, SC-203).
-- [ ] T316 [P] [US1] `tests/unit/no-unbounded-writes.test.ts` — the adapter writes only transitions, touches no other endpoint and no other field (BH-204).
+- [x] T316 [P] [US1] `tests/unit/no-unbounded-writes.test.ts` — the adapter writes only transitions, touches no other endpoint and no other field (BH-204).
 - [ ] T317 [P] [US1] `tests/contract/jira-transitions.test.ts` — `getTransitions` and `transitionIssue` against recorded fixtures, **including the real case where a transition's name differs from its destination** (BH-201).
-- [ ] T318 [P] [US1] `tests/features/push-transitions.feature` — a move transitions the issue; ad-hoc cards write nothing (BH-201, BH-203, BH-204).
+- [x] T318 [P] [US1] `tests/features/push-transitions.feature` — a move transitions the issue; ad-hoc cards write nothing (BH-201, BH-203, BH-204).
 - [x] T319 [US1] `src/domain/reconcile.ts` — pure. Four outcomes from three inputs, nothing else consulted (FR-216, FR-217): unchanged on both sides is a no-op (FR-220), a local-only change is pushed (FR-219), and no path may leave the two sides silently disagreeing (FR-236).
 - [x] T320 [US1] Extend `jira-adapter.ts` with `getTransitions` and `transitionIssue`. **Match on `transition.to.name`, never on `transition.name`** — verified against real workflows where `Pass → PO Approve`. The transition body carries only the transition id, so no field other than status is ever modified (FR-209). Writes are not retried (research.md).
 - [x] T321 [US1] `src/server/sync/transition-service.ts` — board move to Jira transition, updating the recorded last-known state on success (FR-206, FR-210).
@@ -79,9 +79,9 @@ tidy up later.
 ## Phase 4: US7 — Refused transitions fail loudly and safely (P2, built early)
 
 - [x] T323 [US7] Author or sync TestRail cases for BH-205, BH-206, BH-207, BH-208.
-- [ ] T324 [P] [US7] `tests/features/push-refusals.feature` — illegal transition, stale mapping, unreachable Jira, transition needing fields; each reverts the card and names its own cause, and none writes a movement record (BH-205…BH-208, FR-215).
+- [x] T324 [P] [US7] `tests/features/push-refusals.feature` — illegal transition, stale mapping, unreachable Jira, transition needing fields; each reverts the card and names its own cause, and none writes a movement record (BH-205…BH-208, FR-215).
 - [x] T325 [US7] Four typed refusals in `transition-service.ts`, each mapped to its own problem code: no legal transition (FR-211), a mapped status absent from the workflow (FR-212), Jira unreachable (FR-213), and a transition needing fields the board does not hold (FR-214).
-- [ ] T326 [US7] The interface reverts the optimistic move and states which of the four causes applied (FR-020 carried forward).
+- [x] T326 [US7] The interface reverts the optimistic move and states which of the four causes applied (FR-020 carried forward).
 
 **Checkpoint**: a refused move is never mistaken for a successful one. **Story-Complete Review Gate.**
 
@@ -90,8 +90,8 @@ tidy up later.
 ## Phase 5: US6 — Columns I have not mapped stay mine (P2)
 
 - [x] T327 [US6] Author or sync TestRail cases for BH-202 and BH-212.
-- [ ] T328 [P] [US6] `tests/features/unmapped-columns.feature` — moving a Jira card into an unmapped column changes the board and not Jira; an inbound status no column maps to leaves the card alone (BH-202, BH-212).
-- [ ] T329 [US6] Unmapped columns are local-only on both directions (FR-207, FR-221).
+- [x] T328 [P] [US6] `tests/features/unmapped-columns.feature` — moving a Jira card into an unmapped column changes the board and not Jira; an inbound status no column maps to leaves the card alone (BH-202, BH-212).
+- [x] T329 [US6] Unmapped columns are local-only on both directions (FR-207, FR-221).
 
 **Checkpoint**: Blocked is the user's, not Jira's. **Story-Complete Review Gate.**
 
@@ -100,8 +100,8 @@ tidy up later.
 ## Phase 6: US2 — Changes made in Jira reach my board (P1)
 
 - [x] T330 [US2] Author or sync TestRail cases for BH-210.
-- [ ] T331 [P] [US2] `tests/features/adopt-remote.feature` — a remote-only change moves the card and is attributed to sync (BH-210, FR-218, FR-222).
-- [ ] T332 [US2] Apply the reconciler's `ApplyRemote` outcome in the sync service.
+- [x] T331 [P] [US2] `tests/features/adopt-remote.feature` — a remote-only change moves the card and is attributed to sync (BH-210, FR-218, FR-222).
+- [x] T332 [US2] Apply the reconciler's `ApplyRemote` outcome in the sync service.
 
 **Checkpoint**: sync is genuinely two-way. **Story-Complete Review Gate.**
 
@@ -110,10 +110,10 @@ tidy up later.
 ## Phase 7: US3 — Disagreements are surfaced, never guessed (P1)
 
 - [x] T333 [US3] Author or sync TestRail cases for BH-213, BH-214, BH-215, BH-221, BH-222.
-- [ ] T334 [P] [US3] `tests/features/conflicts.feature` — raised on divergence, not on convergence; the card does not move and nothing is sent to Jira; twenty syncs leave it alone; a second detection updates rather than duplicates; a vanished issue closes it as moot (BH-213, BH-214, BH-215, BH-221, BH-222).
+- [x] T334 [P] [US3] `tests/features/conflicts.feature` — raised on divergence, not on convergence; the card does not move and nothing is sent to Jira; twenty syncs leave it alone; a second detection updates rather than duplicates; a vanished issue closes it as moot (BH-213, BH-214, BH-215, BH-221, BH-222).
 - [ ] T335 [P] [US3] `tests/e2e/conflict.spec.ts` — the badge is visible on the card face without opening it (BH-213).
-- [ ] T336 [US3] `src/server/repositories/conflict-repository.ts` — raise, update in place, resolve, list.
-- [ ] T337 [US3] Apply the reconciler's `Conflict` outcome (FR-223). Convergent changes raise nothing and simply bring the last-known state up to date (FR-224); raising a conflict neither moves the card nor sends anything to Jira (FR-225); a conflicted card is skipped by every later sync (FR-227), updated rather than duplicated on a second detection (FR-234), and closed as moot if its issue leaves the query (FR-235).
+- [x] T336 [US3] `src/server/repositories/conflict-repository.ts` — raise, update in place, resolve, list.
+- [x] T337 [US3] Apply the reconciler's `Conflict` outcome (FR-223). Convergent changes raise nothing and simply bring the last-known state up to date (FR-224); raising a conflict neither moves the card nor sends anything to Jira (FR-225); a conflicted card is skipped by every later sync (FR-227), updated rather than duplicated on a second detection (FR-234), and closed as moot if its issue leaves the query (FR-235).
 - [ ] T338 [US3] Conflict badge on the card face without opening it (FR-226), derived from the conflicts table rather than stored on the card, so there is no second source of truth to drift.
 
 **Checkpoint**: nothing diverges silently. **Story-Complete Review Gate.**

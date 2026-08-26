@@ -44,7 +44,7 @@ export class BoardWorld extends World {
   /** Truncate rather than re-migrate: scenarios need isolation, not a fresh schema. */
   async reset(): Promise<void> {
     await this.pool.query(
-      'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, cards RESTART IDENTITY CASCADE',
+      'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, conflicts, cards RESTART IDENTITY CASCADE',
     );
     // Settings are restored, not truncated — the rows are seeded by migration.
     // Without this a scenario that changes the query leaks it into every

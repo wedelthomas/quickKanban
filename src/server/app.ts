@@ -146,6 +146,9 @@ export const buildApp = ({
         new JiraLinkRepository(pool),
         runs,
         settings,
+        mappings,
+        conflicts,
+        new TransitionService(jira),
       )
     : null;
   registerSyncRoutes(app, { sync, lock, runs });

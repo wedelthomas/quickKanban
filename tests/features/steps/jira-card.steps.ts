@@ -166,3 +166,12 @@ When('the query is set to {string}', async function (this: BoardWorld, jql: stri
 Then('Jira was asked {string}', function (this: BoardWorld, jql: string) {
   assert.ok(this.jira.queries.includes(jql), `queries: ${this.jira.queries.join(' | ')}`);
 });
+
+Then('the card for issue {string} has no history records', async function (
+  this: BoardWorld,
+  key: string,
+) {
+  const card = await cardFor(this, key);
+  const res = await this.request('GET', `/api/cards/${card.id}/events`);
+  assert.deepEqual((res.body as { events: unknown[] }).events, []);
+});

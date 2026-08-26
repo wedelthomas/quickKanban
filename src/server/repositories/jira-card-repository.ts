@@ -65,6 +65,45 @@ export class JiraCardRepository {
     return { cardId: rows[0]!.id, outcome: 'created' };
   }
 
+  /** The card's column and the last Jira status recorded for it. */
+  async currentState(
+    client: pg.PoolClient,
+    cardId: string,
+  ): Promise<{ columnId: number; lastKnownStatus: string } | null> {
+    const { rows } = await client.query<{ column_id: number; status_name: string }>(
+      `SELECT c.column_id, jl.status_name
+         FROM cards c JOIN jira_links jl ON jl.card_id = c.id
+        WHERE c.id = $1 AND c.deleted_at IS NULL`,
+      [cardId],
+    );
+    const r = rows[0];
+    return r ? { columnId: r.column_id, lastKnownStatus: r.status_name } : null;
+  }
+
+  /** Moves a card because Jira moved, attributing the movement to sync. */
+  async moveBySync(client: pg.PoolClient, cardId: string, toColumnId: number): Promise<void> {
+    const { rows } = await client.query<{ column_id: number }>(
+      'SELECT column_id FROM cards WHERE id = $1 FOR UPDATE',
+      [cardId],
+    );
+    const from = rows[0]?.column_id;
+    if (from === undefined || from === toColumnId) return;
+
+    await this.events.append(client, {
+      cardId,
+      fromColumnId: from,
+      toColumnId,
+      actor: 'sync',
+    });
+    await client.query(
+      `UPDATE cards SET column_id = $2,
+              position = COALESCE((SELECT max(position) FROM cards WHERE column_id = $2), 0) + 1,
+              updated_at = now()
+        WHERE id = $1`,
+      [cardId, toColumnId],
+    );
+  }
+
   /** Moves a card to Done and archives it, attributing the movement to sync. */
   async archiveBySync(client: pg.PoolClient, cardId: string, reason: string): Promise<void> {
     const { rows } = await client.query<{ column_id: number }>(

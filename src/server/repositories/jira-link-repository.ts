@@ -26,6 +26,23 @@ export class JiraLinkRepository {
     );
   }
 
+  /**
+   * Refreshes everything about the link *except* the recorded status.
+   *
+   * The status is written by whoever reconciled the card, because it records
+   * what that decision concluded rather than what Jira happened to say when
+   * the row was touched.
+   */
+  async upsertMetadata(client: pg.PoolClient, cardId: string, issue: JiraIssue): Promise<void> {
+    await client.query(
+      `UPDATE jira_links
+          SET issue_key = $2, issue_id = $3, url = $4, status_id = $5,
+              jira_updated_at = $6, last_synced_at = now()
+        WHERE card_id = $1`,
+      [cardId, issue.key, issue.id, issue.url, issue.statusId, issue.updatedAt],
+    );
+  }
+
   async findByCardId(cardId: string): Promise<{ issueKey: string; statusName: string } | null> {
     const { rows } = await this.pool.query<{ issue_key: string; status_name: string }>(
       'SELECT issue_key, status_name FROM jira_links WHERE card_id = $1',
