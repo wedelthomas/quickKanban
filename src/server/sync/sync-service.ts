@@ -35,7 +35,13 @@ export class SyncService {
       const { jiraJql } = await this.settings.read();
       issues = await this.jira.searchIssues(jiraJql);
     } catch (error) {
-      const kind = error instanceof JiraError ? error.kind : 'connectivity';
+      // The port's failure vocabulary is wider than a sync run's: transition
+      // failures cannot occur on a read, so they collapse to connectivity here.
+      const raw = error instanceof JiraError ? error.kind : 'connectivity';
+      const kind =
+        raw === 'credentials' || raw === 'rate_limit' || raw === 'malformed'
+          ? raw
+          : 'connectivity';
       // Nothing has been applied: the board is exactly as it was.
       return this.runs.fail(runId, kind);
     }

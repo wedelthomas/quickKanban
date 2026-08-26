@@ -35,13 +35,15 @@ export class BoardRepository {
             WHERE ct.card_id = c.id),
           ARRAY[]::text[]
         ) AS tags,
-        jl.issue_key, jl.url AS issue_url
+        jl.issue_key, jl.url AS issue_url,
+        (cf.card_id IS NOT NULL) AS has_conflict
       FROM columns col
       LEFT JOIN cards c
         ON c.column_id = col.id
        AND c.deleted_at IS NULL
        AND c.archived_at IS NULL
       LEFT JOIN jira_links jl ON jl.card_id = c.id
+      LEFT JOIN conflicts cf ON cf.card_id = c.id AND cf.resolved_at IS NULL
       ORDER BY col.position, c.position
     `);
 

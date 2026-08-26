@@ -35,11 +35,11 @@ tidy up later.
 
 ## Phase 1: Foundational
 
-- [ ] T301 [P] `src/server/db/migrations/009_column_status_mappings.sql` — per data-model.md, seeded with a default mapping onto the statuses this Jira actually exposes (Open, Development, Test, PO Approve, Blocked).
-- [ ] T302 [P] `src/server/db/migrations/010_conflicts.sql` — with the partial unique index on `card_id WHERE resolved_at IS NULL`, so "one open conflict per card" is enforced rather than remembered.
-- [ ] T303 [P] Extend `src/shared/types.ts` with `hasConflict`, `Conflict`, `ColumnMapping`, and the four new problem codes.
-- [ ] T304 [P] Extend `src/server/errors.ts` with `NO_LEGAL_TRANSITION`, `STALE_MAPPING`, `TRANSITION_NEEDS_FIELDS`, `CARD_CONFLICTED`.
-- [ ] T305 Extend `JiraPort` with `getTransitions` and `transitionIssue`; extend the fake to stage legal transitions and each refusal, keeping Jira substitutable so no test in the standard suite reaches a live instance (FR-237).
+- [x] T301 [P] `src/server/db/migrations/009_column_status_mappings.sql` — per data-model.md, seeded with a default mapping onto the statuses this Jira actually exposes (Open, Development, Test, PO Approve, Blocked).
+- [x] T302 [P] `src/server/db/migrations/010_conflicts.sql` — with the partial unique index on `card_id WHERE resolved_at IS NULL`, so "one open conflict per card" is enforced rather than remembered.
+- [x] T303 [P] Extend `src/shared/types.ts` with `hasConflict`, `Conflict`, `ColumnMapping`, and the four new problem codes.
+- [x] T304 [P] Extend `src/server/errors.ts` with `NO_LEGAL_TRANSITION`, `STALE_MAPPING`, `TRANSITION_NEEDS_FIELDS`, `CARD_CONFLICTED`.
+- [x] T305 Extend `JiraPort` with `getTransitions` and `transitionIssue`; extend the fake to stage legal transitions and each refusal, keeping Jira substitutable so no test in the standard suite reaches a live instance (FR-237).
 
 **Checkpoint**: the schema and the port can express a write.
 
@@ -48,12 +48,12 @@ tidy up later.
 ## Phase 2: US5 — I decide which column means which Jira status (P2, built first)
 
 - [x] T306 [US5] Author or sync TestRail cases for BH-223 and BH-224 via `spec-testrail-sync`.
-- [ ] T307 [P] [US5] `tests/unit/mapping.test.ts` — lookup both directions, unmapped columns, two columns sharing a status resolving by board order (BH-224).
+- [x] T307 [P] [US5] `tests/unit/mapping.test.ts` — lookup both directions, unmapped columns, two columns sharing a status resolving by board order (BH-224).
 - [ ] T308 [P] [US5] `tests/features/mapping-settings.feature` — set, remove, persist across restart (BH-223).
 - [ ] T309 [P] [US5] `tests/e2e/mapping.spec.ts` — mapping chosen from Jira's own statuses, not typed.
-- [ ] T310 [US5] `src/domain/column-mapping.ts` — pure lookup both ways, first-in-board-order for a shared status (FR-201, FR-205).
-- [ ] T311 [US5] `src/server/repositories/mapping-repository.ts` — mappings persist across restarts (FR-203).
-- [ ] T312 [US5] `GET|PUT /api/settings/mappings`, and `GET /api/jira/statuses` so the mapping is chosen from what Jira reports rather than typed (FR-202). Removing a mapping returns the column to local-only (FR-204).
+- [x] T310 [US5] `src/domain/column-mapping.ts` — pure lookup both ways, first-in-board-order for a shared status (FR-201, FR-205).
+- [x] T311 [US5] `src/server/repositories/mapping-repository.ts` — mappings persist across restarts (FR-203).
+- [x] T312 [US5] `GET|PUT /api/settings/mappings`, and `GET /api/jira/statuses` so the mapping is chosen from what Jira reports rather than typed (FR-202). Removing a mapping returns the column to local-only (FR-204).
 - [ ] T313 [US5] Mapping editor in the settings dialog, choosing from Jira's statuses rather than free text.
 
 **Checkpoint**: columns mean something in Jira terms. **Story-Complete Review Gate.**
@@ -63,14 +63,14 @@ tidy up later.
 ## Phase 3: US1 — Moving a card updates Jira (P1)
 
 - [x] T314 [US1] Author or sync TestRail cases for BH-201, BH-203, BH-204, BH-209, BH-211, BH-225, BH-226.
-- [ ] T315 [P] [US1] `tests/unit/reconcile.test.ts` — the full decision table, every combination of the three inputs (BH-209, BH-211, SC-203).
+- [x] T315 [P] [US1] `tests/unit/reconcile.test.ts` — the full decision table, every combination of the three inputs (BH-209, BH-211, SC-203).
 - [ ] T316 [P] [US1] `tests/unit/no-unbounded-writes.test.ts` — the adapter writes only transitions, touches no other endpoint and no other field (BH-204).
 - [ ] T317 [P] [US1] `tests/contract/jira-transitions.test.ts` — `getTransitions` and `transitionIssue` against recorded fixtures, **including the real case where a transition's name differs from its destination** (BH-201).
 - [ ] T318 [P] [US1] `tests/features/push-transitions.feature` — a move transitions the issue; ad-hoc cards write nothing (BH-201, BH-203, BH-204).
-- [ ] T319 [US1] `src/domain/reconcile.ts` — pure. Four outcomes from three inputs, nothing else consulted (FR-216, FR-217): unchanged on both sides is a no-op (FR-220), a local-only change is pushed (FR-219), and no path may leave the two sides silently disagreeing (FR-236).
-- [ ] T320 [US1] Extend `jira-adapter.ts` with `getTransitions` and `transitionIssue`. **Match on `transition.to.name`, never on `transition.name`** — verified against real workflows where `Pass → PO Approve`. The transition body carries only the transition id, so no field other than status is ever modified (FR-209). Writes are not retried (research.md).
-- [ ] T321 [US1] `src/server/sync/transition-service.ts` — board move to Jira transition, updating the recorded last-known state on success (FR-206, FR-210).
-- [ ] T322 [US1] Wire the move route: mapped column pushes, unmapped and ad-hoc do not (FR-206…FR-208).
+- [x] T319 [US1] `src/domain/reconcile.ts` — pure. Four outcomes from three inputs, nothing else consulted (FR-216, FR-217): unchanged on both sides is a no-op (FR-220), a local-only change is pushed (FR-219), and no path may leave the two sides silently disagreeing (FR-236).
+- [x] T320 [US1] Extend `jira-adapter.ts` with `getTransitions` and `transitionIssue`. **Match on `transition.to.name`, never on `transition.name`** — verified against real workflows where `Pass → PO Approve`. The transition body carries only the transition id, so no field other than status is ever modified (FR-209). Writes are not retried (research.md).
+- [x] T321 [US1] `src/server/sync/transition-service.ts` — board move to Jira transition, updating the recorded last-known state on success (FR-206, FR-210).
+- [x] T322 [US1] Wire the move route: mapped column pushes, unmapped and ad-hoc do not (FR-206…FR-208).
 
 **Checkpoint**: the board drives Jira. **Story-Complete Review Gate.**
 
@@ -80,7 +80,7 @@ tidy up later.
 
 - [x] T323 [US7] Author or sync TestRail cases for BH-205, BH-206, BH-207, BH-208.
 - [ ] T324 [P] [US7] `tests/features/push-refusals.feature` — illegal transition, stale mapping, unreachable Jira, transition needing fields; each reverts the card and names its own cause, and none writes a movement record (BH-205…BH-208, FR-215).
-- [ ] T325 [US7] Four typed refusals in `transition-service.ts`, each mapped to its own problem code: no legal transition (FR-211), a mapped status absent from the workflow (FR-212), Jira unreachable (FR-213), and a transition needing fields the board does not hold (FR-214).
+- [x] T325 [US7] Four typed refusals in `transition-service.ts`, each mapped to its own problem code: no legal transition (FR-211), a mapped status absent from the workflow (FR-212), Jira unreachable (FR-213), and a transition needing fields the board does not hold (FR-214).
 - [ ] T326 [US7] The interface reverts the optimistic move and states which of the four causes applied (FR-020 carried forward).
 
 **Checkpoint**: a refused move is never mistaken for a successful one. **Story-Complete Review Gate.**

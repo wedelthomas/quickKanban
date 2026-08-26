@@ -7,6 +7,7 @@ import { isOverdue } from '../../domain/overdue.js';
  */
 export interface BoardRow {
   issue_key?: string | null;
+  has_conflict?: boolean | null;
   issue_url?: string | null;
   column_id: number;
   column_key: ColumnKey;
@@ -37,6 +38,7 @@ export const toCard = (row: BoardRow, today: Date): Card => ({
   tags: row.tags ?? [],
   issueKey: row.issue_key ?? null,
   issueUrl: row.issue_url ?? null,
+  hasConflict: row.has_conflict === true,
   createdAt: row.created_at!.toISOString(),
   updatedAt: row.updated_at!.toISOString(),
 });

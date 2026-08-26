@@ -2,36 +2,55 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 /**
- * FR-118 and BH-109: nothing this slice does may write to Jira.
+ * FR-209 and BH-204: the only thing this application ever writes to Jira is an
+ * issue transition.
  *
- * Asserted by the absence of the capability rather than the behaviour of one.
- * A behavioural test proves only the paths someone thought to exercise; this
- * fails the moment a write appears, whether or not anyone remembered to test
- * what they were adding.
+ * This guard was stricter in slice 2, where it asserted the adapter contained
+ * no write verb at all. Slice 3 legitimately adds one, so the guard narrows
+ * rather than disappears: still asserted by the absence of capability, but the
+ * capability is now "transitions only" instead of "nothing".
  */
-describe('the Jira adapter cannot write', () => {
+describe('the Jira adapter writes only transitions', () => {
   const adapter = readFileSync('src/server/jira/jira-adapter.ts', 'utf8');
 
-  it.each(['POST', 'PUT', 'PATCH', 'DELETE'])('issues no %s request', (verb) => {
+  it.each(['PUT', 'PATCH', 'DELETE'])('issues no %s request', (verb) => {
     expect(adapter).not.toMatch(new RegExp(`method:\\s*['"\`]${verb}`, 'i'));
-    expect(adapter).not.toMatch(new RegExp(`['"\`]${verb}['"\`]`));
   });
 
-  it('exposes only searchIssues on the port', () => {
+  it('makes exactly one POST, and it lives inside transitionIssue', () => {
+    // A second POST anywhere would mean this application had grown a way to
+    // change something in Jira that nobody decided to allow.
+    const posts = adapter.match(/method:\s*'POST'/g) ?? [];
+    expect(posts).toHaveLength(1);
+
+    // And that one POST must be in the transition method, targeting the
+    // transitions endpoint — asserted structurally rather than by matching the
+    // exact formatting of the call.
+    const start = adapter.indexOf('async transitionIssue');
+    const end = adapter.indexOf('async listStatuses');
+    expect(start).toBeGreaterThan(-1);
+    const body = adapter.slice(start, end > start ? end : undefined);
+    expect(body).toMatch(/method:\s*'POST'/);
+    expect(body).toMatch(/\/transitions`/);
+  });
+
+  it('sends only a transition id, so no other field can change', () => {
+    expect(adapter).toMatch(/body: JSON\.stringify\(\{ transition: \{ id: transitionId \} \}\)/);
+    // If a fields payload ever appears here, a status change could quietly
+    // carry an edit to something else.
+    expect(adapter).not.toMatch(/body: JSON\.stringify\(\{[^}]*fields/);
+  });
+
+  it('exposes exactly the four operations the port declares', () => {
     const port = readFileSync('src/server/jira/jira-port.ts', 'utf8');
-    // Scoped to the interface body: the file also holds an error class whose
-    // constructor would otherwise read as a port method.
     const body = /export interface JiraPort \{([\s\S]*?)\n\}/.exec(port)?.[1] ?? '';
     const methods = [...body.matchAll(/^\s{2}(\w+)\(/gm)].map((m) => m[1]);
-    expect(methods).toEqual(['searchIssues']);
+    expect(methods.sort()).toEqual(['getTransitions', 'listStatuses', 'searchIssues', 'transitionIssue']);
   });
 
   it('is the only module that talks to Jira over HTTP', () => {
-    // If a second module starts calling out, this guard stops being the single
-    // point that has to stay honest — so fail and make it a deliberate choice.
-    for (const file of ['sync/sync-service.ts', 'routes/sync.ts']) {
-      const source = readFileSync(`src/server/${file}`, 'utf8');
-      expect(source).not.toMatch(/fetch\s*\(/);
+    for (const file of ['sync/sync-service.ts', 'sync/transition-service.ts', 'routes/sync.ts']) {
+      expect(readFileSync(`src/server/${file}`, 'utf8')).not.toMatch(/fetch\s*\(/);
     }
   });
 });

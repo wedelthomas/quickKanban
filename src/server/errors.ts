@@ -70,3 +70,41 @@ export const editForbiddenJiraOwned = (field: string): DomainError =>
     `${field} comes from Jira`,
     `This card's ${field} is owned by Jira and changes there, not here.`,
   );
+
+/**
+ * Four distinct refusals rather than one, because the user's next action
+ * differs for each: choose a different column, fix the mapping, finish it in
+ * Jira, or resolve the conflict. A single MOVE_REFUSED would make the
+ * interface guess which.
+ */
+export const noLegalTransition = (from: string, to: string): DomainError =>
+  new DomainError(
+    'NO_LEGAL_TRANSITION',
+    409,
+    'Jira will not allow that move',
+    `Jira offers no transition from "${from}" to "${to}" for this issue. Its workflow decides which moves are possible.`,
+  );
+
+export const staleMapping = (status: string): DomainError =>
+  new DomainError(
+    'STALE_MAPPING',
+    409,
+    'That column is mapped to a status this issue does not have',
+    `No status named "${status}" exists in this issue's workflow. Update the column mapping in settings.`,
+  );
+
+export const transitionNeedsFields = (transition: string): DomainError =>
+  new DomainError(
+    'TRANSITION_NEEDS_FIELDS',
+    409,
+    'Jira needs more than a status change',
+    `The "${transition}" transition asks for information this board does not hold. Complete it in Jira.`,
+  );
+
+export const cardConflicted = (): DomainError =>
+  new DomainError(
+    'CARD_CONFLICTED',
+    409,
+    'This card disagrees with Jira',
+    'The board and Jira both changed since the last sync. Open the card and choose which one is right.',
+  );

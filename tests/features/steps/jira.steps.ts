@@ -147,10 +147,14 @@ Then('Jira was asked the default query', function (this: BoardWorld) {
 });
 
 Then('no write request was issued to Jira', function (this: BoardWorld) {
-  // The port cannot express a write, so this asserts the guarantee the
-  // interface already makes rather than counting requests.
-  assert.equal(typeof (this.jira as unknown as Record<string, unknown>).transitionIssue,
-    'undefined', 'the Jira port must expose no write operation');
+  // Slice 3 gave the port a write, so this can no longer assert the capability
+  // is absent. It asserts the behaviour instead: a *sync* transitions nothing.
+  // Only an explicit user action may write, and a sync is not one.
+  assert.deepEqual(
+    this.jira.transitionsPerformed,
+    [],
+    'a sync must not transition anything; only a drag or a resolution may',
+  );
 });
 
 Then('the recorded Jira status for {string} is {string}', async function (

@@ -5,12 +5,24 @@ import type {
   UpdateCardInput,
 } from '../../domain/validation.js';
 import type { CardRepository } from '../repositories/card-repository.js';
-import { cardNotFound, deleteForbiddenNonLocal, editForbiddenJiraOwned } from '../errors.js';
+import { cardConflicted, cardNotFound, deleteForbiddenNonLocal, editForbiddenJiraOwned } from '../errors.js';
+import type { TransitionService } from '../sync/transition-service.js';
+import type { MappingRepository } from '../repositories/mapping-repository.js';
+import type { JiraLinkRepository } from '../repositories/jira-link-repository.js';
+import type { ConflictRepository } from '../repositories/conflict-repository.js';
+import { statusForColumn } from '../../domain/column-mapping.js';
 
 export class CardService {
   constructor(
     private readonly cards: CardRepository,
     private readonly now: () => Date = () => new Date(),
+    /** Absent when Jira is not configured; the board then behaves as slice 2. */
+    private readonly jira?: {
+      transitions: TransitionService;
+      mappings: MappingRepository;
+      links: JiraLinkRepository;
+      conflicts: ConflictRepository;
+    },
   ) {}
 
   async create(input: CreateCardInput): Promise<Card> {
@@ -32,9 +44,54 @@ export class CardService {
     if (outcome === 'not-local') throw deleteForbiddenNonLocal();
   }
 
-  async move(id: string, input: MoveCardInput): Promise<{ card: Card; moved: boolean }> {
+  async move(
+    id: string,
+    input: MoveCardInput,
+  ): Promise<{ card: Card; moved: boolean; jira?: { transitioned: boolean; toStatus: string } }> {
+    const jiraOutcome = await this.pushToJiraFirst(id, input.toColumnId);
+
     const result = await this.cards.move(id, input, this.now());
     if (!result) throw cardNotFound(id);
-    return { card: result.card, moved: result.moved };
+    return { card: result.card, moved: result.moved, ...(jiraOutcome ? { jira: jiraOutcome } : {}) };
+  }
+
+  /**
+   * Transitions Jira *before* the card moves on the board.
+   *
+   * Deliberately this order. If the transition is refused the local move never
+   * happens, so there is no half-applied state to unwind — and unwinding is
+   * exactly the code that only runs after something has already gone wrong,
+   * which makes it the least-exercised code in any system.
+   */
+  private async pushToJiraFirst(
+    cardId: string,
+    toColumnId: number,
+  ): Promise<{ transitioned: boolean; toStatus: string } | null> {
+    if (!this.jira) return null;
+
+    const link = await this.jira.links.findByCardId(cardId);
+    if (!link) return null; // an ad-hoc card: Jira is never told (FR-208)
+
+    // A conflicted card is frozen against the user too, not only against sync.
+    // Dragging it would otherwise let someone paper over a disagreement
+    // without ever learning Jira had one.
+    if (await this.jira.conflicts.hasOpen(cardId)) throw cardConflicted();
+
+    const mappings = await this.jira.mappings.forDomain();
+    const targetStatus = statusForColumn(mappings, toColumnId);
+    // An unmapped column is local-only: the board changes, Jira is untouched.
+    if (!targetStatus) return null;
+
+    const outcome = await this.jira.transitions.moveTo(
+      link.issueKey,
+      targetStatus,
+      link.statusName,
+    );
+    if (outcome.transitioned) {
+      // Record what Jira now says, so the next sync sees no difference and
+      // does not mistake our own change for someone else's.
+      await this.jira.links.recordStatus(cardId, outcome.toStatus);
+    }
+    return outcome;
   }
 }

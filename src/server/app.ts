@@ -13,6 +13,10 @@ import { registerTagRoutes } from './routes/tags.js';
 import { TagRepository } from './repositories/tag-repository.js';
 import { EventRepository } from './repositories/event-repository.js';
 import { JiraCardRepository } from './repositories/jira-card-repository.js';
+import { MappingRepository } from './repositories/mapping-repository.js';
+import { ConflictRepository } from './repositories/conflict-repository.js';
+import { TransitionService } from './sync/transition-service.js';
+import { registerMappingRoutes } from './routes/mappings.js';
 import { SettingsRepository } from './repositories/settings-repository.js';
 import { JiraLinkRepository } from './repositories/jira-link-repository.js';
 import { SyncRunRepository } from './repositories/sync-run-repository.js';
@@ -120,7 +124,17 @@ export const buildApp = ({
   const cardRepository = new CardRepository(pool);
   const events = new EventRepository(pool);
   registerBoardRoutes(app, new BoardService(new BoardRepository(pool)));
-  registerCardRoutes(app, new CardService(cardRepository), events);
+  const mappings = new MappingRepository(pool);
+  const conflicts = new ConflictRepository(pool);
+  const cardService = new CardService(
+    cardRepository,
+    () => new Date(),
+    jira
+      ? { transitions: new TransitionService(jira), mappings, links: new JiraLinkRepository(pool), conflicts }
+      : undefined,
+  );
+  registerCardRoutes(app, cardService, events);
+  registerMappingRoutes(app, mappings, jira);
 
   const settings = new SettingsRepository(pool);
   const runs = new SyncRunRepository(pool);

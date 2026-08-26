@@ -26,6 +26,24 @@ export class JiraLinkRepository {
     );
   }
 
+  async findByCardId(cardId: string): Promise<{ issueKey: string; statusName: string } | null> {
+    const { rows } = await this.pool.query<{ issue_key: string; status_name: string }>(
+      'SELECT issue_key, status_name FROM jira_links WHERE card_id = $1',
+      [cardId],
+    );
+    const r = rows[0];
+    return r ? { issueKey: r.issue_key, statusName: r.status_name } : null;
+  }
+
+  /** After our own transition, so the next sync sees no difference. */
+  async recordStatus(cardId: string, statusName: string, client?: pg.PoolClient): Promise<void> {
+    const runner = client ?? this.pool;
+    await runner.query(
+      'UPDATE jira_links SET status_name = $2, last_synced_at = now() WHERE card_id = $1',
+      [cardId, statusName],
+    );
+  }
+
   /** Every issue key currently linked to a card, archived or not. */
   async allKeys(client: pg.PoolClient): Promise<Map<string, { cardId: string; archived: boolean }>> {
     const { rows } = await client.query<{ issue_key: string; card_id: string; archived: boolean }>(

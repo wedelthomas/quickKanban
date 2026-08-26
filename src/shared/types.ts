@@ -52,6 +52,8 @@ export interface Card {
   /** Present only when source is 'jira'. */
   issueKey: string | null;
   issueUrl: string | null;
+  /** True while an unresolved conflict exists. The card is frozen. */
+  hasConflict: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -79,6 +81,26 @@ export interface SyncStatus {
   running: boolean;
   lastSuccessAt: string | null;
   lastRun: SyncRun | null;
+}
+
+export interface ColumnMapping {
+  columnId: number;
+  columnKey: ColumnKey;
+  columnName: string;
+  /** Null means the column is local-only: moves into it never reach Jira. */
+  statusName: string | null;
+}
+
+export type ConflictResolution = 'kept_board' | 'accepted_jira' | 'moot';
+
+export interface Conflict {
+  id: number;
+  card: Card;
+  board: { columnId: number; columnName: string };
+  jira: { statusAtDetection: string; statusCurrent: string };
+  raisedAt: string;
+  resolvedAt: string | null;
+  resolution: ConflictResolution | null;
 }
 
 export interface Settings {
@@ -116,7 +138,11 @@ export type ProblemCode =
   | 'BAD_REQUEST'
   | 'INTERNAL_ERROR'
   | 'JIRA_NOT_CONFIGURED'
-  | 'EDIT_FORBIDDEN_JIRA_OWNED';
+  | 'EDIT_FORBIDDEN_JIRA_OWNED'
+  | 'NO_LEGAL_TRANSITION'
+  | 'STALE_MAPPING'
+  | 'TRANSITION_NEEDS_FIELDS'
+  | 'CARD_CONFLICTED';
 
 export interface Problem {
   type: string;

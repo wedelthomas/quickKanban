@@ -1,4 +1,4 @@
-import { JiraError, type JiraIssue, type JiraPort } from './jira-port.js';
+import { JiraError, type JiraIssue, type JiraPort, type JiraTransition } from './jira-port.js';
 import type { JiraCredentials } from './credentials.js';
 import { backoffDelays } from '../../domain/backoff.js';
 
@@ -63,6 +63,112 @@ export class JiraAdapter implements JiraPort {
       pageToken = page.nextPageToken;
     }
     return issues;
+  }
+
+  /**
+   * Read fresh every time. Which transitions are legal depends on the issue's
+   * current status, which is precisely the thing a sync is uncertain about —
+   * a cached list would be answering yesterday's question.
+   */
+  async getTransitions(issueKey: string): Promise<JiraTransition[]> {
+    const url =
+      `${this.credentials.baseUrl}/rest/api/3/issue/${encodeURIComponent(issueKey)}` +
+      `/transitions?expand=transitions.fields`;
+    const body = await this.get(url);
+    const raw = (body as { transitions?: unknown }).transitions;
+    if (!Array.isArray(raw)) {
+      throw new JiraError('malformed', 'Jira returned an unreadable transition list.');
+    }
+
+    return raw.map((t) => {
+      const transition = t as {
+        id?: unknown;
+        name?: unknown;
+        to?: { name?: unknown };
+        fields?: Record<string, { required?: boolean }>;
+      };
+      return {
+        id: String(transition.id ?? ''),
+        name: String(transition.name ?? ''),
+        // The destination status, not the transition's own name. These differ
+        // routinely: "To Development" leads to "Development", "Pass" to
+        // "PO Approve".
+        toStatusName: String(transition.to?.name ?? ''),
+        requiresFields: Object.values(transition.fields ?? {}).some((f) => f?.required === true),
+      };
+    });
+  }
+
+  /**
+   * The only write this application makes.
+   *
+   * Deliberately not retried. A failed write may or may not have applied — a
+   * timeout says nothing either way — and Jira offers no idempotency key for a
+   * transition, so a retry risks a second move the user never asked for. The
+   * next sync observes the truth instead.
+   */
+  async transitionIssue(issueKey: string, transitionId: string): Promise<void> {
+    const url = `${this.credentials.baseUrl}/rest/api/3/issue/${encodeURIComponent(issueKey)}/transitions`;
+
+    let response: Response;
+    try {
+      response = await this.fetchImpl(url, {
+        method: 'POST',
+        headers: {
+          Authorization: this.credentials.authorization,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        // Only the transition id. No field is sent, so no field but status can
+        // change (FR-209).
+        body: JSON.stringify({ transition: { id: transitionId } }),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+    } catch {
+      throw new JiraError('connectivity', 'Jira could not be reached.');
+    }
+
+    if (response.status === 204 || response.ok) return;
+    if (response.status === 401 || response.status === 403) {
+      throw new JiraError('credentials', 'Jira rejected the configured credentials.');
+    }
+    if (response.status === 400) {
+      // Jira answers 400 both for an illegal transition and for one whose
+      // screen wants fields. The caller has already checked legality, so a 400
+      // here means the screen.
+      throw new JiraError('needs_fields', 'Jira asked for more than a status change.');
+    }
+    throw new JiraError('malformed', `Jira returned an unexpected status ${response.status}.`);
+  }
+
+  async listStatuses(): Promise<string[]> {
+    const body = await this.get(`${this.credentials.baseUrl}/rest/api/3/status`);
+    if (!Array.isArray(body)) {
+      throw new JiraError('malformed', 'Jira returned an unreadable status list.');
+    }
+    const names = body.map((s) => String((s as { name?: unknown }).name ?? '')).filter(Boolean);
+    return [...new Set(names)].sort();
+  }
+
+  /** A GET that shares the read path's failure mapping, without its pagination. */
+  private async get(url: string): Promise<unknown> {
+    let response: Response;
+    try {
+      response = await this.fetchImpl(url, {
+        method: 'GET',
+        headers: { Authorization: this.credentials.authorization, Accept: 'application/json' },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+    } catch {
+      throw new JiraError('connectivity', 'Jira could not be reached.');
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new JiraError('credentials', 'Jira rejected the configured credentials.');
+    }
+    if (!response.ok) {
+      throw new JiraError('malformed', `Jira returned an unexpected status ${response.status}.`);
+    }
+    return response.json().catch(() => null);
   }
 
   private async fetchPage(jql: string, pageToken: string | null): Promise<Page> {

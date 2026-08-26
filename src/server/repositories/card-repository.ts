@@ -304,10 +304,12 @@ export class CardRepository {
              WHERE ct.card_id = c.id),
            ARRAY[]::text[]
          ) AS tags,
-         jl.issue_key, jl.url AS issue_url
+         jl.issue_key, jl.url AS issue_url,
+         (cf.card_id IS NOT NULL) AS has_conflict
        FROM cards c
        JOIN columns col ON col.id = c.column_id
        LEFT JOIN jira_links jl ON jl.card_id = c.id
+       LEFT JOIN conflicts cf ON cf.card_id = c.id AND cf.resolved_at IS NULL
        WHERE c.id = $1 AND c.deleted_at IS NULL`,
       [id],
     );
