@@ -83,7 +83,7 @@ order.
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Implement the migration runner in `src/server/db/migrate.ts`: numbered `.sql` applied in order inside a transaction, tracked in `schema_migrations`, forward-only (research.md).
+- [ ] T022 [US3] Implement the migration runner in `src/server/db/migrate.ts`: numbered `.sql` applied in order inside a transaction before any request is served (FR-031), tracked in `schema_migrations`, forward-only (research.md).
 - [ ] T023 [P] [US3] `src/server/db/migrations/001_columns.sql` — create `columns` and seed exactly the six rows in order (FR-001, data-model.md).
 - [ ] T024 [P] [US3] `src/server/db/migrations/002_cards.sql` — `cards` with its CHECK constraints, `archived_at`, `deleted_at`, and the partial index on `(column_id, position)`.
 - [ ] T025 [P] [US3] `src/server/db/migrations/003_tags.sql` — enable `citext`; create `tags` and `card_tags`.
@@ -91,7 +91,7 @@ order.
 - [ ] T027 [US3] Implement `GET /api/health` in `src/server/routes/health.ts` — reports healthy **only** when the database is genuinely reachable, never on process liveness alone (FR-032).
 - [ ] T028 [US3] Implement `src/server/index.ts`: run migrations, then listen on `127.0.0.1` only; fail loudly and refuse to serve if the database is unreachable at start (FR-034, FR-037).
 - [ ] T029 [US3] Write `docker/Dockerfile` — multi-stage, no build toolchain in the runtime image, base images pinned by digest (Principle IX).
-- [ ] T030 [US3] Write `docker-compose.yml` — app and db only, named volume `kanban_data`, app published to `127.0.0.1:3000`, db port unpublished, healthcheck reading T027.
+- [ ] T030 [US3] Write `docker-compose.yml` — app and db only, named volume `kanban_data` so data survives container recreation and image rebuild (FR-030), app published to `127.0.0.1:3000`, db port unpublished, healthcheck reading T027.
 - [ ] T031 [US3] Write `README.md`: start, stop, reset, and **the name of the volume whose deletion loses every ad-hoc card** (FR-038, risk R-7).
 
 **Checkpoint**: `docker compose up` yields a working, durable, loopback-only board. **Run the Story-Complete Review Gate.**
@@ -127,7 +127,7 @@ order.
 - [ ] T044 [US1] `src/server/repositories/tag-repository.ts` — vocabulary lookup and get-or-create, case-insensitive via `citext`.
 - [ ] T045 [US1] `src/server/repositories/card-repository.ts` — insert, read board, read one. Excludes soft-deleted and archived rows from the board query.
 - [ ] T046 [US1] `src/server/services/board-service.ts` — assemble the six columns with their cards in position order; always returns six columns including empty ones.
-- [ ] T047 [US1] `src/server/services/card-service.ts` — create: validate, normalize tags, place at top of Backlog (FR-009), compute `overdue` server-side (FR-042).
+- [ ] T047 [US1] `src/server/services/card-service.ts` — create a card from a title (FR-003) with optional description (FR-005): validate, normalize tags, place at top of Backlog (FR-009), compute `overdue` server-side (FR-042).
 - [ ] T048 [US1] `src/server/routes/board.ts` — `GET /api/board`.
 - [ ] T049 [US1] `src/server/routes/cards.ts` — `POST /api/cards`.
 - [ ] T050 [P] [US1] `src/server/routes/tags.ts` — `GET /api/tags?q=` prefix search for autocomplete (FR-043).
@@ -160,11 +160,11 @@ order.
 
 ### Implementation for User Story 2
 
-- [ ] T061 [US2] Column renumbering in `src/domain/ordering.ts`. Pure, no I/O.
-- [ ] T062 [US2] Extend `card-repository.ts` with the move transaction: lock the card and the destination column's rows, renumber, update. One transaction (plan.md, Failure modes).
+- [ ] T061 [US2] Column renumbering in `src/domain/ordering.ts` — repositioning within a column (FR-017). Pure, no I/O.
+- [ ] T062 [US2] Extend `card-repository.ts` with the move transaction: lock the card and the destination column's rows, renumber, update. One transaction (plan.md, Failure modes). Persists both column and position (FR-018).
 - [ ] T063 [US2] Extend `card-service.ts` with move: absolute target for idempotency; returns `moved: false` and writes nothing when the position is unchanged (contracts/api.md).
 - [ ] T064 [US2] `POST /api/cards/:id/move` in `src/server/routes/cards.ts`.
-- [ ] T065 [US2] Drag context and sortable columns in `Board.tsx` using `@dnd-kit`, sharing one drag lifecycle with the keyboard sensor added in US5 (research.md).
+- [ ] T065 [US2] Drag context and sortable columns in `Board.tsx` using `@dnd-kit` (FR-016), sharing one drag lifecycle with the keyboard sensor added in US5 (research.md). A drag released outside every column leaves the card unchanged (FR-021).
 - [ ] T066 [US2] Optimistic move and revert in `use-board.ts`: apply locally, reconcile against the response's authoritative position, revert and surface the typed `code` on failure (FR-019, FR-020).
 
 **Checkpoint**: the board expresses progress and survives reload. **Run the Story-Complete Review Gate.**
@@ -189,7 +189,7 @@ order.
 ### Implementation for User Story 4
 
 - [ ] T070 [US4] Extend `card-repository.ts` with update and soft delete — sets `deleted_at`, never removes the row (FR-041).
-- [ ] T071 [US4] Extend `card-service.ts`: update with the same validation as create; delete refused with `DELETE_FORBIDDEN_NON_LOCAL` when source is not `local` (FR-015).
+- [ ] T071 [US4] Extend `card-service.ts`: update title, description, priority, due date and tags with the same validation as create (FR-013); delete refused with `DELETE_FORBIDDEN_NON_LOCAL` when source is not `local` (FR-015).
 - [ ] T072 [US4] `PATCH /api/cards/:id` and `DELETE /api/cards/:id` in `src/server/routes/cards.ts`.
 - [ ] T073 [US4] Extend `CardDialog.tsx` for editing, reusing the create form.
 - [ ] T074 [US4] Delete confirmation in the web client; cancel leaves the card untouched (FR-014).
@@ -214,7 +214,7 @@ order.
 
 ### Implementation for User Story 5
 
-- [ ] T077 [US5] `src/web/keyboard/use-shortcuts.ts` — `n` new card, `/` search, `j`/`k` focus movement, `1`–`6` send focused card to a column, `?` help, `Esc` close (FR-022).
+- [ ] T077 [US5] `src/web/keyboard/use-shortcuts.ts` — `n` new card, `/` search, `j`/`k` focus movement, `1`–`6` send focused card to a column, `?` help, `Esc` close (FR-022). Every action available by pointer must be reachable here (FR-025).
 - [ ] T078 [US5] Wire `@dnd-kit`'s keyboard sensor into the existing drag context from T065 so keyboard and pointer moves share one code path, not two.
 - [ ] T079 [P] [US5] Visible focus ring on the focused card using the accent token (FR-023).
 - [ ] T080 [US5] Focus restoration on dialog close in `CardDialog.tsx` (FR-039).
