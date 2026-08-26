@@ -464,12 +464,11 @@ actor.
   - **When** the issue matches the query again and a sync runs
   - **Then** the original card is restored and no duplicate exists
 
-- **BH-114** (satisfies FR-126, FR-128): Syncs run on schedule and at startup
-  - **Given** the poll interval is configured and the application has just
-    started
-  - **Then** a sync runs shortly after startup, and a further sync runs once
-    the interval elapses, with no user action
-  - **When** the interval elapses again, a further sync runs
+- **BH-114** (satisfies FR-126, FR-128): Syncs run at startup and on schedule
+  - **Given** the poll interval is configured and Jira is reachable
+  - **When** the application starts, and the interval then elapses twice
+  - **Then** a sync runs shortly after startup without waiting a full interval,
+    and one further sync runs per elapsed interval, with no user action
 
 - **BH-115** (satisfies FR-127): Refresh syncs immediately
   - **Given** the board is open and the next scheduled sync is not due

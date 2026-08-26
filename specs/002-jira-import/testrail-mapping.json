@@ -1,0 +1,277 @@
+{
+  "spec_path": "specs/002-jira-import/spec.md",
+  "jira_ref": null,
+  "project_id": 115,
+  "suite_id": 32733,
+  "parent_section_id": 2162674,
+  "last_synced_at": "2026-08-26T22:16:49Z",
+  "last_synced_by": "spec-testrail-sync",
+  "template_id": 4,
+  "notes": "Risk tier FULL, so priority_id 4 (Must Test) on every case, unlike slice 1's STANDARD tier at 3. Automation status 4 = 'To Be Automated' from project 115's own field config. BH-114's clause order was corrected in spec.md before syncing: it read Given/Then/When, which the parser faithfully turned into nonsense.",
+  "user_stories": {
+    "us1": {
+      "title": "My assigned Jira work appears without my typing it",
+      "priority": "P1",
+      "section_id": 2162675,
+      "section_name": "US1 · Assigned Jira work appears"
+    },
+    "us2": {
+      "title": "I can tell my own work from Jira's at a glance",
+      "priority": "P1",
+      "section_id": 2162676,
+      "section_name": "US2 · Telling my work from Jira's"
+    },
+    "us3": {
+      "title": "The board keeps itself current",
+      "priority": "P1",
+      "section_id": 2162678,
+      "section_name": "US3 · Keeping the board current"
+    },
+    "us4": {
+      "title": "I know whether sync is working",
+      "priority": "P1",
+      "section_id": 2162679,
+      "section_name": "US4 · Knowing whether sync works"
+    },
+    "us5": {
+      "title": "Work that leaves my queue does not vanish",
+      "priority": "P2",
+      "section_id": 2162677,
+      "section_name": "US5 · Work leaving the queue"
+    },
+    "us6": {
+      "title": "My Jira credentials stay where they belong",
+      "priority": "P1",
+      "section_id": 2162680,
+      "section_name": "US6 · Credentials stay where they belong"
+    }
+  },
+  "scenarios": {},
+  "verification": {
+    "TEST-101": {
+      "case_id": 19999978,
+      "pins": "BH-101",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "67c3d6910ca1fca2e59d531c64f7b5a54e13bc68aa890933bd45582eba5c02f7",
+      "title_at_last_sync": "TEST-101 — Matching issues create one Backlog card each",
+      "automation_id": "test-101.bh-101"
+    },
+    "TEST-102": {
+      "case_id": 19999979,
+      "pins": "BH-102",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "8f8dd4dc7e0bed3a69a1c4e304e59dde9c74abf7503e91f13264262a9606740a",
+      "title_at_last_sync": "TEST-102 — Issues beyond the first response page are imported",
+      "automation_id": "test-102.bh-102"
+    },
+    "TEST-103": {
+      "case_id": 19999980,
+      "pins": "BH-103",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "0f9bb47a57ea20036369faae96e96798d5c2eb9becb4766bab2e03f6f88af547",
+      "title_at_last_sync": "TEST-103 — Twenty syncs produce no duplicate card",
+      "automation_id": "test-103.bh-103"
+    },
+    "TEST-104": {
+      "case_id": 19999987,
+      "pins": "BH-104",
+      "user_story": "us2",
+      "section_id": 2162676,
+      "hash": "7b5b3fb49e9bf2d20832a41d402146fc1cf3a6b63a3d4fc1317d4ae38c4d237a",
+      "title_at_last_sync": "TEST-104 — Imported card shows issue key and Jira-sourced marking",
+      "automation_id": "test-104.bh-104"
+    },
+    "TEST-105": {
+      "case_id": 19999981,
+      "pins": "BH-105",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "f9e86e61b238ffe5c7b4a6f399f1be90cedd333122635784fb31b987df4a07a1",
+      "title_at_last_sync": "TEST-105 — Changed issue summary updates the card title",
+      "automation_id": "test-105.bh-105"
+    },
+    "TEST-106": {
+      "case_id": 19999982,
+      "pins": "BH-106",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "4b28eeeefe57b96b48b72f48c2ec739c9f4b937ffaf49c02f5410de37c9569cd",
+      "title_at_last_sync": "TEST-106 — Sync leaves a user-placed card in its column",
+      "automation_id": "test-106.bh-106"
+    },
+    "TEST-107": {
+      "case_id": 19999983,
+      "pins": "BH-107",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "d0f3547de1a409d117a6d7b587873cb1ffd67d0d61763da1c99267e0a8b5ea8f",
+      "title_at_last_sync": "TEST-107 — Recorded Jira status and last-updated match what Jira returned",
+      "automation_id": "test-107.bh-107"
+    },
+    "TEST-108": {
+      "case_id": 19999984,
+      "pins": "BH-108",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "5bdde2496bccea47fb499d8c34eee166c1e196db70e47d73ffb20f4968b47454",
+      "title_at_last_sync": "TEST-108 — Twenty syncs leave every ad-hoc card untouched",
+      "automation_id": "test-108.bh-108"
+    },
+    "TEST-109": {
+      "case_id": 19999985,
+      "pins": "BH-109",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "9404b5ff3a985bf1291c121e533565a335b699f128a94edb42085249742c8ea5",
+      "title_at_last_sync": "TEST-109 — No write request is issued to Jira in the whole suite",
+      "automation_id": "test-109.bh-109"
+    },
+    "TEST-110": {
+      "case_id": 19999988,
+      "pins": "BH-110",
+      "user_story": "us2",
+      "section_id": 2162676,
+      "hash": "574468b09f5732e6b827b7d5de77aabaa5b3f67f3f995bbd742a6713f63d99d2",
+      "title_at_last_sync": "TEST-110 — Delete and title edit are refused on an imported card",
+      "automation_id": "test-110.bh-110"
+    },
+    "TEST-111": {
+      "case_id": 19999989,
+      "pins": "BH-111",
+      "user_story": "us5",
+      "section_id": 2162677,
+      "hash": "5762b8fc68720b75469d0edbdb412863add6c6970afa7f153db0076e646373fd",
+      "title_at_last_sync": "TEST-111 — Issue leaving the query archives the card into Done",
+      "automation_id": "test-111.bh-111"
+    },
+    "TEST-112": {
+      "case_id": 19999990,
+      "pins": "BH-112",
+      "user_story": "us5",
+      "section_id": 2162677,
+      "hash": "39596126b5f584c6e43a969fd3fd7eb5e818b85e90dd6e4b7002fd8ec2c76a4f",
+      "title_at_last_sync": "TEST-112 — Sync-caused movement records sync as the actor",
+      "automation_id": "test-112.bh-112"
+    },
+    "TEST-113": {
+      "case_id": 19999991,
+      "pins": "BH-113",
+      "user_story": "us5",
+      "section_id": 2162677,
+      "hash": "65355585c5687854cfeb0ebb12aad9ea72acfdc65b554d024557fc1e65855285",
+      "title_at_last_sync": "TEST-113 — Returning issue restores the archived card without duplicating",
+      "automation_id": "test-113.bh-113"
+    },
+    "TEST-114": {
+      "case_id": 19999992,
+      "pins": "BH-114",
+      "user_story": "us3",
+      "section_id": 2162678,
+      "hash": "08f964f9d47ecceda6240d69ac73387792c53e5a70072ceb41012ef13ab124d8",
+      "title_at_last_sync": "TEST-114 — Sync runs at startup and again each interval",
+      "automation_id": "test-114.bh-114"
+    },
+    "TEST-115": {
+      "case_id": 19999993,
+      "pins": "BH-115",
+      "user_story": "us3",
+      "section_id": 2162678,
+      "hash": "42b3bb08f5b27eeb023bfd45ea4fe09d4b32f276014e4f26a0c9606c8068cf3c",
+      "title_at_last_sync": "TEST-115 — Refresh triggers a sync ahead of schedule",
+      "automation_id": "test-115.bh-115"
+    },
+    "TEST-116": {
+      "case_id": 19999994,
+      "pins": "BH-116",
+      "user_story": "us3",
+      "section_id": 2162678,
+      "hash": "1c0584f2a5d6156736b1fb1d0aa6958ff3f060adc390f2600d73c72070c5a281",
+      "title_at_last_sync": "TEST-116 — Fifty overlapping refreshes start no second sync",
+      "automation_id": "test-116.bh-116"
+    },
+    "TEST-117": {
+      "case_id": 19999995,
+      "pins": "BH-117",
+      "user_story": "us3",
+      "section_id": 2162678,
+      "hash": "2b4b6e837418a0ad09881bf54a26797596b3091d84d4ad52dc49bb79a3fdca75",
+      "title_at_last_sync": "TEST-117 — Rate limit produces bounded backoff and retry",
+      "automation_id": "test-117.bh-117"
+    },
+    "TEST-118": {
+      "case_id": 19999997,
+      "pins": "BH-118",
+      "user_story": "us4",
+      "section_id": 2162679,
+      "hash": "41fd2c6e03de9ce7ce0bd57c7ed59e6602fa7b869ee88bd4395d919020ce1e90",
+      "title_at_last_sync": "TEST-118 — Failed sync leaves no partial change and blocks no board action",
+      "automation_id": "test-118.bh-118"
+    },
+    "TEST-119": {
+      "case_id": 19999998,
+      "pins": "BH-119",
+      "user_story": "us4",
+      "section_id": 2162679,
+      "hash": "b4ce0b39b39722c9e57ec5c09fc3d66c0d59252a7edc125f6fdd608a48e4c8d0",
+      "title_at_last_sync": "TEST-119 — Sync status shows success, then failure, then clears",
+      "automation_id": "test-119.bh-119"
+    },
+    "TEST-120": {
+      "case_id": 19999999,
+      "pins": "BH-120",
+      "user_story": "us4",
+      "section_id": 2162679,
+      "hash": "4f4349b52b24f0f0cab384944beb869afc1c0e42a5b37c1741604d6c1b13c66f",
+      "title_at_last_sync": "TEST-120 — Board stays interactive while a sync runs",
+      "automation_id": "test-120.bh-120"
+    },
+    "TEST-121": {
+      "case_id": 20000000,
+      "pins": "BH-121",
+      "user_story": "us4",
+      "section_id": 2162679,
+      "hash": "727d1e62a84eed4dc82a723b5af1dd30ff78a20f9c57e259ed6d0e4db0b00d6a",
+      "title_at_last_sync": "TEST-121 — Rejected credentials report differently from connectivity loss",
+      "automation_id": "test-121.bh-121"
+    },
+    "TEST-122": {
+      "case_id": 20000001,
+      "pins": "BH-122",
+      "user_story": "us6",
+      "section_id": 2162680,
+      "hash": "04575a15df8e04520aa62ab8afd00519cc2cb030d93d993d23b8c8b91249bea2",
+      "title_at_last_sync": "TEST-122 — No credential appears in browser payloads, logs or settings",
+      "automation_id": "test-122.bh-122"
+    },
+    "TEST-123": {
+      "case_id": 20000002,
+      "pins": "BH-123",
+      "user_story": "us6",
+      "section_id": 2162680,
+      "hash": "34b678131682aa72c12b1bb6834ac1552f8441e67eda302c3a7dd771ead090a8",
+      "title_at_last_sync": "TEST-123 — Unconfigured Jira still serves the ad-hoc board",
+      "automation_id": "test-123.bh-123"
+    },
+    "TEST-124": {
+      "case_id": 19999996,
+      "pins": "BH-124",
+      "user_story": "us3",
+      "section_id": 2162678,
+      "hash": "8eef5fdcca94e7763d0ad571bc1d4241d088fbeed3daa776940e617a933dac23",
+      "title_at_last_sync": "TEST-124 — Default query is the user's unfinished assigned issues; changes take effect",
+      "automation_id": "test-124.bh-124"
+    },
+    "TEST-125": {
+      "case_id": 19999986,
+      "pins": "BH-125",
+      "user_story": "us1",
+      "section_id": 2162675,
+      "hash": "e56a43faa5ad8d04c3cbd837df6b5548a5c5104a45e80be07fa3b59e0eb3768f",
+      "title_at_last_sync": "TEST-125 — Empty query result is reported as a successful sync",
+      "automation_id": "test-125.bh-125"
+    }
+  }
+}

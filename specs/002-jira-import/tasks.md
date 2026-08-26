@@ -32,6 +32,12 @@ Stories are ordered by dependency, then priority:
 
 ---
 
+> **TestRail sync status**: all 25 cases synced up front to project 115,
+> suite 32733, under section 2162674 ("Slice 2 — Jira Import"), cases
+> 19999978–20000002, each *To Be Automated* and priority *Must Test* (FULL
+> tier). The per-story sync tasks are therefore complete. Mapping:
+> `testrail-mapping.json`.
+
 ## Phase 1: Setup
 
 - [ ] T201 Add `undici` as an explicit dev dependency for `MockAgent`, and a `test:contract` script running `vitest --config vitest.contract.config.ts`.
@@ -67,7 +73,7 @@ Stories are ordered by dependency, then priority:
 
 ### TestRail sync
 
-- [ ] T214 [US1] Author or sync TestRail cases for BH-101, BH-102, BH-103, BH-105, BH-106, BH-107, BH-108, BH-109 and BH-125 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
+- [x] T214 [US1] Author or sync TestRail cases for BH-101, BH-102, BH-103, BH-105, BH-106, BH-107, BH-108, BH-109 and BH-125 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests — write first, confirm they FAIL
 
@@ -101,7 +107,7 @@ Stories are ordered by dependency, then priority:
 
 ### TestRail sync
 
-- [ ] T229 [US2] Author or sync TestRail cases for BH-104 and BH-110 via `spec-testrail-sync`.
+- [x] T229 [US2] Author or sync TestRail cases for BH-104 and BH-110 via `spec-testrail-sync`.
 
 ### Tests — write first, confirm they FAIL
 
@@ -126,7 +132,7 @@ Stories are ordered by dependency, then priority:
 
 ### TestRail sync
 
-- [ ] T235 [US5] Author or sync TestRail cases for BH-111, BH-112 and BH-113 via `spec-testrail-sync`.
+- [x] T235 [US5] Author or sync TestRail cases for BH-111, BH-112 and BH-113 via `spec-testrail-sync`.
 
 ### Tests — write first, confirm they FAIL
 
@@ -150,7 +156,7 @@ Stories are ordered by dependency, then priority:
 
 ### TestRail sync
 
-- [ ] T240 [US3] Author or sync TestRail cases for BH-114, BH-115, BH-116, BH-117 and BH-124 via `spec-testrail-sync`.
+- [x] T240 [US3] Author or sync TestRail cases for BH-114, BH-115, BH-116, BH-117 and BH-124 via `spec-testrail-sync`.
 
 ### Tests — write first, confirm they FAIL
 
@@ -179,7 +185,7 @@ Stories are ordered by dependency, then priority:
 
 ### TestRail sync
 
-- [ ] T250 [US4] Author or sync TestRail cases for BH-118, BH-119, BH-120 and BH-121 via `spec-testrail-sync`.
+- [x] T250 [US4] Author or sync TestRail cases for BH-118, BH-119, BH-120 and BH-121 via `spec-testrail-sync`.
 
 ### Tests — write first, confirm they FAIL
 
@@ -204,7 +210,7 @@ Stories are ordered by dependency, then priority:
 
 ### TestRail sync
 
-- [ ] T256 [US6] Author or sync TestRail cases for BH-122 and BH-123 via `spec-testrail-sync`.
+- [x] T256 [US6] Author or sync TestRail cases for BH-122 and BH-123 via `spec-testrail-sync`.
 
 ### Tests — write first, confirm they FAIL
 
