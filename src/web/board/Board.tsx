@@ -14,7 +14,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useBoard } from './use-board.js';
 import { ColumnView, columnDroppableId } from './ColumnView.js';
 import { CardDialog } from '../cards/CardDialog.js';
-import type { Board as BoardData } from '../../shared/types.js';
+import type { Board as BoardData, Card } from '../../shared/types.js';
 
 /**
  * Resolves what dnd-kit reports it was dropped over into a concrete
@@ -66,8 +66,10 @@ const collisionDetection: CollisionDetection = (args) => {
 };
 
 export const Board = () => {
-  const { board, error, moveError, dismissMoveError, createCard, moveCard } = useBoard();
+  const { board, error, moveError, dismissMoveError, createCard, moveCard, updateCard, deleteCard } =
+    useBoard();
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Card | null>(null);
 
   const sensors = useSensors(
     // A small distance so a click on a card is not read as a drag.
@@ -109,7 +111,7 @@ export const Board = () => {
       <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragEnd={onDragEnd}>
         <div className="board" data-testid="board">
           {board.columns.map((column) => (
-            <ColumnView column={column} key={column.id} />
+            <ColumnView column={column} key={column.id} onOpenCard={setEditing} />
           ))}
         </div>
       </DndContext>
@@ -119,6 +121,20 @@ export const Board = () => {
           onSubmit={async (input) => {
             await createCard(input);
             setCreating(false);
+          }}
+        />
+      )}
+      {editing && (
+        <CardDialog
+          initial={editing}
+          onCancel={() => setEditing(null)}
+          onSubmit={async (input) => {
+            await updateCard(editing.id, input);
+            setEditing(null);
+          }}
+          onDelete={async () => {
+            await deleteCard(editing.id);
+            setEditing(null);
           }}
         />
       )}

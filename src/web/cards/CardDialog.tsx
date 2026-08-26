@@ -14,10 +14,13 @@ export const CardDialog = ({
   initial,
   onSubmit,
   onCancel,
+  onDelete,
 }: {
   initial?: Partial<CardDraft>;
   onSubmit: (draft: CardDraft) => Promise<void>;
   onCancel: () => void;
+  /** Absent when creating — there is nothing to delete yet. */
+  onDelete?: () => Promise<void>;
 }) => {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
@@ -25,6 +28,7 @@ export const CardDialog = ({
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? '');
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const titleRef = useRef<HTMLInputElement>(null);
   useEffect(() => titleRef.current?.focus(), []);
@@ -103,6 +107,37 @@ export const CardDialog = ({
         </div>
 
         <div className="dialog-actions">
+          {onDelete && !confirmingDelete && (
+            <button
+              type="button"
+              className="button button--danger"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              Delete
+            </button>
+          )}
+          {onDelete && confirmingDelete && (
+            <div className="confirm" role="group" aria-label="Confirm deletion">
+              <span className="confirm-text">Delete this card?</span>
+              <button
+                type="button"
+                className="button"
+                data-testid="cancel-delete"
+                onClick={() => setConfirmingDelete(false)}
+              >
+                Keep it
+              </button>
+              <button
+                type="button"
+                className="button button--danger"
+                data-testid="confirm-delete"
+                onClick={() => void onDelete()}
+              >
+                Delete
+              </button>
+            </div>
+          )}
+          <span className="dialog-actions-spacer" />
           <button type="button" className="button" onClick={onCancel}>
             Cancel
           </button>

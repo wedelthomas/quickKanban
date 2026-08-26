@@ -19,7 +19,12 @@ export class ApiError extends Error {
 const request = async <T>(url: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(url, {
     ...init,
-    headers: { 'content-type': 'application/json', ...init?.headers },
+    // Only declare a JSON body when there is one. Sending this header on a
+    // bodiless DELETE makes the server reject the request for having an empty
+    // JSON body.
+    headers: init?.body
+      ? { 'content-type': 'application/json', ...init.headers }
+      : init?.headers,
   });
   if (!response.ok) {
     // The client switches on `code`, never on `detail` — see contracts/api.md.
@@ -108,5 +113,34 @@ export const useBoard = () => {
     [board, refresh],
   );
 
-  return { board, error, moveError, dismissMoveError: () => setMoveError(null), refresh, createCard, moveCard };
+  const updateCard = useCallback(
+    async (cardId: string, patch: Partial<CreateCardInput>): Promise<void> => {
+      await request<Card>(`/api/cards/${cardId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(patch),
+      });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const deleteCard = useCallback(
+    async (cardId: string): Promise<void> => {
+      await request<void>(`/api/cards/${cardId}`, { method: 'DELETE' });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  return {
+    board,
+    error,
+    moveError,
+    dismissMoveError: () => setMoveError(null),
+    refresh,
+    createCard,
+    moveCard,
+    updateCard,
+    deleteCard,
+  };
 };

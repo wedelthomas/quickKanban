@@ -21,7 +21,7 @@ const formatDue = (iso: string): string => {
  * once (NFR-13, SC-006). Priority is a coloured dot rather than a word because
  * the card is scanned, not read.
  */
-export const CardView = ({ card }: { card: Card }) => {
+export const CardView = ({ card, onOpen }: { card: Card; onOpen: (card: Card) => void }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
   });
@@ -33,6 +33,7 @@ export const CardView = ({ card }: { card: Card }) => {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       data-testid="card"
       data-card-id={card.id}
+      onDoubleClick={() => onOpen(card)}
       {...attributes}
       {...listeners}
     >

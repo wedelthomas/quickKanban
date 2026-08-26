@@ -79,7 +79,9 @@ export type ProblemCode =
   | 'CARD_NOT_FOUND'
   | 'COLUMN_NOT_FOUND'
   | 'DELETE_FORBIDDEN_NON_LOCAL'
-  | 'DATABASE_UNAVAILABLE';
+  | 'DATABASE_UNAVAILABLE'
+  | 'BAD_REQUEST'
+  | 'INTERNAL_ERROR';
 
 export interface Problem {
   type: string;

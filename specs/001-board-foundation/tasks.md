@@ -213,18 +213,28 @@ order.
 
 ### Tests for User Story 4 — write first, confirm they FAIL
 
-- [ ] T068 [P] [US4] `tests/features/card-editing.feature` + steps — all five attributes persist; delete is cancellable and, when confirmed, removes the card from the board while retaining its record; delete is refused for a seeded non-local card (BH-012, BH-013, BH-023).
-- [ ] T069 [P] [US4] `tests/e2e/no-reload.spec.ts` — a full create–move–edit–delete cycle triggers no full page reload (BH-025).
+- [x] T068 [P] [US4] `tests/features/card-editing.feature` + steps — all five attributes persist; delete is cancellable and, when confirmed, removes the card from the board while retaining its record; delete is refused for a seeded non-local card (BH-012, BH-013, BH-023).
+- [x] T069 [P] [US4] `tests/e2e/no-reload.spec.ts` — a full create–move–edit–delete cycle triggers no full page reload (BH-025).
 
 ### Implementation for User Story 4
 
-- [ ] T070 [US4] Extend `card-repository.ts` with update and soft delete — sets `deleted_at`, never removes the row (FR-041).
-- [ ] T071 [US4] Extend `card-service.ts`: update title, description, priority, due date and tags with the same validation as create (FR-013); delete refused with `DELETE_FORBIDDEN_NON_LOCAL` when source is not `local` (FR-015).
-- [ ] T072 [US4] `PATCH /api/cards/:id` and `DELETE /api/cards/:id` in `src/server/routes/cards.ts`.
-- [ ] T073 [US4] Extend `CardDialog.tsx` for editing, reusing the create form.
-- [ ] T074 [US4] Delete confirmation in the web client; cancel leaves the card untouched (FR-014).
+- [x] T070 [US4] Extend `card-repository.ts` with update and soft delete — sets `deleted_at`, never removes the row (FR-041).
+- [x] T071 [US4] Extend `card-service.ts`: update title, description, priority, due date and tags with the same validation as create (FR-013); delete refused with `DELETE_FORBIDDEN_NON_LOCAL` when source is not `local` (FR-015).
+- [x] T072 [US4] `PATCH /api/cards/:id` and `DELETE /api/cards/:id` in `src/server/routes/cards.ts`.
+- [x] T073 [US4] Extend `CardDialog.tsx` for editing, reusing the create form.
+- [x] T074 [US4] Delete confirmation in the web client; cancel leaves the card untouched (FR-014).
 
-**Checkpoint**: the board is fully editable. **Run the Story-Complete Review Gate.**
+**Checkpoint**: the board is fully editable. **Story-Complete Review Gate run; findings recorded below.**
+
+### US4 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-013, FR-014, FR-015 and FR-041 implemented. All four pathways verified green.
+- **Design**: tags are replaced wholesale on update rather than merged, because `tags: []` must be able to mean "no tags"; a merge makes clearing them impossible. `softDelete` returns `'deleted' | 'not-found' | 'not-local'` rather than throwing, keeping the HTTP shape a decision of the route layer.
+- **Two defects the API-level suite structurally could not catch:**
+  1. The browser client set `content-type: application/json` on a bodiless `DELETE`, which Fastify rejects outright. The acceptance suite uses `app.inject`, which sets no such header, so no amount of API-level testing would have found it. Only a real browser did.
+  2. The error handler mapped every unrecognised error to a 500 labelled `VALIDATION_FAILED`. That turned the 400 above into a reported server fault with a misleading code — the kind of thing that sends whoever debugs it next looking in entirely the wrong place. It now honours a framework error's own status and distinguishes `BAD_REQUEST` from `INTERNAL_ERROR`.
+- **Lesson recorded**: an acceptance suite that injects requests cannot exercise how a browser actually forms them. The E2E layer is not a duplicate of the acceptance layer; it covers a class of defect the other cannot reach.
+- **Security**: deletion is restricted by source at the repository level, inside the same transaction that reads the row, so the check cannot be raced.
 
 ---
 

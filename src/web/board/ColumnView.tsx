@@ -1,12 +1,18 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import type { BoardColumn } from '../../shared/types.js';
+import type { BoardColumn, Card } from '../../shared/types.js';
 import { CardView } from './CardView.js';
 
 /** Prefix so a column's droppable id can never collide with a card's uuid. */
 export const columnDroppableId = (columnId: number): string => `column-${columnId}`;
 
-export const ColumnView = ({ column }: { column: BoardColumn }) => {
+export const ColumnView = ({
+  column,
+  onOpenCard,
+}: {
+  column: BoardColumn;
+  onOpenCard: (card: Card) => void;
+}) => {
   const { setNodeRef, isOver } = useDroppable({ id: columnDroppableId(column.id) });
 
   return (
@@ -27,7 +33,7 @@ export const ColumnView = ({ column }: { column: BoardColumn }) => {
           strategy={verticalListSortingStrategy}
         >
           {column.cards.map((card) => (
-            <CardView card={card} key={card.id} />
+            <CardView card={card} key={card.id} onOpen={onOpenCard} />
           ))}
         </SortableContext>
       </div>

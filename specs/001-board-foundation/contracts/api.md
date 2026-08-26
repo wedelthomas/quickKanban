@@ -28,6 +28,8 @@ program, and conflating them makes error text load-bearing.
 | `COLUMN_NOT_FOUND` | 404 | Unknown column id |
 | `DELETE_FORBIDDEN_NON_LOCAL` | 409 | Delete attempted on a card whose source is not `local` (FR-015) |
 | `DATABASE_UNAVAILABLE` | 503 | Database unreachable — the client reverts the optimistic move (FR-020) |
+| `BAD_REQUEST` | 4xx | The request was malformed in a way the framework rejected before routing (bad JSON, empty body with a JSON content-type). Carries the framework's own status |
+| `INTERNAL_ERROR` | 500 | An unexpected server fault. Genuinely 500 — never used for a caller's mistake |
 
 ## Types
 

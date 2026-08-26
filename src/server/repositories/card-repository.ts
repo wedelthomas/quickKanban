@@ -1,7 +1,7 @@
 import type pg from 'pg';
 import type { BoardColumn, Card, ColumnKey, Priority, CardSource } from '../../shared/types.js';
 import { isOverdue } from '../../domain/overdue.js';
-import type { CreateCardInput, MoveCardInput } from '../../domain/validation.js';
+import type { CreateCardInput, MoveCardInput, UpdateCardInput } from '../../domain/validation.js';
 import { planMove, type ColumnOrder } from '../../domain/ordering.js';
 import { TagRepository } from './tag-repository.js';
 
@@ -148,6 +148,118 @@ export class CardRepository {
         fromColumnId: plan.fromColumnId,
         toColumnId: plan.toColumnId,
       };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Updates only the fields present in the patch. Tags are replaced wholesale
+   * rather than merged, because `tags: []` has to be able to mean "no tags" —
+   * a merge would make clearing them impossible.
+   */
+  async update(id: string, input: UpdateCardInput, today: Date): Promise<Card | null> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const { rows } = await client.query<{ id: string }>(
+        'SELECT id FROM cards WHERE id = $1 AND deleted_at IS NULL FOR UPDATE',
+        [id],
+      );
+      if (rows.length === 0) {
+        await client.query('ROLLBACK');
+        return null;
+      }
+
+      const sets: string[] = [];
+      const values: unknown[] = [];
+      const set = (column: string, value: unknown): void => {
+        values.push(value);
+        sets.push(`${column} = $${values.length}`);
+      };
+      if (input.title !== undefined) set('title', input.title);
+      if (input.description !== undefined) set('description', input.description);
+      if (input.priority !== undefined) set('priority', input.priority);
+      if (input.dueDate !== undefined) set('due_date', input.dueDate);
+
+      if (sets.length > 0) {
+        values.push(id);
+        await client.query(
+          `UPDATE cards SET ${sets.join(', ')}, updated_at = now() WHERE id = $${values.length}`,
+          values,
+        );
+      }
+
+      if (input.tags !== undefined) {
+        await client.query('DELETE FROM card_tags WHERE card_id = $1', [id]);
+        const tags = await this.tags.getOrCreate(client, input.tags);
+        if (tags.length > 0) {
+          await client.query(
+            'INSERT INTO card_tags (card_id, tag_id) SELECT $1, unnest($2::int[])',
+            [id, tags.map((t) => t.id)],
+          );
+        }
+        await client.query('UPDATE cards SET updated_at = now() WHERE id = $1', [id]);
+      }
+
+      await client.query('COMMIT');
+      return this.findById(id, today);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Soft delete: the card leaves the board and its row stays. Two reasons —
+   * an ad-hoc card exists nowhere else, so a mis-click should be recoverable;
+   * and the movement history references the card with ON DELETE RESTRICT, so
+   * the row must survive for the history to outlive it (FR-029, FR-041).
+   *
+   * Returns 'not-found' or 'not-local' rather than throwing, so the HTTP shape
+   * stays a decision of the route layer.
+   */
+  async softDelete(id: string): Promise<'deleted' | 'not-found' | 'not-local'> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const { rows } = await client.query<{ source: string; column_id: number }>(
+        'SELECT source, column_id FROM cards WHERE id = $1 AND deleted_at IS NULL FOR UPDATE',
+        [id],
+      );
+      const card = rows[0];
+      if (!card) {
+        await client.query('ROLLBACK');
+        return 'not-found';
+      }
+      if (card.source !== 'local') {
+        await client.query('ROLLBACK');
+        return 'not-local';
+      }
+
+      await client.query(
+        'UPDATE cards SET deleted_at = now(), updated_at = now() WHERE id = $1',
+        [id],
+      );
+      // Close the gap the card leaves, so positions stay contiguous.
+      await client.query(
+        `UPDATE cards AS c SET position = ranked.rank
+           FROM (SELECT id, row_number() OVER (ORDER BY position) AS rank
+                   FROM cards
+                  WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL) AS ranked
+          WHERE c.id = ranked.id`,
+        [card.column_id],
+      );
+
+      await client.query('COMMIT');
+      return 'deleted';
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

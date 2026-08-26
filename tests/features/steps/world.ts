@@ -15,6 +15,8 @@ export class BoardWorld extends World {
   response!: { status: number; body: unknown };
   /** The card produced by the most recent creating step, for later assertions. */
   lastCard?: import('../../../src/shared/types.js').Card;
+  /** Id of a Jira-sourced card seeded directly, for rules that protect them. */
+  seededJiraCardId?: string;
 
   async start(): Promise<void> {
     const connectionString =

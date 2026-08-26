@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { createCardSchema, moveCardSchema } from '../../domain/validation.js';
+import { createCardSchema, moveCardSchema, updateCardSchema } from '../../domain/validation.js';
 import { titleRequired, validationFailed } from '../errors.js';
 import type { CardService } from '../services/card-service.js';
 
@@ -13,6 +13,20 @@ export const registerCardRoutes = (app: FastifyInstance, cards: CardService): vo
       throw titleIssue ? titleRequired() : validationFailed(parsed.error.issues[0]!.message);
     }
     return reply.status(201).send(await cards.create(parsed.data));
+  });
+
+  app.patch<{ Params: { id: string } }>('/api/cards/:id', async (request) => {
+    const parsed = updateCardSchema.safeParse(request.body);
+    if (!parsed.success) {
+      const titleIssue = parsed.error.issues.find((i) => i.path[0] === 'title');
+      throw titleIssue ? titleRequired() : validationFailed(parsed.error.issues[0]!.message);
+    }
+    return cards.update(request.params.id, parsed.data);
+  });
+
+  app.delete<{ Params: { id: string } }>('/api/cards/:id', async (request, reply) => {
+    await cards.delete(request.params.id);
+    return reply.status(204).send();
   });
 
   app.post<{ Params: { id: string } }>('/api/cards/:id/move', async (request) => {

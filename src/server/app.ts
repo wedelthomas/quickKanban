@@ -53,14 +53,24 @@ export const buildApp = ({ pool, webRoot, logger = true }: AppOptions): FastifyI
           : null;
 
     if (!domain) {
-      request.log.error({ err: error }, 'unhandled error');
-      return reply.status(500).type('application/problem+json').send({
-        type: 'about:blank',
-        title: 'Something went wrong',
-        status: 500,
-        code: 'VALIDATION_FAILED',
-        detail: 'The request could not be completed.',
-      });
+      // A framework error that already knows it is the caller's fault must not
+      // be reported as a server fault: a 400 dressed up as a 500 sends whoever
+      // debugs it next looking in the wrong place entirely.
+      const status = (error as { statusCode?: number }).statusCode ?? 500;
+      const clientFault = status >= 400 && status < 500;
+
+      request.log.error({ err: error }, clientFault ? 'rejected request' : 'unhandled error');
+
+      return reply
+        .status(status)
+        .type('application/problem+json')
+        .send({
+          type: 'about:blank',
+          title: clientFault ? 'The request could not be accepted' : 'Something went wrong',
+          status,
+          code: clientFault ? 'BAD_REQUEST' : 'INTERNAL_ERROR',
+          detail: clientFault ? error.message : 'The request could not be completed.',
+        });
     }
 
     return reply.status(domain.status).type('application/problem+json').send({
