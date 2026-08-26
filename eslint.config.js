@@ -8,7 +8,15 @@ export default tseslint.config(
   {
     rules: {
       'no-console': ['error', { allow: ['error'] }],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          // Omitting a property by destructuring is a deliberate discard, not
+          // an oversight: `const { title, ...rest } = input`.
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
 );
