@@ -136,7 +136,7 @@ order.
 - [x] T037 [P] [US1] `tests/features/card-creation.feature` + steps — creation into Backlog, blank title refused, priority default, tag normalization, card face content (BH-002…BH-006).
 - [x] T038 [P] [US1] `tests/features/tags.feature` + steps — tag entry suggests and reuses an existing vocabulary tag (BH-030).
 - [x] T039 [P] [US1] `tests/features/due-dates.feature` + steps — overdue begins the day after the due date (BH-029).
-- [~] T040 [P] [US1] `tests/e2e/card-face.spec.ts` — title, priority, due date, tags and source all legible without opening the card (BH-006). **Written, not yet run**: the Playwright Chromium download stalls in this environment. Run `npx playwright install chromium` then `npm run test:e2e`.
+- [x] T040 [P] [US1] `tests/e2e/card-face.spec.ts` — title, priority, due date, tags and source all legible without opening the card (BH-006). Runs against the machine's installed Chrome (`channel: 'chrome'`) rather than the bundled Chromium, which downloads fully but stalls during extraction on this Mac.
 
 ### Implementation for User Story 1
 

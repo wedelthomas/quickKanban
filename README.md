@@ -88,8 +88,17 @@ npm run test:e2e           # drag-and-drop and the keyboard map, in a browser
 npm run test:ops           # container lifecycle, persistence, loopback binding
 ```
 
-The acceptance suite needs a test database; the ops suite drives
-`docker compose` directly and will stop and recreate your containers.
+The acceptance suite starts and stops its own test database. The ops suite
+drives `docker compose` directly and **runs `down -v` as part of its setup, so
+it deletes the cards on your board** — run it before you start using the board
+for real work, not after.
+
+The browser tests use the Google Chrome installed on your machine rather than
+Playwright's bundled Chromium (`channel: 'chrome'` in `playwright.config.ts`).
+The bundled build downloads fully and then stalls during extraction here,
+most likely endpoint security scanning the archive. If you would rather have
+the hermetic build, `npx playwright install chromium` and drop the `channel`
+line.
 
 ## How this was built
 
