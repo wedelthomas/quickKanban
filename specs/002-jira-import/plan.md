@@ -25,6 +25,13 @@ The riskiest part of this slice is not the sync logic — it is the credential.
 Everything about how it is read, passed and logged is treated as a
 first-class requirement rather than a configuration detail.
 
+**Amended 2026-08-26**, after the first real import. Cards are placed in the
+column their Jira status maps to rather than all landing in Backlog. The
+original rule was a clean code seam that produced an unusable board: eight of
+eleven real issues arrived in the wrong column, and every new assignment would
+have needed re-sorting by hand. Ongoing movement remains slice 3's; only
+initial placement changed.
+
 ## Technical Context
 
 **Language/Version**: TypeScript 5.7 on Node 22 LTS (unchanged from slice 1)
@@ -98,7 +105,8 @@ specs/002-jira-import/
 src/
 ├── domain/
 │   ├── jql.ts                    # default query; validation of a user-supplied one
-│   └── backoff.ts                # retry delays; pure, no timers
+│   ├── backoff.ts                # retry delays; pure, no timers
+│   └── status-mapping.ts         # Jira status name -> board column, for placement
 ├── server/
 │   ├── jira/
 │   │   ├── jira-port.ts          # the interface + issue shape
@@ -141,6 +149,7 @@ substantially while leaving the first alone.
 |---|---|---|
 | `JiraPort` interface with two implementations | Required by NFR-23: no test in the standard suite may contact live Jira. The fake drives every acceptance scenario; the real one is exercised only by contract tests against recorded fixtures. | Testing against live Jira makes the suite non-deterministic, network-dependent, and capable of mutating a real backlog. Note this same interface was **rejected** in slice 1 for having one implementation and no caller — the justification is the second implementation and the real caller, not the idea. |
 | Principle V — no Confluence runbook | Carried from slice 1: no on-call, no operator but the user. | Unchanged. |
+| A default status-to-column mapping ships in slice 2, while the editable mapping is a slice 3 feature | Amended after a real import: placing every issue in Backlog put eight of eleven in the wrong column, so the slice delivered a board that needed re-sorting by hand after every assignment. A fixed default is the smallest thing that makes the import useful. | Waiting for slice 3 was the original plan and is what produced the problem. Bringing the *editable* mapping forward as well would dissolve the slice boundary for a setting the user has no reason to change before they can see its effect. |
 | `cards.archived_reason` is written here and read in slice 4 | FR-123 requires the reason an issue left the board to be recorded, and BH-111 asserts it in this slice. It is read back by the archive view in slice 4. | Not speculative — a behavior pathway in *this* slice asserts it. |
 
 ## Architecture Review
@@ -292,6 +301,7 @@ pin, per NFR-21.
 | Test File | Type | Covers |
 | --- | --- | --- |
 | `tests/unit/jql.test.ts` | Unit | Default query selects the user's unfinished assigned issues; empty query rejected — BH-124 |
+| `tests/unit/status-mapping.test.ts` | Unit | Status names map to the right column, case-insensitively; unknown falls back to Backlog — BH-101, BH-126 |
 | `tests/unit/backoff.test.ts` | Unit | Bounded exponential delays; `Retry-After` honoured; attempts capped — BH-117 |
 | `tests/unit/credential-redaction.test.ts` | Unit | No error the adapter can produce contains the token — BH-122 |
 | `tests/unit/no-jira-writes.test.ts` | Unit | The adapter source contains no POST/PUT/PATCH/DELETE — BH-109, by absence of capability |

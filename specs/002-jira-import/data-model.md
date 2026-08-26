@@ -62,6 +62,13 @@ Written by this slice when an issue stops matching the query (FR-123), read by
 slice 4's archive view. Null for cards that are still on the board and for
 cards archived by slice 4's age rule, which has its own reason.
 
+## What the status mapping is *not*
+
+A table. Slice 2's mapping is a constant in `src/domain/status-mapping.ts`,
+consulted only when a card is created. Storing it would imply it is editable,
+which it is not until slice 3 — and a settings row nobody can change is a worse
+lie than a constant.
+
 ## What this model deliberately does not have
 
 - **No table of Jira statuses.** Slice 3 maps columns to statuses; until then

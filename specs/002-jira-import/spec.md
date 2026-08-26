@@ -23,6 +23,13 @@ history it populates.
   board and the recorded Jira status is carried for Slice 3's benefit
 - Q: Does this feature write to Jira at all? → A: No. Every interaction with
   Jira is a read
+- Q: **(Amended 2026-08-26, after seeing a real import)** Should every imported
+  issue land in Backlog? → A: No. A card is placed in the column its Jira
+  status maps to when it is first created, falling back to Backlog for an
+  unrecognised status. Ongoing movement stays out of scope: an existing card is
+  never re-placed by a sync. The original answer sent eight of eleven real
+  issues to the wrong column and would have needed re-sorting by hand after
+  every new assignment — a clean code seam that produced an unusable board
 
 ---
 
@@ -45,8 +52,10 @@ appear in Backlog carrying each issue's key, summary and status.
 **Acceptance Scenarios**:
 
 1. **Given** a board with no Jira cards and three issues assigned to the user
-   in Jira, **When** a sync runs, **Then** three cards appear in the Backlog
-   column, one per issue.
+   in Jira, **When** a sync runs, **Then** three cards appear, one per issue,
+   each in the column its Jira status maps to.
+2. **Given** an issue whose Jira status matches no mapping, **When** a sync
+   runs, **Then** its card appears in Backlog rather than being dropped.
 2. **Given** an imported card, **When** the board is displayed, **Then** the
    card shows the issue key and the issue summary as its title.
 3. **Given** a sync has already imported an issue, **When** a later sync runs,
@@ -258,7 +267,11 @@ credential material appears in either.
   represented on the board. *(BR-10)*
 - **FR-111**: System MUST NOT create a second card for an issue already
   represented on the board. *(BR-10)*
-- **FR-112**: A newly imported card MUST be placed in the Backlog column. *(BR-10)*
+- **FR-112**: A newly imported card MUST be placed in the board column its
+  Jira status maps to, and in Backlog when the status is unrecognised. *(BR-10, BR-16)*
+- **FR-138**: System MUST carry a default mapping from Jira status names to
+  board columns, matched case-insensitively, applied only when a card is first
+  created. The mapping is not user-editable in this feature. *(BR-16)*
 - **FR-113**: System MUST NOT change the column of an existing card as a result
   of a sync, except as required by FR-122. *(BR-15)*
 - **FR-114**: An imported card MUST carry the issue key, the issue summary as
@@ -325,6 +338,9 @@ credential material appears in either.
   archived, and on failure, the kind of failure.
 - **Query Configuration**: The user-adjustable definition of which issues
   belong on the board, plus the poll interval.
+- **Status Mapping**: A fixed correspondence between Jira status names and board
+  columns, consulted only when a card is created. Neither stored nor editable in
+  this feature; Slice 3 makes it both.
 
 The **Card** entity from Slice 1 gains a source of Jira-sourced and an
 optional Jira Link. The **Card Movement** entity gains sync as a possible
@@ -382,7 +398,10 @@ actor.
 
 - Writing anything to Jira, including status transitions *(Slice 3)*.
 - Mapping board columns to Jira statuses *(Slice 3)*.
-- Moving a card in response to a Jira status change *(Slice 3)*.
+- Moving an **existing** card in response to a Jira status change *(Slice 3)*.
+  Initial placement by status is in scope; ongoing movement is not.
+- A **user-editable** column-to-status mapping *(Slice 3)*. This feature ships a
+  fixed default so the board is usable; changing it comes later.
 - Conflict detection and resolution *(Slice 3)*.
 - Creating Jira issues from ad-hoc cards *(non-goal, BRD §5.2)*.
 - Editing any Jira field, including comments and worklogs *(non-goal, BRD §5.2)*.
@@ -394,11 +413,17 @@ actor.
 
 ## Behavior Pathways
 
-- **BH-101** (satisfies FR-109, FR-110, FR-112): Matching issues import into
-  Backlog
-  - **Given** three issues match the configured query and none is on the board
+- **BH-101** (satisfies FR-109, FR-110, FR-112, FR-138): Matching issues import
+  into the column their status maps to
+  - **Given** three issues match the query, in Jira statuses mapping to
+    Backlog, In Progress and Test, and none is on the board
   - **When** a sync runs
-  - **Then** three cards exist in the Backlog column, one per issue
+  - **Then** one card exists per issue, each in the mapped column
+
+- **BH-126** (satisfies FR-112): An unrecognised status falls back to Backlog
+  - **Given** an issue whose Jira status matches no entry in the mapping
+  - **When** a sync runs
+  - **Then** its card appears in Backlog rather than being dropped or refused
 
 - **BH-102** (satisfies FR-109): Import is not limited to one response page
   - **Given** the query matches more issues than a single Jira response returns
@@ -542,7 +567,7 @@ actor.
 
 | ID | Test name | Pins |
 |---|---|---|
-| TEST-101 | Matching issues create one Backlog card each | BH-101 |
+| TEST-101 | Matching issues are placed in the column their status maps to | BH-101 |
 | TEST-102 | Issues beyond the first response page are imported | BH-102 |
 | TEST-103 | Twenty syncs produce no duplicate card | BH-103 |
 | TEST-104 | Imported card shows issue key and Jira-sourced marking | BH-104 |
@@ -567,3 +592,4 @@ actor.
 | TEST-123 | Unconfigured Jira still serves the ad-hoc board | BH-123 |
 | TEST-124 | Default query is the user's unfinished assigned issues; changes take effect | BH-124 |
 | TEST-125 | Empty query result is reported as a successful sync | BH-125 |
+| TEST-126 | Issue with an unmapped status lands in Backlog | BH-126 |

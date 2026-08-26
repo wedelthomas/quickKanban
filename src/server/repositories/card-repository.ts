@@ -4,6 +4,7 @@ import { type BoardRow, toCard } from './board-row.js';
 import type { CreateCardInput, MoveCardInput, UpdateCardInput } from '../../domain/validation.js';
 import { planMove, type ColumnOrder } from '../../domain/ordering.js';
 import type { JiraIssue } from '../jira/jira-port.js';
+import { columnForStatus } from '../../domain/status-mapping.js';
 import { TagRepository } from './tag-repository.js';
 import { EventRepository } from './event-repository.js';
 
@@ -289,21 +290,25 @@ export class CardRepository {
       return 'updated';
     }
 
+    // Placed by status (FR-112, FR-138), falling back to Backlog for anything
+    // the mapping does not recognise.
+    const columnId = columnForStatus(issue.statusName);
+
     await client.query(
       `SELECT id FROM cards
         WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL
         FOR UPDATE`,
-      [BACKLOG_COLUMN_ID],
+      [columnId],
     );
     await client.query(
       `UPDATE cards SET position = position + 1
         WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL`,
-      [BACKLOG_COLUMN_ID],
+      [columnId],
     );
     await client.query(
       `INSERT INTO cards (source, title, priority, column_id, position)
        VALUES ('jira', $1, 'medium', $2, 1)`,
-      [issue.summary, BACKLOG_COLUMN_ID],
+      [issue.summary, columnId],
     );
     return 'created';
   }

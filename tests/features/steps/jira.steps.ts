@@ -21,6 +21,22 @@ Given('Jira has the issues {string}', function (this: BoardWorld, keys: string) 
   this.jira.setIssues(list(keys).map((key) => anIssue({ key })));
 });
 
+Given('Jira has an issue {string} with status {string}', function (
+  this: BoardWorld,
+  key: string,
+  status: string,
+) {
+  this.jira.setIssues([anIssue({ key, statusName: status })]);
+});
+
+Given('Jira also has an issue {string} with status {string}', function (
+  this: BoardWorld,
+  key: string,
+  status: string,
+) {
+  this.jira.setIssues([...this.jira.currentIssues(), anIssue({ key, statusName: status })]);
+});
+
 Given('Jira has no issues', function (this: BoardWorld) {
   this.jira.setIssues([]);
 });

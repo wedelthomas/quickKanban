@@ -32,6 +32,12 @@ Stories are ordered by dependency, then priority:
 
 ---
 
+> **Amended 2026-08-26** after the first real import: FR-112 now places a card
+> in the column its Jira status maps to. T225 and T227 are reopened below, and
+> T272–T274 added. Tasks already marked complete that the amendment invalidates
+> are unmarked rather than left standing — a checked box that no longer holds
+> is worse than an unchecked one.
+>
 > **TestRail sync status**: all 25 cases synced up front to project 115,
 > suite 32733, under section 2162674 ("Slice 2 — Jira Import"), cases
 > 19999978–20000002, each *To Be Automated* and priority *Must Test* (FULL
@@ -78,6 +84,8 @@ Stories are ordered by dependency, then priority:
 ### Tests — write first, confirm they FAIL
 
 - [x] T215 [P] [US1] `tests/unit/jql.test.ts` — default query shape; empty query rejected (BH-124's unit half).
+- [x] T272 [P] [US1] `tests/unit/status-mapping.test.ts` — every status name maps to the right column, case-insensitively; an unknown status falls back to Backlog (BH-101, BH-126).
+- [x] T274 [P] [US1] Extend `tests/features/jira-import.feature` — issues in differing statuses land in their mapped columns, and an unrecognised status falls back to Backlog (BH-101, BH-126).
 - [x] T216 [P] [US1] `tests/unit/no-jira-writes.test.ts` — the adapter's source contains no POST, PUT, PATCH or DELETE (BH-109, by absence of capability rather than by behaviour).
 - [ ] T217 [P] [US1] `tests/contract/jira-adapter.test.ts` — real adapter against recorded fixtures: pagination across pages, 401, 429, 5xx, malformed body (BH-102).
 - [x] T218 [P] [US1] `tests/features/jira-import.feature` + steps — import into Backlog, no duplicates across twenty syncs, summary updates, empty result is a success (BH-101, BH-103, BH-105, BH-125).
@@ -87,10 +95,11 @@ Stories are ordered by dependency, then priority:
 ### Implementation
 
 - [x] T221 [P] [US1] `src/domain/jql.ts` — default query selecting the user's unfinished assigned issues (FR-107), and validation of a user-supplied one. Pure.
+- [x] T273 [P] [US1] `src/domain/status-mapping.ts` — default Jira status name to board column mapping, case-insensitive, falling back to Backlog for anything unrecognised (FR-138). Pure.
 - [x] T222 [US1] `src/server/jira/credentials.ts` — read connection details and credentials from environment only (FR-101), report configured/not-configured, and build the auth header at call time. **Never returns the token to a caller that might render or log it** (FR-104).
 - [x] T223 [US1] `src/server/jira/jira-adapter.ts` — `searchIssues` over `GET /rest/api/3/search/jql`, paginating to exhaustion so results beyond one page are imported (FR-109), 10s timeout, typed failures. GET only (FR-118).
 - [x] T224 [US1] `src/server/repositories/jira-link-repository.ts` — upsert a link recording the issue's status and Jira's own last-updated value (FR-116), read links, list issue keys currently on the board.
-- [x] T225 [US1] Extend `card-repository.ts` with `upsertFromJira`: create exactly one card per matching issue and no second card for one already present (FR-110), carrying the issue key, summary as title and link (FR-114), updating the title when the summary changes (FR-115). Places new cards at the top of Backlog (FR-112) and **never changes an existing card's column** (FR-113).
+- [x] T225 [US1] Extend `card-repository.ts` with `upsertFromJira`: create exactly one card per matching issue and no second card for one already present (FR-110), carrying the issue key, summary as title and link (FR-114), updating the title when the summary changes (FR-115). Places a new card at the top of the column its Jira status maps to, or Backlog when unrecognised (FR-112, FR-138), and **never changes an existing card's column** (FR-113).
 - [x] T226 [US1] Extend `board-row.ts` and the board query so `Card` carries `issueKey` and `issueUrl`.
 - [x] T227 [US1] `src/server/sync/sync-service.ts` — fetch every page, then apply in one transaction, recording a `sync_run`. Ad-hoc cards are never altered, moved or removed by a sync (FR-117).
 - [x] T228 [US1] `src/server/repositories/sync-run-repository.ts` — start, finish, read latest, read last success.

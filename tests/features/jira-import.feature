@@ -2,12 +2,21 @@ Feature: Assigned Jira work appears on the board
   A meaningful share of the user's work does live in Jira. It should arrive on
   the board without retyping, and arriving twice is as bad as not arriving.
 
-  Scenario: Matching issues become Backlog cards
+  Scenario: Issues are placed in the column their status maps to
     Given the application is running
-    And Jira has the issues "AIHUB-1, AIHUB-2, AIHUB-3"
+    And Jira has an issue "AIHUB-1" with status "Open"
+    And Jira also has an issue "AIHUB-2" with status "Development"
+    And Jira also has an issue "AIHUB-3" with status "Test"
     When a sync runs
-    Then the "backlog" column holds 3 cards
-    And the board has a card for issue "AIHUB-1"
+    Then the card for issue "AIHUB-1" is in the "backlog" column
+    And the card for issue "AIHUB-2" is in the "in_progress" column
+    And the card for issue "AIHUB-3" is in the "test" column
+
+  Scenario: An unrecognised status falls back to Backlog
+    Given the application is running
+    And Jira has an issue "AIHUB-9" with status "Awaiting Interstellar Approval"
+    When a sync runs
+    Then the card for issue "AIHUB-9" is in the "backlog" column
 
   Scenario: A second sync creates no duplicate
     Given the application is running
