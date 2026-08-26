@@ -32,13 +32,13 @@ export class JiraCardRepository {
     client: pg.PoolClient,
     issue: JiraIssue,
     knownCardId: string | null,
-  ): Promise<'created' | 'updated'> {
+  ): Promise<{ cardId: string; outcome: 'created' | 'updated' }> {
     if (knownCardId) {
       await client.query(
         `UPDATE cards SET title = $2, updated_at = now() WHERE id = $1 AND title <> $2`,
         [knownCardId, issue.summary],
       );
-      return 'updated';
+      return { cardId: knownCardId, outcome: 'updated' };
     }
 
     // Placed by status (FR-112, FR-138), falling back to Backlog for anything
@@ -56,25 +56,13 @@ export class JiraCardRepository {
         WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL`,
       [columnId],
     );
-    await client.query(
+    const { rows } = await client.query<{ id: string }>(
       `INSERT INTO cards (source, title, priority, column_id, position)
-       VALUES ('jira', $1, 'medium', $2, 1)`,
+       VALUES ('jira', $1, 'medium', $2, 1)
+       RETURNING id`,
       [issue.summary, columnId],
     );
-    return 'created';
-  }
-
-  async cardIdForIssue(client: pg.PoolClient, issueKey: string): Promise<string | null> {
-    const { rows } = await client.query<{ id: string }>(
-      `SELECT c.id FROM cards c
-         LEFT JOIN jira_links jl ON jl.card_id = c.id
-        WHERE (jl.issue_key = $1 OR (jl.issue_key IS NULL AND c.source = 'jira'))
-          AND c.deleted_at IS NULL
-        ORDER BY (jl.issue_key = $1) DESC NULLS LAST, c.created_at DESC
-        LIMIT 1`,
-      [issueKey],
-    );
-    return rows[0]?.id ?? null;
+    return { cardId: rows[0]!.id, outcome: 'created' };
   }
 
   /** Moves a card to Done and archives it, attributing the movement to sync. */

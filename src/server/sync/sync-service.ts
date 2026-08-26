@@ -64,12 +64,20 @@ export class SyncService {
 
     for (const issue of issues) {
       const known = existing.get(issue.key);
-      const outcome = await this.cards.upsertFromJira(client, issue, known?.cardId ?? null);
+      // The insert returns its own id rather than the link being looked up
+      // afterwards. The previous lookup relied on there being exactly one
+      // unlinked Jira card at that moment — an invariant held by the order of
+      // this loop, not by the query, and `now()` is identical for every row in
+      // a transaction so created_at could not break the tie.
+      const { cardId, outcome } = await this.cards.upsertFromJira(
+        client,
+        issue,
+        known?.cardId ?? null,
+      );
       if (outcome === 'created') counts.created += 1;
       else counts.updated += 1;
 
-      const cardId = await this.cards.cardIdForIssue(client, issue.key);
-      if (cardId) await this.links.upsert(client, cardId, issue);
+      await this.links.upsert(client, cardId, issue);
 
       // An issue that came back gets its own card returned to the board rather
       // than a second one created (FR-125).

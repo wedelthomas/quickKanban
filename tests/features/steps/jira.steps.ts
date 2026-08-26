@@ -194,3 +194,23 @@ Then('the ad-hoc card {string} is in the {string} column', async function (
   const column = b.columns.find((c) => c.cards.some((card) => card.title === title));
   assert.equal(column?.key, columnKey, `"${title}" should be in ${columnKey}`);
 });
+
+Then('every Jira card is linked to exactly one issue', async function (this: BoardWorld) {
+  // Would have caught cards being linked to the wrong issue key: within a
+  // transaction `now()` is identical for every row, so an ordering-based
+  // lookup had no way to tell same-sync cards apart.
+  const { rows } = await this.pool.query<{ cards: string; links: string; distinct: string }>(
+    `SELECT (SELECT count(*) FROM cards WHERE source = 'jira' AND deleted_at IS NULL) AS cards,
+            (SELECT count(*) FROM jira_links) AS links,
+            (SELECT count(DISTINCT card_id) FROM jira_links) AS distinct`,
+  );
+  const { cards, links, distinct } = rows[0]!;
+  assert.equal(links, cards, 'every Jira card must have a link');
+  assert.equal(distinct, links, 'no card may carry two links');
+
+  const { rows: mismatched } = await this.pool.query<{ title: string; issue_key: string }>(
+    `SELECT c.title, jl.issue_key FROM cards c JOIN jira_links jl ON jl.card_id = c.id
+      WHERE c.title <> 'Summary for ' || jl.issue_key`,
+  );
+  assert.deepEqual(mismatched, [], 'each card must carry its own issue summary');
+});

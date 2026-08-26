@@ -45,3 +45,14 @@ Feature: Assigned Jira work appears on the board
     And Jira has no issues
     When a sync runs
     Then Jira was asked the default query
+
+  Scenario: Several new issues in one sync each link to their own issue
+    Given the application is running
+    And Jira has an issue "AIHUB-1" with status "Open"
+    And Jira also has an issue "AIHUB-2" with status "Development"
+    And Jira also has an issue "AIHUB-3" with status "Test"
+    When a sync runs
+    Then the card for issue "AIHUB-1" has title "Summary for AIHUB-1"
+    And the card for issue "AIHUB-2" has title "Summary for AIHUB-2"
+    And the card for issue "AIHUB-3" has title "Summary for AIHUB-3"
+    And every Jira card is linked to exactly one issue

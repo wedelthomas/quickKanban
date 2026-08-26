@@ -272,7 +272,7 @@ Stories are ordered by dependency, then priority:
 - [x] T267 Code cleanup; no file over 300 lines without recorded justification.
 - [x] T268 Security check: no credential in the diff; dependency audit clean at Critical/High.
 - [x] T269 Run `quickstart.md` end to end — including the no-token path, which must work.
-- [ ] T270 Run `/speckit.review` against the diff; address blocking findings.
+- [x] T270 Run `/speckit.review` against the diff; address blocking findings.
 - [ ] T271 Request peer review.
 
 ---
