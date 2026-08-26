@@ -1,7 +1,8 @@
 import type pg from 'pg';
 import type { BoardColumn, Card, ColumnKey, Priority, CardSource } from '../../shared/types.js';
 import { isOverdue } from '../../domain/overdue.js';
-import type { CreateCardInput } from '../../domain/validation.js';
+import type { CreateCardInput, MoveCardInput } from '../../domain/validation.js';
+import { planMove, type ColumnOrder } from '../../domain/ordering.js';
 import { TagRepository } from './tag-repository.js';
 
 /** Backlog. New cards land here (FR-009). */
@@ -79,6 +80,92 @@ export class CardRepository {
     } finally {
       client.release();
     }
+  }
+
+  /**
+   * Moves a card to an absolute target (column + index), which is what makes
+   * the operation idempotent under replay: a repeated request lands the card
+   * in the same place rather than shifting it again.
+   *
+   * One transaction, with the affected columns' rows locked before anything is
+   * read, so two rapid moves serialise instead of interleaving into a column
+   * with duplicate positions.
+   */
+  async move(
+    id: string,
+    input: MoveCardInput,
+    today: Date,
+  ): Promise<{ card: Card; moved: boolean; fromColumnId: number; toColumnId: number } | null> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const { rows: cardRows } = await client.query<{ column_id: number }>(
+        `SELECT column_id FROM cards WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`,
+        [id],
+      );
+      const current = cardRows[0];
+      if (!current) {
+        await client.query('ROLLBACK');
+        return null;
+      }
+
+      const from = await this.lockedOrder(client, current.column_id);
+      const to =
+        current.column_id === input.toColumnId
+          ? from
+          : await this.lockedOrder(client, input.toColumnId);
+
+      const plan = planMove({ cardId: id, from, to, toIndex: input.toIndex });
+
+      if (!plan.changed) {
+        // No write and no history: a move to the position already held did not
+        // happen, and recording it would put noise in slice 4's summary.
+        await client.query('ROLLBACK');
+        const card = await this.findById(id, today);
+        return { card: card!, moved: false, fromColumnId: from.columnId, toColumnId: to.columnId };
+      }
+
+      await client.query(
+        `UPDATE cards AS c
+            SET column_id = v.column_id, position = v.position, updated_at = now()
+           FROM (SELECT unnest($1::uuid[]) AS id,
+                        unnest($2::int[])  AS column_id,
+                        unnest($3::int[])  AS position) AS v
+          WHERE c.id = v.id`,
+        [
+          plan.assignments.map((a) => a.cardId),
+          plan.assignments.map((a) => a.columnId),
+          plan.assignments.map((a) => a.position),
+        ],
+      );
+
+      await client.query('COMMIT');
+      const card = await this.findById(id, today);
+      return {
+        card: card!,
+        moved: true,
+        fromColumnId: plan.fromColumnId,
+        toColumnId: plan.toColumnId,
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /** Live card ids of a column, in order, locked for the rest of the transaction. */
+  private async lockedOrder(client: pg.PoolClient, columnId: number): Promise<ColumnOrder> {
+    const { rows } = await client.query<{ id: string }>(
+      `SELECT id FROM cards
+        WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL
+        ORDER BY position
+        FOR UPDATE`,
+      [columnId],
+    );
+    return { columnId, cardIds: rows.map((r) => r.id) };
   }
 
   async findById(id: string, today: Date): Promise<Card | null> {

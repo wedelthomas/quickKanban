@@ -254,3 +254,38 @@
 .board-message--error {
   color: var(--destructive);
 }
+
+.card--dragging {
+  opacity: 0.4;
+}
+
+.column--over .column-cards {
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+}
+
+.board-bar {
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.move-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 auto 0 0;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--destructive);
+  border-radius: var(--radius-sm);
+  color: var(--destructive);
+  font-size: var(--text-sm);
+}
+
+.move-error-dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}

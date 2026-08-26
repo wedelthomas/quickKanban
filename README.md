@@ -88,10 +88,13 @@ npm run test:e2e           # drag-and-drop and the keyboard map, in a browser
 npm run test:ops           # container lifecycle, persistence, loopback binding
 ```
 
-The acceptance suite starts and stops its own test database. The ops suite
-drives `docker compose` directly and **runs `down -v` as part of its setup, so
-it deletes the cards on your board** — run it before you start using the board
-for real work, not after.
+The acceptance suite starts and stops its own test database. `test:e2e` brings
+the stack up first, so it works from cold.
+
+The ops suite drives `docker compose` directly. It **runs `down -v` both to set
+up and to clean up, so it deletes the cards on your board and leaves the stack
+stopped.** Run it before you start using the board for real work, not after,
+and expect to `docker compose up -d` afterwards.
 
 The browser tests use the Google Chrome installed on your machine rather than
 Playwright's bundled Chromium (`channel: 'chrome'` in `playwright.config.ts`).

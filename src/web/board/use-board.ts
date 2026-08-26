@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Board, Card } from '../../shared/types.js';
+import { applyMove } from './apply-move.js';
 import type { CreateCardInput } from '../../domain/validation.js';
 
 export interface ProblemResponse {
@@ -33,6 +34,7 @@ const request = async <T>(url: string, init?: RequestInit): Promise<T> => {
 export const useBoard = () => {
   const [board, setBoard] = useState<Board | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [moveError, setMoveError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -64,5 +66,47 @@ export const useBoard = () => {
     [refresh],
   );
 
-  return { board, error, refresh, createCard };
+  /**
+   * Applies the move immediately, then reconciles. On failure the board goes
+   * back to exactly what it was and the reason is named — a move that silently
+   * failed would leave the board confidently wrong, which is the one outcome
+   * this product cannot afford.
+   */
+  const moveCard = useCallback(
+    async (cardId: string, toColumnId: number, toIndex: number): Promise<void> => {
+      setMoveError(null);
+      const snapshot = board;
+      if (!snapshot) return;
+
+      const optimistic = applyMove(snapshot, cardId, toColumnId, toIndex);
+      if (!optimistic) return; // nothing would change; don't call the server
+
+      setBoard(optimistic);
+      try {
+        const result = await request<{ card: Card; moved: boolean }>(
+          `/api/cards/${cardId}/move`,
+          { method: 'POST', body: JSON.stringify({ toColumnId, toIndex }) },
+        );
+        // Reconcile against the authoritative position rather than assuming the
+        // optimistic guess was right.
+        const shown = optimistic.columns
+          .flatMap((c) => c.cards)
+          .find((c) => c.id === cardId);
+        if (
+          shown &&
+          (shown.columnId !== result.card.columnId || shown.position !== result.card.position)
+        ) {
+          await refresh();
+        }
+      } catch (e) {
+        setBoard(snapshot);
+        setMoveError(
+          e instanceof ApiError ? e.problem.detail : 'The move could not be saved.',
+        );
+      }
+    },
+    [board, refresh],
+  );
+
+  return { board, error, moveError, dismissMoveError: () => setMoveError(null), refresh, createCard, moveCard };
 };

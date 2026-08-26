@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { createCardSchema } from '../../domain/validation.js';
+import { createCardSchema, moveCardSchema } from '../../domain/validation.js';
 import { titleRequired, validationFailed } from '../errors.js';
 import type { CardService } from '../services/card-service.js';
 
@@ -13,5 +13,14 @@ export const registerCardRoutes = (app: FastifyInstance, cards: CardService): vo
       throw titleIssue ? titleRequired() : validationFailed(parsed.error.issues[0]!.message);
     }
     return reply.status(201).send(await cards.create(parsed.data));
+  });
+
+  app.post<{ Params: { id: string } }>('/api/cards/:id/move', async (request) => {
+    const parsed = moveCardSchema.safeParse(request.body);
+    if (!parsed.success) throw validationFailed(parsed.error.issues[0]!.message);
+    // The response always carries the card's authoritative position, so the
+    // browser reconciles its optimistic guess against fact rather than
+    // assuming the move landed where it drew it.
+    return cards.move(request.params.id, parsed.data);
   });
 };

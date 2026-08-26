@@ -5,6 +5,11 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
+  // One worker, not merely one test at a time per file. Every spec runs against
+  // the same board and the same database, so files running concurrently would
+  // truncate each other's data mid-test — which shows up as failures that move
+  // between runs rather than a reproducible bug.
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: 'list',

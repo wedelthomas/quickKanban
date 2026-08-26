@@ -84,7 +84,7 @@ order.
 ### Tests for User Story 3 — write first, confirm they FAIL
 
 - [x] T017 [P] [US3] `tests/ops/startup.test.ts` — first start against empty storage creates the schema and serves a six-column board; the documented single command brings both containers to healthy (BH-020, BH-024).
-- [~] T018 [P] [US3] `tests/ops/persistence.test.ts` — cards in four columns survive destroying and recreating both containers (BH-019). **Written, not yet runnable**: it needs card creation (US1) and movement (US2). Runs at the US2 checkpoint — see T031a.
+- [x] T018 [P] [US3] `tests/ops/persistence.test.ts` — cards in four columns survive destroying and recreating both containers (BH-019). Run and passing as of the US2 checkpoint.
 - [x] T019 [P] [US3] `tests/features/health.feature` + steps — health reports unhealthy when the data store is unreachable (BH-021).
 - [x] T020 [P] [US3] `tests/ops/loopback.test.ts` — serves on loopback with no authentication challenge, refuses non-loopback (BH-022).
 - [x] T021 [P] [US3] `tests/ops/docs.test.ts` — README covers start, stop and reset, and names the data volume (BH-026).
@@ -102,7 +102,7 @@ order.
 - [x] T030 [US3] Write `docker-compose.yml` — app and db only, named volume `kanban_data` so data survives container recreation and image rebuild (FR-030), app published to `127.0.0.1:3000`, db port unpublished, healthcheck reading T027.
 - [x] T031 [US3] Write `README.md`: start, stop, reset, and **the name of the volume whose deletion loses every ad-hoc card** (FR-038, risk R-7).
 
-- [ ] T031a [US3] **Remediation, deferred to the US2 checkpoint**: run `tests/ops/persistence.test.ts` (TEST-019/BH-019) once card creation and movement exist, and record the result to TestRail run 51174. Raised by the US3 Story-Complete Review Gate: BH-019 is expressed in terms of cards on the board, so US3 can build durable storage but cannot prove it at the board level alone. The storage layer itself is proven now by TEST-020 (schema creation) and the volume configuration.
+- [x] T031a [US3] **Remediation, deferred to the US2 checkpoint**: run `tests/ops/persistence.test.ts` (TEST-019/BH-019) once card creation and movement exist, and record the result to TestRail run 51174. Raised by the US3 Story-Complete Review Gate: BH-019 is expressed in terms of cards on the board, so US3 can build durable storage but cannot prove it at the board level alone. The storage layer itself is proven now by TEST-020 (schema creation) and the volume configuration.
 
 **Checkpoint**: `docker compose up` yields a working, durable, loopback-only board — with TEST-019 outstanding per T031a. **Story-Complete Review Gate run; findings recorded below.**
 
@@ -172,21 +172,32 @@ order.
 
 ### Tests for User Story 2 — write first, confirm they FAIL
 
-- [ ] T057 [P] [US2] `tests/unit/ordering.test.ts` — renumbering on insert at top, middle and end; move to an occupied position; single-card column; move to the position already held.
-- [ ] T058 [P] [US2] `tests/features/card-movement.feature` + steps — move persists, reorder persists, off-board release changes nothing (BH-007, BH-008, BH-011).
-- [ ] T059 [P] [US2] `tests/e2e/drag-and-drop.spec.ts` — pointer drag across columns and within a column (BH-007, BH-008, BH-011).
-- [ ] T060 [P] [US2] `tests/e2e/optimistic-revert.spec.ts` — the move renders before the server responds, and a rejected move reverts the card with a stated reason (BH-009, BH-010).
+- [x] T057 [P] [US2] `tests/unit/ordering.test.ts` — renumbering on insert at top, middle and end; move to an occupied position; single-card column; move to the position already held.
+- [x] T058 [P] [US2] `tests/features/card-movement.feature` + steps — move persists, reorder persists, off-board release changes nothing (BH-007, BH-008, BH-011).
+- [x] T059 [P] [US2] `tests/e2e/drag-and-drop.spec.ts` — pointer drag across columns and within a column (BH-007, BH-008, BH-011).
+- [x] T060 [P] [US2] `tests/e2e/optimistic-revert.spec.ts` — the move renders before the server responds, and a rejected move reverts the card with a stated reason (BH-009, BH-010).
 
 ### Implementation for User Story 2
 
-- [ ] T061 [US2] Column renumbering in `src/domain/ordering.ts` — repositioning within a column (FR-017). Pure, no I/O.
-- [ ] T062 [US2] Extend `card-repository.ts` with the move transaction: lock the card and the destination column's rows, renumber, update. One transaction (plan.md, Failure modes). Persists both column and position (FR-018).
-- [ ] T063 [US2] Extend `card-service.ts` with move: absolute target for idempotency; returns `moved: false` and writes nothing when the position is unchanged (contracts/api.md).
-- [ ] T064 [US2] `POST /api/cards/:id/move` in `src/server/routes/cards.ts`.
-- [ ] T065 [US2] Drag context and sortable columns in `Board.tsx` using `@dnd-kit` (FR-016), sharing one drag lifecycle with the keyboard sensor added in US5 (research.md). A drag released outside every column leaves the card unchanged (FR-021).
-- [ ] T066 [US2] Optimistic move and revert in `use-board.ts`: apply locally, reconcile against the response's authoritative position, revert and surface the typed `code` on failure (FR-019, FR-020).
+- [x] T061 [US2] Column renumbering in `src/domain/ordering.ts` — repositioning within a column (FR-017). Pure, no I/O.
+- [x] T062 [US2] Extend `card-repository.ts` with the move transaction: lock the card and the destination column's rows, renumber, update. One transaction (plan.md, Failure modes). Persists both column and position (FR-018).
+- [x] T063 [US2] Extend `card-service.ts` with move: absolute target for idempotency; returns `moved: false` and writes nothing when the position is unchanged (contracts/api.md).
+- [x] T064 [US2] `POST /api/cards/:id/move` in `src/server/routes/cards.ts`.
+- [x] T065 [US2] Drag context and sortable columns in `Board.tsx` using `@dnd-kit` (FR-016), sharing one drag lifecycle with the keyboard sensor added in US5 (research.md). A drag released outside every column leaves the card unchanged (FR-021).
+- [x] T066 [US2] Optimistic move and revert in `use-board.ts`: apply locally, reconcile against the response's authoritative position, revert and surface the typed `code` on failure (FR-019, FR-020).
 
-**Checkpoint**: the board expresses progress and survives reload. **Run the Story-Complete Review Gate.**
+**Checkpoint**: the board expresses progress and survives reload. **Story-Complete Review Gate run; findings recorded below.**
+
+### US2 Story-Complete Review Gate — findings
+
+- **Spec alignment**: FR-016…FR-021 implemented. All five of the story's pathways verified green, plus TEST-019 unblocked and passing.
+- **Design**: `planMove` is a pure function shared by the server and the browser's optimistic update. Sharing it is deliberate — an optimistic update computed by different rules than the authoritative one drifts, and the drift shows up as cards jumping after the server responds.
+- **Three defects found by the tests, all real:**
+  1. A sortable card is both draggable and droppable, so the default collision strategy reported the card as dropped on itself. That resolved to its own position, planned no change, and swallowed the drag silently. Replaced with a strategy that drops the active id and prefers a card over its containing column.
+  2. The reorder test dropped into the column's padding above the first card, which correctly means "the column" and therefore "the end". The test was wrong, not the code; it now drops onto the card, which is the actual gesture.
+  3. **The E2E suite was running spec files in parallel against one shared database.** `fullyParallel: false` only sequences tests within a file; `workers` was never set, so three files ran concurrently and each `resetBoard()` truncated the others' data mid-test. This presented as failures that moved between runs — the most expensive kind to chase, and the reason two earlier fixes looked like they had not worked. Fixed with `workers: 1`.
+- **Movement history is deliberately not written yet.** The move transaction is the right place for it and US6 adds the append there, so US6's tests can still fail first rather than passing on arrival — which is what happened to health and overdue.
+- **Tests**: assertions are behavioural. The optimistic test holds the request open with a route interceptor, so it proves the optimistic render rather than a fast server.
 
 ---
 
