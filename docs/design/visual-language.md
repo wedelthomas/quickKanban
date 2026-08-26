@@ -129,9 +129,13 @@ Archive and Summary views in Slice 4, where vertical lists benefit from it and
 horizontal space is not contested. The statistic strip sits directly beneath
 the board header, where it costs vertical space only.
 
-## Open question
+## Theme decision
 
-Both references are dark. The portal additionally offers a light/system/dark
-control. The board is specified dark-first; whether a light theme is in scope
-is a plan-level decision, since it roughly doubles both the palette work and
-the visual review surface.
+**Dark only.** Decided 2026-08-26.
+
+Both references are dark, and the board runs on the user's own machine all
+day. The portal's light/system/dark control is deliberately not adopted: a
+light palette roughly doubles the palette work and means every visual check
+happens twice, on every slice, for a theme the sole user has not asked for.
+
+Should that change, the palette above is the single place to revisit.
