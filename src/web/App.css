@@ -494,3 +494,46 @@ kbd {
   flex: 1;
   max-width: 60%;
 }
+
+/* --- filter bar --------------------------------------------------------- */
+
+.filter-bar {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0 0 var(--space-3);
+}
+
+.filter-text {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.filter-bar .input {
+  padding: 4px var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Not styled as an error: a filter hiding everything is the control working,
+   not something going wrong. It just must never be silent. */
+.filter-empty-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}

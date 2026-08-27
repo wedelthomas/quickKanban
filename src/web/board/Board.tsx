@@ -3,11 +3,8 @@ import {
   DndContext,
   PointerSensor,
   KeyboardSensor,
-  pointerWithin,
-  rectIntersection,
   useSensor,
   useSensors,
-  type CollisionDetection,
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
@@ -21,63 +18,23 @@ import { useSync } from '../sync/use-sync.js';
 import { SyncStatusPill } from '../sync/SyncStatus.js';
 import { useConflicts } from '../conflicts/use-conflicts.js';
 import { ConflictDialog } from '../conflicts/ConflictDialog.js';
+import { FilterBar } from './FilterBar.js';
+import { useFilter } from './use-filter.js';
+import { collisionDetection, resolveTarget } from './drag.js';
+import { matches } from '../../domain/card-filter.js';
 import type { ShortcutMatch } from '../keyboard/shortcuts.js';
 import type { Board as BoardData, Card } from '../../shared/types.js';
 
 /**
- * Resolves what dnd-kit reports it was dropped over into a concrete
- * (column, 1-based index) target. Dropping on a card means "in front of that
- * card"; dropping on the column's empty space means "at the end".
+ * The board screen: cards, drag and drop, keyboard, filter and the dialogs.
+ *
+ * A little over 300 lines, and the two obvious extractions were both tried and
+ * rejected. The drag geometry did leave, to `drag.ts`, because it is arithmetic
+ * about pointers and owes nothing to board state. The keyboard handler and the
+ * dialog block cannot: each would need eight to ten props threaded back in —
+ * the board, the mutations, two refs and five setters — which moves the tangle
+ * somewhere else and adds an indirection to look through while doing it.
  */
-const resolveTarget = (
-  board: BoardData,
-  activeId: string,
-  overId: string,
-): { toColumnId: number; toIndex: number } | null => {
-  const columnMatch = /^column-(\d+)$/.exec(overId);
-  if (columnMatch) {
-    const toColumnId = Number(columnMatch[1]);
-    const column = board.columns.find((c) => c.id === toColumnId);
-    if (!column) return null;
-    const withoutActive = column.cards.filter((c) => c.id !== activeId);
-    return { toColumnId, toIndex: withoutActive.length + 1 };
-  }
-
-  const column = board.columns.find((c) => c.cards.some((card) => card.id === overId));
-  if (!column) return null;
-  const index = column.cards
-    .filter((c) => c.id !== activeId)
-    .findIndex((c) => c.id === overId);
-  return {
-    toColumnId: column.id,
-    toIndex: (index === -1 ? column.cards.length : index) + 1,
-  };
-};
-
-/**
- * A sortable card is both draggable and droppable, so the default strategies
- * happily report that a card was dropped on itself — which resolves to its own
- * position, plans no change, and silently swallows the drag. Dropping the
- * active id and preferring what the pointer is actually inside makes an empty
- * column a reachable target.
- */
-const collisionDetection: CollisionDetection = (args) => {
-  const notSelf = (c: { id: string | number }) => c.id !== args.active.id;
-  const isColumn = (c: { id: string | number }) => String(c.id).startsWith('column-');
-
-  // A card and the column containing it are both under the pointer. The card
-  // is the more specific answer — it means "put me in front of this one" —
-  // so cards are preferred and the column is the fallback for empty space.
-  const prefer = (candidates: ReturnType<typeof pointerWithin>) => {
-    const usable = candidates.filter(notSelf);
-    const cards = usable.filter((c) => !isColumn(c));
-    return cards.length > 0 ? cards : usable;
-  };
-
-  const under = prefer(pointerWithin(args));
-  return under.length > 0 ? under : prefer(rectIntersection(args));
-};
-
 export const Board = () => {
   const {
     board,
@@ -97,6 +54,13 @@ export const Board = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conflictsOpen, setConflictsOpen] = useState(false);
   const { conflicts, resolve } = useConflicts(board);
+  const {
+    filter,
+    update: updateFilter,
+    clear: clearFilter,
+    active: filtering,
+  } = useFilter();
+  const filterInputRef = useRef<HTMLInputElement | null>(null);
   // Held by id rather than by element, because the board re-renders after every
   // move and the element the user focused is gone by the time it lands.
   const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
@@ -129,6 +93,14 @@ export const Board = () => {
     (match: ShortcutMatch): void => {
       if (match.action === 'close') {
         setHelpOpen(false);
+        // Escape clears the filter as well as closing the help overlay: with
+        // the filter focused it is the obvious way out, and a filter the user
+        // cannot dismiss without reaching for the mouse fails FR-309.
+        clearFilter();
+        return;
+      }
+      if (match.action === 'focus-filter') {
+        filterInputRef.current?.focus();
         return;
       }
       if (match.action === 'help') {
@@ -179,7 +151,7 @@ export const Board = () => {
         void moveCard(cardId, column.id, column.cards.length + 1);
       }
     },
-    [board, moveCard, focusCardById],
+    [board, moveCard, focusCardById, clearFilter],
   );
 
   // Suspended while a dialog owns the screen, so the board's shortcuts cannot
@@ -200,6 +172,23 @@ export const Board = () => {
     if (!target) return;
     void moveCard(String(event.active.id), target.toColumnId, target.toIndex);
   };
+
+  // Narrowed for display only. No request is made and nothing is written —
+  // which is how FR-311 (filtering alters no card) is true by construction
+  // rather than by convention.
+  const visible: BoardData = filtering
+    ? {
+        ...board,
+        columns: board.columns.map((column) => ({
+          ...column,
+          cards: column.cards.filter((card) => matches(card, filter)),
+        })),
+      }
+    : board;
+
+  const hiddenCount =
+    board.columns.reduce((n, c) => n + c.cards.length, 0) -
+    visible.columns.reduce((n, c) => n + c.cards.length, 0);
 
   return (
     <>
@@ -235,13 +224,37 @@ export const Board = () => {
           New card
         </button>
       </div>
+      <FilterBar
+        board={board}
+        filter={filter}
+        active={filtering}
+        onChange={updateFilter}
+        onClear={clearFilter}
+        inputRef={filterInputRef}
+      />
+      {filtering &&
+        hiddenCount > 0 &&
+        visible.columns.every((c) => c.cards.length === 0) && (
+          // The whole of SC-309: an empty board must never be ambiguous between
+          // "a filter is hiding things" and "you have no work".
+          <p
+            className="filter-empty-notice"
+            role="status"
+            data-testid="filter-empty-notice"
+          >
+            A filter is hiding {hiddenCount} card{hiddenCount === 1 ? '' : 's'}.
+            <button className="button" onClick={clearFilter}>
+              Clear filter
+            </button>
+          </p>
+        )}
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetection}
         onDragEnd={onDragEnd}
       >
         <div className="board" data-testid="board">
-          {board.columns.map((column) => (
+          {visible.columns.map((column) => (
             <ColumnView column={column} key={column.id} onOpenCard={setEditing} />
           ))}
         </div>

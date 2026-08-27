@@ -11,6 +11,7 @@ export type ShortcutAction =
   | 'focus-previous'
   | 'open-card'
   | 'move-to-column'
+  | 'focus-filter'
   | 'help'
   | 'close';
 
@@ -31,6 +32,7 @@ export const SHORTCUTS: readonly Shortcut[] = [
     description: 'Send the focused card to that column',
     action: 'move-to-column',
   },
+  { label: '/', description: 'Filter the board', action: 'focus-filter' },
   { label: '?', description: 'Show this list', action: 'help' },
   { label: 'Esc', description: 'Close a dialog', action: 'close' },
 ];
@@ -51,6 +53,7 @@ export const matchShortcut = (event: KeyboardEvent): ShortcutMatch | null => {
   if (event.key === 'j' || event.key === 'ArrowDown') return { action: 'focus-next' };
   if (event.key === 'k' || event.key === 'ArrowUp') return { action: 'focus-previous' };
   if (event.key === 'Enter') return { action: 'open-card' };
+  if (event.key === '/') return { action: 'focus-filter' };
 
   if (/^[1-6]$/.test(event.key)) {
     return { action: 'move-to-column', columnPosition: Number(event.key) };

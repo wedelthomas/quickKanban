@@ -89,11 +89,11 @@ board, with every column still visible.
   every pairwise combination, the empty filter, and the filter matching nothing.
   SC-302 asks for no false positives and no omissions across combinations, so
   this is a table, not a handful of examples — BH-301, BH-302, BH-303, BH-304.
-- [ ] T411 [P] [US1] `tests/features/filtering.feature` — a filtered board moves
+- [x] T411 [P] [US1] `tests/features/filtering.feature` — a filtered board moves
   no card and changes no content. This is the acceptance-level half of SC-303;
   the client-side design (R-1) makes it true by construction, and this test is
   what proves the construction held — BH-305.
-- [ ] T412 [P] [US1] `tests/e2e/filter.spec.ts` — all six columns visible while
+- [x] T412 [P] [US1] `tests/e2e/filter.spec.ts` — all six columns visible while
   filtered; the empty-filtered board states that a filter is hiding cards and
   offers to clear it; filter reachable, applicable and clearable by keyboard
   alone; reload clears it — BH-305, BH-306, BH-307, BH-308.
@@ -103,18 +103,18 @@ board, with every column still visible.
 - [x] T413 [US1] `src/domain/card-filter.ts` — a pure `matches(card, filter)`
   plus the `Filter` shape. Text matches title and description only; tags are a
   separate control, so the two never overlap surprisingly (spec Edge Cases).
-- [ ] T414 [US1] `src/web/board/use-filter.ts` — the filter state hook. Held in
+- [x] T414 [US1] `src/web/board/use-filter.ts` — the filter state hook. Held in
   component state and nowhere else: that is what makes FR-310 (no persistence
   across reload) free rather than something to enforce.
-- [ ] T415 [US1] `src/web/board/FilterBar.tsx` — text input, tag select,
+- [x] T415 [US1] `src/web/board/FilterBar.tsx` — text input, tag select,
   priority select, source select, overdue toggle, and a clear control. Every one
   reachable by keyboard (FR-309).
-- [ ] T416 [US1] `Board.tsx` filters before rendering, and renders all six
+- [x] T416 [US1] `Board.tsx` filters before rendering, and renders all six
   columns regardless of matches (FR-307).
-- [ ] T417 [US1] The empty-filtered board states that a filter is active and how
+- [x] T417 [US1] The empty-filtered board states that a filter is active and how
   to clear it (FR-308). **An empty board must never be ambiguous between
   "filtered" and "you have no work"** — that ambiguity is the whole of SC-309.
-- [ ] T418 [US1] `/` focuses the filter, `Escape` clears it; both listed in the
+- [x] T418 [US1] `/` focuses the filter, `Escape` clears it; both listed in the
   help overlay. Must respect the `suspended` flag slice 1 added, so the
   shortcut cannot reach past an open dialog.
 
