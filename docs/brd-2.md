@@ -296,7 +296,7 @@ beginning only after the v1 baseline is complete.
 
 | Slice | Contents | Requirements | Outcome |
 |---|---|---|---|
-| **5. Iteration and board restructure** | Column set changed to Backlog / Iteration Items / In Progress / Test / PO Review / Done; blocked becomes a flag with edge and badge; migration of existing blocked cards; iteration resolution from the reference board; the banner | BR-38…BR-61, BR-81…BR-83, NFR-25, NFR-27, NFR-28, NFR-30, NFR-32 | The board knows the iteration, and blocked stops costing a column |
+| **5. Iteration and board restructure** | Column set changed to Backlog / Iteration Items / In Progress / Test / PO Review / Done; blocked becomes a flag with edge and badge; migration of existing blocked cards; iteration resolution from the reference board; the banner | BR-38…BR-61, BR-81…BR-83, BR-86, NFR-25, NFR-27, NFR-28, NFR-30, NFR-32 | The board knows the iteration, and blocked stops costing a column |
 | **6. Time, points and iteration reporting** | Time derived from movement history; working-hours model; points import and local entry; velocity; the Phase 2 reports and the iteration burndown; summary extended to the iteration period | BR-62…BR-80, BR-84…BR-85, NFR-26, NFR-29 | The board answers where the iteration went, and shows it going |
 
 NFR-31 is cross-cutting.
