@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { resetBoard } from './reset.js';
+import { resetBoard, E2E_DATABASE } from './reset.js';
 import { createCard } from './helpers.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -18,7 +18,7 @@ const archiveDaysAgo = async (title: string, days: number): Promise<void> => {
     '-U',
     process.env.POSTGRES_USER ?? 'kanban',
     '-d',
-    process.env.POSTGRES_DB ?? 'kanban',
+    E2E_DATABASE,
     '-c',
     `UPDATE cards SET column_id = 6, archived_at = now() - interval '${days} days'
       WHERE title = $$${title}$$;`,

@@ -4,6 +4,44 @@ import { promisify } from 'node:util';
 const run = promisify(execFile);
 
 /**
+ * The browser suite's own database.
+ *
+ * Every psql call in this file targets it explicitly rather than POSTGRES_DB,
+ * which names the developer's real board. Using POSTGRES_DB here is what
+ * emptied it.
+ */
+export const E2E_DATABASE = 'kanban_e2e';
+
+/**
+ * Refuses to run against anything but the browser suite's own database.
+ *
+ * A belt to docker-compose.e2e.yml's braces. That override is what makes the
+ * app talk to kanban_e2e; this makes the truncation itself refuse if the app
+ * is somehow pointed elsewhere — which is exactly what happened before either
+ * existed, and cost a real board its cards and its configured author.
+ */
+const assertNotTheRealBoard = async (): Promise<void> => {
+  const { stdout } = await run('docker', [
+    'compose',
+    'exec',
+    '-T',
+    'app',
+    'sh',
+    '-c',
+    'echo "$DATABASE_URL"',
+  ]);
+  const target = stdout.trim().split('/').pop() ?? '';
+  if (target !== E2E_DATABASE) {
+    throw new Error(
+      `Refusing to truncate: the app is pointed at "${target}", not ${E2E_DATABASE}. ` +
+        'Start the browser stack with `npm run test:e2e`, which applies ' +
+        'docker-compose.e2e.yml. Running playwright directly against the ' +
+        'normal stack would empty the real board.',
+    );
+  }
+};
+
+/**
  * Empties the board between tests.
  *
  * Goes through psql in the db container rather than the API, because the API
@@ -12,6 +50,7 @@ const run = promisify(execFile);
  * `compose exec` is the way in.
  */
 export const resetBoard = async (): Promise<void> => {
+  await assertNotTheRealBoard();
   await run('docker', [
     'compose',
     'exec',
@@ -21,7 +60,7 @@ export const resetBoard = async (): Promise<void> => {
     '-U',
     process.env.POSTGRES_USER ?? 'kanban',
     '-d',
-    process.env.POSTGRES_DB ?? 'kanban',
+    E2E_DATABASE,
     '-c',
     // Settings are restored rather than truncated: the rows are seeded by
     // migration, so dropping them would leave the app with no query at all.
@@ -82,7 +121,7 @@ export const seedJiraCard = async (opts: {
     '-U',
     process.env.POSTGRES_USER ?? 'kanban',
     '-d',
-    process.env.POSTGRES_DB ?? 'kanban',
+    E2E_DATABASE,
     '-c',
     sql,
   ]);
@@ -110,7 +149,7 @@ export const seedConflict = async (opts: {
     '-U',
     process.env.POSTGRES_USER ?? 'kanban',
     '-d',
-    process.env.POSTGRES_DB ?? 'kanban',
+    E2E_DATABASE,
     '-c',
     sql,
   ]);
