@@ -83,7 +83,7 @@ move recorded against the system.
 - [x] T017 [P] [US1] Contract test `tests/contract/retired-column.test.ts` — TEST-401's write-path half: a move into the retired column is refused with `COLUMN_RETIRED` and 422.
 - [x] T018 [P] [US1] Contract test `tests/contract/board-payload.test.ts` — TEST-406: `blocked`, `blockedDivergesFromJira` and `carriedIterations` present; no retired column returned.
 - [x] T019 [P] [US1] Acceptance feature `tests/features/blocked-flag.feature` and steps — TEST-406, TEST-407, TEST-408: set and clear, move while blocked, filter by blocked, summary grouping driven by the flag.
-- [ ] T020 [P] [US1] E2E test `tests/e2e/blocked-card.spec.ts` — TEST-427: edge and badge visible, blocked distinguishable with colour disabled, flag settable and clearable by keyboard alone.
+- [x] T020 [P] [US1] E2E test `tests/e2e/blocked-card.spec.ts` — TEST-427: edge and badge visible, blocked distinguishable with colour disabled, flag settable and clearable by keyboard alone.
 
 ### Implementation for User Story 1
 
@@ -97,7 +97,27 @@ move recorded against the system.
 - [x] T028 [US1] Drive the summary's blocked grouping from the flag rather than from column membership, in `src/server/services/summary-service.ts` and `src/server/repositories/summary-repository.ts` (FR-415).
 - [x] T029 [US1] Update `src/web/board/Board.tsx` and `ColumnView.tsx` for the six new columns and their colours.
 
-**Checkpoint**: US1 fully functional. **Run the Story-Complete Review Gate.**
+**Checkpoint**: US1 fully functional. **Story-Complete Review Gate PASSED.**
+
+Spec alignment, design, error handling, tests, security and integration all
+clear. Suites at the checkpoint: 216 unit, 24 contract, 135 acceptance (815
+steps), 26 ops, 52 e2e.
+
+Four defects were found during this story and fixed, none of them by reading
+the code:
+
+- Moving into the retired column answered 200 and the card vanished from the
+  board. Found by probing the running board.
+- Iteration Items was unreachable: `moveCardSchema` pinned `toColumnId` to
+  1..6 and Iteration Items is id 7. The developer hit this dragging a card.
+- `PATCH {blocked:true}` wrote `true` and answered `false`: two separate
+  SELECTs feed the same `toCard`, and only one was updated.
+- The mapping route pinned the same 1..6 range and required exactly six
+  entries, so no mapping payload could be saved at all.
+
+All four share one cause: constants that were true only while column ids
+happened to match board positions. Four copies of the column-id map in the step
+files had the same problem and are now one.
 
 ---
 

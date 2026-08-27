@@ -21,7 +21,8 @@ test.describe('the summary', () => {
 
     // Move it to In Progress so there is both a movement and current state.
     await page.keyboard.press('j');
-    await page.keyboard.press('2');
+    // 3 is In Progress since the restructure: Iteration Items took position 2.
+    await page.keyboard.press('3');
     await expect(
       page.getByTestId('column').filter({ hasText: 'In Progress' }).getByTestId('card'),
     ).toHaveCount(1);
@@ -46,7 +47,8 @@ test.describe('the summary', () => {
     await page.goto('/');
     await createCard(page, 'Rotate staging certificates');
     await page.keyboard.press('j');
-    await page.keyboard.press('2');
+    // 3 is In Progress since the restructure: Iteration Items took position 2.
+    await page.keyboard.press('3');
 
     await page.getByRole('button', { name: 'Summary' }).click();
     await page.getByTestId('summary-copy').click();

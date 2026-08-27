@@ -21,10 +21,12 @@ test.describe('the column mapping editor', () => {
 
     const editor = page.getByTestId('mapping-editor');
     await expect(editor.getByTestId('mapping-test')).toHaveValue('Test');
-    // Blocked ships unmapped on purpose: not every board column is a Jira status.
-    await expect(editor.getByTestId('mapping-blocked')).toHaveValue('');
+    // Iteration Items ships unmapped on purpose: committing to work is a
+    // decision, not a Jira status. This was Blocked's job until slice 5 retired
+    // that column — the mechanism is unchanged, the example moved.
+    await expect(editor.getByTestId('mapping-iteration_items')).toHaveValue('');
 
-    await editor.getByTestId('mapping-blocked').selectOption('Development');
+    await editor.getByTestId('mapping-iteration_items').selectOption('Development');
     // One Save for the whole dialog — the mapping is part of the settings, not
     // a separate screen with its own commit.
     await page
@@ -36,7 +38,7 @@ test.describe('the column mapping editor', () => {
     await page.reload();
     await page.getByRole('button', { name: 'Settings' }).click();
     await expect(
-      page.getByTestId('mapping-editor').getByTestId('mapping-blocked'),
+      page.getByTestId('mapping-editor').getByTestId('mapping-iteration_items'),
     ).toHaveValue('Development');
   });
 });
