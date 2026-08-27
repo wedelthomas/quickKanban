@@ -4,6 +4,7 @@ import pg from 'pg';
 import { buildApp } from '../../../src/server/app.js';
 import { runMigrations } from '../../../src/server/db/migrate.js';
 import { FakeJiraAdapter } from '../../../src/server/jira/fake-jira-adapter.js';
+import { FakeIterationAdapter } from '../../../src/server/jira/fake-iteration-adapter.js';
 
 /**
  * The acceptance suite runs against the real API and a real database. No
@@ -42,6 +43,8 @@ export class BoardWorld extends World {
   pool!: pg.Pool;
   /** Staged by the Jira steps; the app is built against this, never live Jira. */
   jira!: FakeJiraAdapter;
+  /** The iteration source, likewise fake. Defaults to board 1391's real shape. */
+  iterations!: FakeIterationAdapter;
   response!: { status: number; body: unknown };
   /** The card produced by the most recent creating step, for later assertions. */
   lastCard?: import('../../../src/shared/types.js').Card;
@@ -57,7 +60,13 @@ export class BoardWorld extends World {
     this.pool = new pg.Pool({ connectionString, statement_timeout: 5_000 });
     await runMigrations(this.pool);
     this.jira = new FakeJiraAdapter();
-    this.app = buildApp({ pool: this.pool, logger: false, jira: this.jira });
+    this.iterations = new FakeIterationAdapter();
+    this.app = buildApp({
+      pool: this.pool,
+      logger: false,
+      jira: this.jira,
+      iterations: this.iterations,
+    });
     await this.app.ready();
   }
 
@@ -71,7 +80,10 @@ export class BoardWorld extends World {
   /** Truncate rather than re-migrate: scenarios need isolation, not a fresh schema. */
   async reset(): Promise<void> {
     await this.pool.query(
-      'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, conflicts, cards RESTART IDENTITY CASCADE',
+      // `iterations` is in this list for the reason SEEDED_SETTINGS exists: a
+      // cached iteration left by one scenario makes the next one's "nothing
+      // cached" premise false, and it fails as 'cached' rather than saying so.
+      'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, conflicts, iterations, cards RESTART IDENTITY CASCADE',
     );
     for (const [key, value] of Object.entries(SEEDED_SETTINGS)) {
       await this.pool.query(

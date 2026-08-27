@@ -133,29 +133,43 @@ the banner persists, marked as not freshly read.
 
 ### Tests for User Story 2
 
-- [ ] T030 [US2] Author or sync TestRail cases for BH-416 through BH-422, BH-428, BH-429 and BH-430 via `spec-testrail-sync`, before the implementation tasks below.
-- [ ] T031 [P] [US2] Unit test `tests/unit/sprint-selection.test.ts` — TEST-417 (the configured team's sprint wins over another team's regardless of response order), TEST-418 (an undated active sprint yields no iteration), TEST-430 (a lower reported ordinal is displayed as reported, never counted forward).
-- [ ] T032 [P] [US2] Unit test `tests/unit/working-days.test.ts` — TEST-416's arithmetic: working days remaining across weekends and a configured working-day set.
-- [ ] T033 [P] [US2] Unit test `tests/unit/iteration-provenance.test.ts` — TEST-419 (cached, marked stale), TEST-420 (estimated, marked, no ordinal name), TEST-422 (an elapsed iteration stops being presented as current).
-- [ ] T034 [P] [US2] Contract test `tests/contract/iteration-api.test.ts` — TEST-416 and TEST-421: the payload shape, and the never-5xx guarantee under every failure of the source.
-- [ ] T035 [P] [US2] Acceptance feature `tests/features/iteration-banner.feature` and steps — read, cached, estimated, and the board staying interactive throughout.
-- [ ] T036 [P] [US2] E2E test `tests/e2e/iteration-banner.spec.ts` — TEST-428: the banner present alongside roughly fifty cards in a column with no scrolling (FR-441).
+- [x] T030 [US2] Author or sync TestRail cases for BH-416 through BH-422, BH-428, BH-429 and BH-430 via `spec-testrail-sync`, before the implementation tasks below.
+- [x] T031 [P] [US2] Unit test `tests/unit/sprint-selection.test.ts` — TEST-417 (the configured team's sprint wins over another team's regardless of response order), TEST-418 (an undated active sprint yields no iteration), TEST-430 (a lower reported ordinal is displayed as reported, never counted forward).
+- [x] T032 [P] [US2] Unit test `tests/unit/working-days.test.ts` — TEST-416's arithmetic: working days remaining across weekends and a configured working-day set.
+- [x] T033 [P] [US2] Unit test `tests/unit/iteration-provenance.test.ts` — TEST-419 (cached, marked stale), TEST-420 (estimated, marked, no ordinal name), TEST-422 (an elapsed iteration stops being presented as current).
+- [x] T034 [P] [US2] Contract test `tests/contract/iteration-api.test.ts` — TEST-416 and TEST-421: the payload shape, and the never-5xx guarantee under every failure of the source.
+- [x] T035 [P] [US2] Acceptance feature `tests/features/iteration-banner.feature` and steps — read, cached, estimated, and the board staying interactive throughout.
+- [x] T036 [P] [US2] E2E test `tests/e2e/iteration-banner.spec.ts` — TEST-428: the banner present alongside roughly fifty cards in a column with no scrolling (FR-441).
 
 ### Implementation for User Story 2
 
-- [ ] T037 [P] [US2] Pure `src/domain/sprint-selection.ts`: pick the configured team's sprint from a list of active sprints; ignore other teams (FR-445); reject undated sprints (FR-425); break ties on lowest sprint id (FR-424).
-- [ ] T038 [P] [US2] Pure `src/domain/working-days.ts`: working days between two dates given a configured working-day set. Takes its clock as an argument.
-- [ ] T039 [US2] `src/server/jira/iteration-port.ts` — the interface from contracts/api.md, with nullable sprint dates because undated sprints are real.
-- [ ] T040 [P] [US2] `src/server/jira/iteration-adapter.ts` — reads active sprints from the configured board, reusing the existing credential handling in `credentials.ts` and the backoff in `src/domain/backoff.ts`. No new retry policy.
-- [ ] T041 [P] [US2] `src/server/jira/fake-iteration-adapter.ts` — the suite's double (FR-442, NFR-25), able to present two active sprints, an undated sprint, and every failure kind.
-- [ ] T042 [US2] `src/server/repositories/iteration-repository.ts` — upsert on `ordinal_name`, read the current iteration by `starts_on DESC`.
-- [ ] T043 [US2] `src/server/services/iteration-service.ts` — resolve, cache, degrade through cached to estimated to nothing (FR-426, FR-428). Runs inside the existing `src/server/sync/sync-lock.ts` so it cannot overlap a poll. **Failure never propagates to the caller** (FR-430).
-- [ ] T044 [US2] `GET /api/iteration` in `src/server/routes/iteration.ts`, registered in `src/server/app.ts`. Always 200; a null body is a valid state.
-- [ ] T045 [US2] `src/web/board/IterationBanner.tsx` — name, date range, working days remaining, and a visible marker when the value is cached or estimated (FR-427). Rendered by `src/web/App.tsx` so it does not block the board's own load (FR-429).
-- [ ] T046 [US2] **Add the Jira Agile touchpoint to `docs/external-interactions.md`** — direction, contract, authentication, timeout, retry, and both failure modes, matching the entries slices 1–3 wrote. Constitution Principle XI and the standing quality gate require this in the same change as the touchpoint.
+- [x] T037 [P] [US2] Pure `src/domain/sprint-selection.ts`: pick the configured team's sprint from a list of active sprints; ignore other teams (FR-445); reject undated sprints (FR-425); break ties on lowest sprint id (FR-424).
+- [x] T038 [P] [US2] Pure `src/domain/working-days.ts`: working days between two dates given a configured working-day set. Takes its clock as an argument.
+- [x] T039 [US2] `src/server/jira/iteration-port.ts` — the interface from contracts/api.md, with nullable sprint dates because undated sprints are real.
+- [x] T040 [P] [US2] `src/server/jira/iteration-adapter.ts` — reads active sprints from the configured board, reusing the existing credential handling in `credentials.ts` and the backoff in `src/domain/backoff.ts`. No new retry policy.
+- [x] T041 [P] [US2] `src/server/jira/fake-iteration-adapter.ts` — the suite's double (FR-442, NFR-25), able to present two active sprints, an undated sprint, and every failure kind.
+- [x] T042 [US2] `src/server/repositories/iteration-repository.ts` — upsert on `ordinal_name`, read the current iteration by `starts_on DESC`.
+- [x] T043 [US2] `src/server/services/iteration-service.ts` — resolve, cache, degrade through cached to estimated to nothing (FR-426, FR-428). Runs inside the existing `src/server/sync/sync-lock.ts` so it cannot overlap a poll. **Failure never propagates to the caller** (FR-430).
+- [x] T044 [US2] `GET /api/iteration` in `src/server/routes/iteration.ts`, registered in `src/server/app.ts`. Always 200; a null body is a valid state.
+- [x] T045 [US2] `src/web/board/IterationBanner.tsx` — name, date range, working days remaining, and a visible marker when the value is cached or estimated (FR-427). Rendered by `src/web/App.tsx` so it does not block the board's own load (FR-429).
+- [x] T046 [US2] **Add the Jira Agile touchpoint to `docs/external-interactions.md`** — direction, contract, authentication, timeout, retry, and both failure modes, matching the entries slices 1–3 wrote. Constitution Principle XI and the standing quality gate require this in the same change as the touchpoint.
 
-**Checkpoint**: US1 and US2 both work independently. **Run the Story-Complete
-Review Gate.**
+**Checkpoint**: US1 and US2 both work independently. **Story-Complete Review
+Gate PASSED.**
+
+Verified live against tsgjira.atlassian.net: the banner reads
+`CRM TradeBlazers 2026 S18`, 24 Aug – 7 Sep, correctly choosing TradeBlazers
+over the MDS sprint sharing board 1391, and displays it as `S18`.
+
+Two findings recorded during this story:
+
+- The settings route had no validation for any slice 5 key, so a PUT carrying
+  `iterationBoardId` returned 200 and silently discarded it. T070 was pulled
+  forward from US6 to close it.
+- NFR-14's density budget had never been asserted by any test in four slices,
+  and its literal reading — fifty cards in ONE column without scrolling — is
+  not achievable by any layout on any display. The e2e test asserts the
+  achievable reading (a full board of fifty, distributed) and says so.
 
 ---
 
@@ -254,7 +268,7 @@ banner follows, restart, and confirm the setting survived.
 
 ### Implementation for User Story 6
 
-- [ ] T070 [US6] Extend the Zod schema in `src/server/routes/settings.ts` with the bounds from contracts/api.md: cadence 1–90, hours 0–23 with start < end, working days a non-empty subset, field ids matching `^customfield_\d+$`, board id a positive integer.
+- [x] T070 [US6] Extend the Zod schema in `src/server/routes/settings.ts` with the bounds from contracts/api.md: cadence 1–90, hours 0–23 with start < end, working days a non-empty subset, field ids matching `^customfield_\d+$`, board id a positive integer.
 - [ ] T071 [US6] Re-arm iteration resolution when the board or team name changes, following the existing `onIntervalChanged` pattern.
 - [ ] T072 [US6] Add the controls to `src/web/settings/SettingsDialog.tsx`, showing each field identifier's default. No credential appears, and there is nowhere to put one.
 

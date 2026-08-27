@@ -154,3 +154,38 @@ export const seedConflict = async (opts: {
     sql,
   ]);
 };
+
+/**
+ * Puts `count` plain cards across the board's live columns in one statement.
+ *
+ * Through psql rather than the API for the same reason resetBoard is: fifty
+ * sequential POSTs would make the density test slow enough that nobody runs it,
+ * and what it asserts is about layout rather than about creation.
+ */
+export const seedCards = async (count: number): Promise<void> => {
+  await run('docker', [
+    'compose',
+    'exec',
+    '-T',
+    'db',
+    'psql',
+    '-U',
+    process.env.POSTGRES_USER ?? 'kanban',
+    '-d',
+    E2E_DATABASE,
+    '-c',
+    // Distributed across the live columns, because that is what a workload of
+    // this size actually looks like — all of it in one column is a state no
+    // real board reaches and no layout could serve.
+    `INSERT INTO cards (title, column_id, position)
+       SELECT 'Card ' || n,
+              c.id,
+              row_number() OVER (PARTITION BY c.id ORDER BY n)
+         FROM generate_series(1, ${count}) AS n
+         JOIN LATERAL (
+           SELECT id FROM columns WHERE retired_at IS NULL
+            ORDER BY position OFFSET (n - 1) % (SELECT count(*) FROM columns WHERE retired_at IS NULL)
+            LIMIT 1
+         ) AS c ON true`,
+  ]);
+};

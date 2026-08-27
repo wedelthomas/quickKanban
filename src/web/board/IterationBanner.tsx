@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Iteration } from '../../shared/types.js';
+import { shortIterationName } from '../../domain/iteration-name.js';
 
 const formatRange = (startsOn: string, endsOn: string): string => {
   const at = (iso: string): Date => {
@@ -52,10 +53,17 @@ export const IterationBanner = () => {
       data-testid="iteration-banner"
       data-provenance={provenance}
     >
-      <span className="iteration-name" data-testid="iteration-name">
+      <span
+        className="iteration-name"
+        data-testid="iteration-name"
+        // The full name in the tooltip: which team's sprint was chosen is the
+        // one fact worth making configurable, so it stays reachable even though
+        // the prefix is noise on a board that is entirely one person's.
+        title={ordinalName ?? undefined}
+      >
         {/* An estimated iteration carries no ordinal: the number resets at the
             fiscal year, so a computed one would be wrong every January. */}
-        {ordinalName ?? 'Current iteration'}
+        {shortIterationName(ordinalName) ?? 'Current iteration'}
       </span>
       <span className="iteration-dates">{formatRange(startsOn, endsOn)}</span>
       <span className="iteration-days" data-testid="iteration-days">

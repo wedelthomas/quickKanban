@@ -70,9 +70,38 @@ interceptable by anyone on the path.
 **Blast radius.** This is the only touchpoint in the system that changes data
 other people can see. Everything else is local to the user's machine.
 
+### Jira Cloud Agile API — read (the iteration)
+
+| Field | Value |
+|---|---|
+| **Direction** | Outbound HTTPS, from the app container |
+| **Introduced in** | Slice 5 (`specs/005-iteration-and-board-restructure/`) |
+| **Contract** | `GET {JIRA_BASE_URL}/rest/agile/1.0/board/{boardId}/sprint?state=active&maxResults=50`. Returns `values[]` of sprints carrying `id`, `name`, `startDate`, `endDate`. A different API surface from the REST v3 endpoints above — Agile endpoints, not `/rest/api/3` — verified against tsgjira.atlassian.net on 2026-08-26. |
+| **Authentication** | The same account email and API token as the REST touchpoints, from a gitignored `.env`. No new credential and no new place to put one. |
+| **Timeout** | 10s per request |
+| **Retries** | The shared bounded backoff (`src/domain/backoff.ts`), unchanged. 429 honours `Retry-After`. 401/403 is not retried: a rejected credential will be rejected again. |
+| **Failure mode** | **Silent, by design.** Every failure — unreachable, rejected credentials, rate limit, a board that does not exist, a sprint carrying no dates — degrades to the last iteration read, then to one computed from the configured anchor, then to no banner at all. `GET /api/iteration` answers 200 in every case (FR-430). This is the opposite of the REST write touchpoint above, whose failures must be loud, and is why it sits behind its own port rather than `JiraPort`. |
+| **Data classification** | No PII. Sprint names and dates are the user's own team's schedule. |
+| **Writes** | **None, ever.** This surface is read-only; the board still writes exactly one field to Jira, issue status, through the touchpoint above. |
+
+Two properties of the real instance shape this contract and are worth stating
+here rather than only in the spec:
+
+- **Board 1391 carries two active sprints at all times**, one per team sharing
+  it, with identical dates and ordinals — true across all 730 of its closed
+  sprints. "The active sprint" is therefore not a well-defined thing, and the
+  configured team name is what makes the choice deterministic.
+- **A sprint may be named but undated.** Board 1391's future sprints are. That
+  is ordinary, not malformed, and is treated as no result rather than an error.
+
 ## Planned touchpoints
 
 None. All four slices are delivered.
+
+### Slice 5 added one — the first since slice 3
+
+The Agile API entry above. Recorded in the same change that introduced it, per
+the standing quality gate, rather than after the fact.
 
 ### Slice 4 added no touchpoint — checked, not assumed
 
