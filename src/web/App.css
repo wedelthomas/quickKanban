@@ -165,6 +165,61 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  /* A dialog taller than the window used to put its own Save button out of
+     reach with no way to scroll to it — the browser suite found this by timing
+     out on a click that resolved to a real, unreachable button. */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Settings carries far more than a form's worth of fields since slice 5: the
+   Jira query, two schedules, the iteration, the working week, three field
+   identifiers and the column mapping. Stacked in one 520px column that is a
+   scroll, not a form — and a scroll deep enough that the browser suite found
+   the Save button unreachable. Wider, and genuinely laid out for the width
+   rather than merely allowed to overflow. */
+.dialog--wide {
+  width: min(1180px, 100%);
+}
+
+/* Three columns, collapsing to two and then one as the window narrows. The
+   point is to remove the scroll rather than to make it wider and still scroll:
+   auto-fit means a narrow window degrades to a stack rather than to a squeeze,
+   and align-items:start stops a short column stretching to match a tall one. */
+.settings-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.settings-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.dialog--wide .field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.dialog--wide .field-row > .field {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.dialog--wide fieldset.field {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin: 0;
+}
+
+.dialog--wide legend {
+  padding: 0 var(--space-1);
 }
 
 .field {

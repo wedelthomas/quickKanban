@@ -122,6 +122,12 @@ export const Board = () => {
         requestAnimationFrame(() => filterInputRef.current?.focus());
         return;
       }
+      if (match.action === 'settings') {
+        if (dialogs.isOpen('settings')) dialogs.hide();
+        else dialogs.show('settings');
+        return;
+      }
+
       if (match.action === 'help') {
         if (dialogs.isOpen('help')) dialogs.hide();
         else dialogs.show('help');

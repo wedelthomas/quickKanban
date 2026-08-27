@@ -187,3 +187,70 @@ Then(
     assert.equal(card.carriedIterations, expected);
   },
 );
+
+When(
+  'the {string} setting is changed to {string}',
+  async function (this: BoardWorld, key: string, value: string) {
+    await this.request('PUT', '/api/settings', { [key]: value });
+  },
+);
+
+When(
+  'the {string} setting is changed to {int}',
+  async function (this: BoardWorld, key: string, value: number) {
+    await this.request('PUT', '/api/settings', { [key]: value });
+  },
+);
+
+When('the working days are set to nothing', async function (this: BoardWorld) {
+  await this.request('PUT', '/api/settings', { workingDays: [] });
+});
+
+When(
+  'the working hours are set to start at {int} and end at {int}',
+  async function (this: BoardWorld, start: number, end: number) {
+    await this.request('PUT', '/api/settings', {
+      workingStartHour: start,
+      workingEndHour: end,
+    });
+  },
+);
+
+// 'the settings are read' already exists in jira-card.steps.ts; reused rather
+// than redefined.
+When('the application is restarted', async function (this: BoardWorld) {
+  // Rebuilt against the same database, which is what a restart is: settings
+  // live there, not in the process.
+  await this.app.close();
+  const { buildApp } = await import('../../../src/server/app.js');
+  this.app = buildApp({
+    pool: this.pool,
+    logger: false,
+    jira: this.jira,
+    iterations: this.iterations,
+  });
+  await this.app.ready();
+});
+
+Then(
+  'the {string} setting is {string}',
+  async function (this: BoardWorld, key: string, expected: string) {
+    await this.request('GET', '/api/settings');
+    assert.equal((this.response.body as Record<string, unknown>)[key], expected);
+  },
+);
+
+Then('no setting mentions a token, a password or a secret', function (this: BoardWorld) {
+  // FR-437's standing rule, asserted rather than assumed: the simplest way to
+  // keep the interface from leaking a credential is for there to be nowhere
+  // to put one.
+  const keys = Object.keys(this.response.body as Record<string, unknown>);
+  for (const key of keys) {
+    assert.ok(
+      // Word-bounded, and 'auth' is dropped entirely: "author" contains it,
+      // and a display name is not a credential. A guard that cries wolf gets deleted.
+      !/\b(token|password|secret|credential|apikey)\b/i.test(key),
+      `settings expose "${key}", which sounds like a credential`,
+    );
+  }
+});

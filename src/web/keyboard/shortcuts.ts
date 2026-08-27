@@ -12,6 +12,7 @@ export type ShortcutAction =
   | 'open-card'
   | 'move-to-column'
   | 'focus-filter'
+  | 'settings'
   | 'help'
   | 'close';
 
@@ -35,6 +36,7 @@ export const SHORTCUTS: readonly Shortcut[] = [
     action: 'move-to-column',
   },
   { label: '/', description: 'Filter the board', action: 'focus-filter' },
+  { label: ',', description: 'Open settings', action: 'settings' },
   { label: '?', description: 'Show this list', action: 'help' },
   { label: 'Esc', description: 'Close a dialog', action: 'close' },
 ];
@@ -58,6 +60,9 @@ export const matchShortcut = (event: KeyboardEvent): ShortcutMatch | null => {
   if (event.key === 'j' || event.key === 'ArrowUp') return { action: 'focus-previous' };
   if (event.key === 'Enter') return { action: 'open-card' };
   if (event.key === '/') return { action: 'focus-filter' };
+  // Comma, the convention every editor and browser settled on for preferences.
+  // Unshifted, so it needs no modifier the board does not already reserve.
+  if (event.key === ',') return { action: 'settings' };
 
   if (/^[1-6]$/.test(event.key)) {
     return { action: 'move-to-column', columnPosition: Number(event.key) };

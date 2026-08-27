@@ -290,17 +290,26 @@ banner follows, restart, and confirm the setting survived.
 
 ### Tests for User Story 6
 
-- [ ] T068 [US6] Author or sync TestRail cases for BH-426 via `spec-testrail-sync`, before the implementation tasks below.
-- [ ] T069 [P] [US6] Acceptance feature `tests/features/iteration-settings.feature` and steps — TEST-426: changed settings survive a restart, and a changed team name switches the banner to the other team's sprint on the same dates.
+- [x] T068 [US6] Author or sync TestRail cases for BH-426 via `spec-testrail-sync`, before the implementation tasks below.
+- [x] T069 [P] [US6] Acceptance feature `tests/features/iteration-settings.feature` and steps — TEST-426: changed settings survive a restart, and a changed team name switches the banner to the other team's sprint on the same dates.
 
 ### Implementation for User Story 6
 
 - [x] T070 [US6] Extend the Zod schema in `src/server/routes/settings.ts` with the bounds from contracts/api.md: cadence 1–90, hours 0–23 with start < end, working days a non-empty subset, field ids matching `^customfield_\d+$`, board id a positive integer.
-- [ ] T071 [US6] Re-arm iteration resolution when the board or team name changes, following the existing `onIntervalChanged` pattern.
-- [ ] T072 [US6] Add the controls to `src/web/settings/SettingsDialog.tsx`, showing each field identifier's default. No credential appears, and there is nowhere to put one.
+- [x] T071 [US6] Re-arm iteration resolution when the board or team name changes, following the existing `onIntervalChanged` pattern.
+- [x] T072 [US6] Add the controls to `src/web/settings/SettingsDialog.tsx`, showing each field identifier's default. No credential appears, and there is nowhere to put one.
 
-**Checkpoint**: All six stories independently functional. **Run the
-Story-Complete Review Gate before Polish.**
+**Checkpoint**: All six stories independently functional. **Story-Complete
+Review Gate PASSED.**
+
+The settings dialog outgrew its 520px column during this story — enough that
+the browser suite found its own Save button unreachable, timing out on a click
+that resolved to a real but off-screen element. It is now three columns at
+1180px, with the column mapping moved in rather than sitting full-width below,
+and it collapses to fewer columns rather than squeezing.
+
+`,` opens settings, matching the convention every editor and browser settled
+on.
 
 ---
 
