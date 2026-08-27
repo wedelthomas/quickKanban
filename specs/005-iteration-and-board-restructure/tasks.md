@@ -323,7 +323,7 @@ on.
 - [x] T078 [P] Run `npm run lint` and the full suite: unit, contract, ops, acceptance, e2e.
 - [x] T079 Run `quickstart.md` end to end against a live stack, including the two degraded iteration paths and the team-filter check.
 - [x] T080 **Live verification against real Jira** — the board's own history says this finds what a green suite cannot. Confirm the banner shows the actual current TradeBlazers iteration with correct dates, and that the other team's sprint is ignored. Record it in `specs/005-iteration-and-board-restructure/live-verification.md`, as slice 3 did.
-- [ ] T081 Run `/speckit.review` for a second-pass review of the diff against `main`; address blocking findings before opening a PR.
+- [x] T081 Run `/speckit.review` for a second-pass review of the diff against `main`; address blocking findings before opening a PR.
 - [ ] T082 Request peer code review; address feedback before merge.
 
 ---

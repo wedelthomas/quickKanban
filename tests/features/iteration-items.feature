@@ -13,18 +13,26 @@ Feature: I commit work to this iteration
     And Jira has an issue "AIHUB-1" with status "Open"
     And a sync runs
 
+  # FR-408: Iteration Items defaults to having no Jira status mapping, so it
+  # takes slice 3's unmapped-column path unchanged. That requirement is met by
+  # the ABSENCE of a column_status_mappings row rather than by any new code,
+  # which is why it is cited here — these scenarios are the only artefact
+  # holding it true, and a refactor of the unmapped path would otherwise have
+  # nothing pointing at what it breaks.
   Scenario: Moving a Jira card in changes the board and tells Jira nothing
     When the card for issue "AIHUB-1" is moved to the "iteration_items" column
     Then the card for issue "AIHUB-1" is in the "iteration_items" column
     And issue "AIHUB-1" has status "Open" in Jira
     And no transition was performed in Jira
 
+  # FR-433: placement persists, and is the user's alone.
   Scenario: A later sync leaves committed work where it was put
     Given the card for issue "AIHUB-1" is moved to the "iteration_items" column
     When a sync runs
     Then the card for issue "AIHUB-1" is in the "iteration_items" column
     And no transition was performed in Jira
 
+  # FR-434.
   Scenario: Sync never places a card there on the user's behalf
     # The fixture deliberately carries a sprint on the issue. Production code
     # must stay ignorant of the sprint field — reading it onto cards is out of

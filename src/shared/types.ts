@@ -1,6 +1,13 @@
 /**
  * The vocabulary of the specification, in code. Names come straight from
  * spec.md's Key Entities so the two read alike.
+ *
+ * Over 300 lines, deliberately kept whole. This is a glossary, not a module
+ * with behaviour: every entry is a name the spec also uses, and the value of
+ * having one place to look them up is exactly the value that splitting it
+ * would destroy. Length here is a measure of how much vocabulary the product
+ * has, not of how much this file does — it has no branches, no dependencies
+ * beyond itself, and one reason to change per type.
  */
 
 export const COLUMN_KEYS = [

@@ -198,6 +198,7 @@ even though it is a separate interface.
 | Data | Money / decimal handling | N/A — not a financial feature. No monetary or decimal quantity appears. |
 | Operational | Deployment & rollback strategy | `docker compose up` as before; migrations apply at process start. Rollback is not automatic: the migration moves cards, so reverting the image without reverting the data would leave cards in a column the old code expects to be Blocked. Recorded as a risk below. |
 | Operational | Schema / data migration plan | Six migrations, `016`–`021`, detailed in data-model.md. The only data-moving one is `017`, covered by a dedicated test asserting no card is lost (NFR-27, TEST-402). |
+| Cross-cutting | Client-side state and refetch policy | Two independent fetches, each deciding its own refresh: the banner reads once per page load (an iteration changes fortnightly), the author heading reads on load and when settings close (the only moment it can change). Neither shares state with the board's own fetch, which is what keeps a slow iteration source from delaying board load (FR-429). Added after `/speckit.review` found the table had no row for it. |
 | Alternatives | Alternatives considered + rejection rationale | Eleven decisions with their rejected alternatives in research.md. The three consequential ones — retire rather than delete, a separate iteration port, and counting carry-over at the boundary rather than deriving it on read — are also in Complexity Tracking above. |
 
 **As-built check (T074, end of slice).** The diagram was one component short:

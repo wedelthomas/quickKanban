@@ -29,6 +29,8 @@ export class IterationService {
      * tests that care only about the banner.
      */
     private readonly carryOver?: CarryOverService,
+    /** Debug sink for failures that are deliberately not surfaced to the user. */
+    private readonly log?: (message: string) => void,
   ) {}
 
   async current(): Promise<Iteration | null> {
@@ -42,8 +44,13 @@ export class IterationService {
     if (read) {
       // Recorded before it is returned, so the cache is warm for the first
       // outage rather than the second.
-      await this.iterations.record(read).catch(() => {
-        // A failed write must not cost the user the iteration we just read.
+      await this.iterations.record(read).catch((error: unknown) => {
+        // A failed write must not cost the user the iteration we just read —
+        // but a persistently failing one would otherwise be invisible, since
+        // the cache is only consulted when the source is already down.
+        this.log?.(
+          `iteration cache write failed: ${error instanceof Error ? error.message : 'unknown'}`,
+        );
       });
     }
 
