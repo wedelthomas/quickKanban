@@ -56,6 +56,10 @@ this slice directly.
   blocked? → A: A distinct marker on the card face, rendered outlined rather
   than solid so it reads as "the two sources disagree" and not as "this card is
   blocked". The solid badge and red edge remain reserved for actually blocked.
+- Q: Board 1391 carries two active sprints per iteration, one per team sharing
+  it. Which is used? → A: TradeBlazers only. The other team's sprints are
+  ignored. Their dates and ordinals match, but the displayed name would differ,
+  so the choice must be explicit rather than incidental.
 - Q: What resets the carry-over count? → A: Reaching Done, or returning to
   Backlog. The count measures one continuous stretch of being committed but
   unfinished; pulling a card back to Backlog is a deliberate withdrawal of that
@@ -244,7 +248,8 @@ setting survived.
 **Acceptance Scenarios**:
 
 1. **Given** the settings screen, **When** the user changes the iteration
-   reference board, **Then** the next resolution reads the new board.
+   reference board or the team name, **Then** the next resolution follows the
+   new values.
 2. **Given** changed Phase 2 settings, **When** the application restarts,
    **Then** the settings are still in force.
 3. **Given** the settings screen, **When** the user views it, **Then** the Jira
@@ -271,9 +276,11 @@ setting survived.
   is real — board 1391's future sprints are undated. Treated as no result.
 - **The reference board has no active sprint at all.** Also real: board 5600
   has zero sprints of any state. Treated as no result.
-- **Two sprints are active on the reference board simultaneously.** Board 1391
-  currently has two ("CRM TradeBlazers 2026 S18" and "MDS 2026 S18"). The
-  behaviour must be deterministic rather than dependent on response ordering.
+- **Two sprints are active on the reference board simultaneously.** This is the
+  normal state, not an exception: board 1391 is shared by two teams, and every
+  iteration in its 730-sprint history exists twice — "CRM TradeBlazers 2026 S18"
+  alongside "MDS 2026 S18", with identical dates. The configured team name
+  decides, and the other team's sprints are ignored.
 - **The iteration ends while the board is open.** The banner must not continue
   asserting a finished iteration indefinitely.
 - **Jira reports a card blocked, the user clears it, and Jira later clears it
@@ -346,7 +353,12 @@ setting survived.
 - **FR-423**: The ordinal name MUST be taken from the source rather than
   computed by counting, because the ordinal resets at the fiscal-year boundary.
 - **FR-424**: Where the reference board reports more than one active sprint, the
-  selection MUST be deterministic and MUST NOT depend on response ordering.
+  sprint MUST be selected by a configured team name, defaulting to
+  "CRM TradeBlazers". Selection MUST NOT depend on response ordering. Two
+  concurrently active sprints is the steady state on board 1391, not an edge
+  case: two teams share it, and each iteration exists there twice.
+- **FR-445**: Sprints on the reference board belonging to another team MUST be
+  ignored entirely.
 - **FR-425**: An active sprint lacking a start or end date MUST be treated as no
   result.
 - **FR-426**: A resolved iteration MUST be cached and MUST continue to be
@@ -380,8 +392,9 @@ setting survived.
 
 #### Settings
 
-- **FR-437**: Settings MUST include the iteration reference board, the working
-  days and working hours, and the fallback anchor date and cadence length.
+- **FR-437**: Settings MUST include the iteration reference board, the team name
+  used to select among its active sprints, the working days and working hours,
+  and the fallback anchor date and cadence length.
 - **FR-438**: The Jira field identifiers for blocked, sprint and story points
   MUST be viewable and editable in settings, with their defaults shown.
 - **FR-439**: All settings introduced by this feature MUST persist across
@@ -551,10 +564,12 @@ setting survived.
   - **When** the board loads
   - **Then** that name, that range and the remaining working days are displayed
 
-- **BH-417** (satisfies FR-424): Multiple active sprints resolve deterministically
-  - **Given** a reference board reporting two active sprints
+- **BH-417** (satisfies FR-424, FR-445): The configured team's sprint is chosen
+  - **Given** a reference board reporting two active sprints belonging to
+    different teams
   - **When** resolution runs repeatedly with the responses in differing order
-  - **Then** the same sprint is chosen every time
+  - **Then** the configured team's sprint is chosen every time and the other
+    team's is ignored
 
 - **BH-418** (satisfies FR-425): An undated sprint is no result
   - **Given** a reference board whose active sprint has no start or end date
@@ -661,7 +676,7 @@ setting survived.
 | TEST-414 | Divergence indication clears once the states agree | BH-414 |
 | TEST-415 | Every Jira write in the suite leaves the blocked field untouched | BH-415 |
 | TEST-416 | Banner shows the active sprint's name, range and remaining working days | BH-416 |
-| TEST-417 | Two active sprints resolve to the same one regardless of order | BH-417 |
+| TEST-417 | The configured team's sprint wins over another team's, regardless of order | BH-417 |
 | TEST-418 | An undated active sprint yields no iteration | BH-418 |
 | TEST-419 | Unreachable source shows the cached iteration, marked stale | BH-419 |
 | TEST-420 | No cache and no source yields an estimated iteration, marked | BH-420 |
