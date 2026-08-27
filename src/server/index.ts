@@ -48,6 +48,7 @@ const main = async (): Promise<void> => {
   const lock = new SyncLock();
   const settings = new SettingsRepository(pool);
   let scheduler: Scheduler | null = null;
+  let archiveScheduler: Scheduler | null = null;
 
   const app = buildApp({
     pool,
@@ -55,6 +56,7 @@ const main = async (): Promise<void> => {
     jira,
     lock,
     onIntervalChanged: () => scheduler?.reschedule(),
+    onArchiveIntervalChanged: () => archiveScheduler?.reschedule(),
   });
 
   if (jira) {
@@ -70,6 +72,24 @@ const main = async (): Promise<void> => {
     console.error('Sync scheduler started.');
   }
 
+  // Started unconditionally: archival is about the board's own Done column and
+  // has nothing to do with Jira, so a board with no credentials still tidies
+  // itself. Its own schedule, too — the sync's cadence is driven by how fresh
+  // the user wants Jira to be, and a slow archival pass must not be able to
+  // delay a sync for a reason no user could explain (research.md R-5).
+  archiveScheduler = new Scheduler(
+    async () => {
+      const res = await app.inject({ method: 'POST', url: '/api/archive/run' });
+      // 409 means a pass was already running, which is the guard working.
+      if (res.statusCode >= 400 && res.statusCode !== 409)
+        throw new Error(`scheduled archival failed: ${res.statusCode}`);
+    },
+    async () => (await settings.read()).archiveIntervalSeconds,
+    { startupDelayMs: 30_000 },
+  );
+  archiveScheduler.start();
+  console.error('Archive scheduler started.');
+
   // FR-034 restricts the board to the host's loopback interface, but the
   // mechanism is the compose publish spec (`127.0.0.1:3000:3000`), NOT this
   // bind address. Inside a container, binding 127.0.0.1 would bind the
@@ -84,6 +104,7 @@ const main = async (): Promise<void> => {
 
   const shutdown = async (): Promise<void> => {
     scheduler?.stop();
+    archiveScheduler?.stop();
     await app.close();
     await pool.end();
     process.exit(0);

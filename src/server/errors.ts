@@ -87,6 +87,18 @@ export const jiraCredentialsRejected = (): DomainError =>
     'The move was not made. Check the API token in the environment; the board cannot fix this by retrying.',
   );
 
+/** A pass is already running. Single-flight, in process and in the database. */
+export const archiveInProgress = (): DomainError =>
+  new DomainError(
+    'ARCHIVE_IN_PROGRESS',
+    409,
+    'An archival pass is already running',
+    'Nothing was started. Wait for the pass in flight to finish.',
+  );
+
+export const invalidDateRange = (detail: string): DomainError =>
+  new DomainError('INVALID_DATE_RANGE', 400, 'That date range cannot be read', detail);
+
 export const jiraNotConfigured = (): DomainError =>
   new DomainError(
     'JIRA_NOT_CONFIGURED',

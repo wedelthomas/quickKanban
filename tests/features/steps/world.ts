@@ -10,6 +10,19 @@ import { FakeJiraAdapter } from '../../../src/server/jira/fake-jira-adapter.js';
  * repository is stubbed: these scenarios exist to prove the whole path works,
  * and a mocked datastore would prove only that the mock does.
  */
+// Restored wholesale rather than key by key.
+//
+// This is the third time a setting has leaked between scenarios — the JQL,
+// then the column mapping, now the archive window, each fixed by adding one
+// more line here. Enumerating the keys means the next setting added leaks
+// until someone notices. Naming the full seeded set means it cannot.
+const SEEDED_SETTINGS: Record<string, unknown> = {
+  'jira.jql': 'assignee = currentUser() AND statusCategory != Done',
+  'sync.interval_seconds': 300,
+  'archive.window_days': 7,
+  'archive.interval_seconds': 3600,
+};
+
 export class BoardWorld extends World {
   app!: FastifyInstance;
   pool!: pg.Pool;
@@ -46,20 +59,16 @@ export class BoardWorld extends World {
     await this.pool.query(
       'TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, conflicts, cards RESTART IDENTITY CASCADE',
     );
-    // Settings are restored, not truncated — the rows are seeded by migration.
-    // Without this a scenario that changes the query leaks it into every
-    // scenario that runs after it, which is exactly what happened.
-    await this.pool.query(
-      `UPDATE settings SET value = '"assignee = currentUser() AND statusCategory != Done"'::jsonb
-        WHERE key = 'jira.jql'`,
-    );
-    await this.pool.query(
-      `UPDATE settings SET value = '300'::jsonb WHERE key = 'sync.interval_seconds'`,
-    );
-    // Same reasoning for the column mapping, and for the same reason it was
-    // added to settings: a scenario that remaps a column leaked into every
-    // later scenario. Rewritten wholesale rather than updated, because an
-    // unmapped column is the ABSENCE of a row, not a null in one.
+    for (const [key, value] of Object.entries(SEEDED_SETTINGS)) {
+      await this.pool.query(
+        `INSERT INTO settings (key, value) VALUES ($1, $2::jsonb)
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+        [key, JSON.stringify(value)],
+      );
+    }
+
+    // Same reasoning for the column mapping. Rewritten wholesale rather than
+    // updated, because an unmapped column is the ABSENCE of a row, not a null.
     await this.pool.query('DELETE FROM column_status_mappings');
     await this.pool.query(
       `INSERT INTO column_status_mappings (column_id, status_name)

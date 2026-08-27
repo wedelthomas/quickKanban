@@ -137,23 +137,23 @@ endpoint's shape being driven by test convenience rather than by US5's actual
 need. The cucumber world already has a pool and other steps already assert
 through it.
 
-- [ ] T419 [US2] Sync TestRail cases TEST-309, TEST-309a, TEST-310, TEST-311, TEST-312 via
+- [x] T419 [US2] Sync TestRail cases TEST-309, TEST-309a, TEST-310, TEST-311, TEST-312 via
   `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
-- [ ] T420 [P] [US2] `tests/unit/archival.test.ts` — the window boundary
+- [x] T420 [P] [US2] `tests/unit/archival.test.ts` — the window boundary
   exactly: one second under, exactly on, one second over. Plus the zero window,
   and the card created directly in Done with no arrival event, whose fallback to
   `created_at` exists because null would otherwise mean either "infinitely old"
   or "infinitely new" and both are wrong (R-2) — BH-309, BH-310.
-- [ ] T421 [P] [US2] `tests/features/archival.feature` — eligibility; the
+- [x] T421 [P] [US2] `tests/features/archival.feature` — eligibility; the
   configurable window; the card that reached Done, left and returned yesterday,
   measured from its most recent arrival; **the conflicted card that is never
   archived however old** (FR-318a); and the archival recorded with the system as
   actor — BH-309, BH-309a, BH-310, BH-311, BH-312.
 
-- [ ] T421a [US2] `tests/features/steps/reporting.steps.ts` — the steps the
+- [x] T421a [US2] `tests/features/steps/reporting.steps.ts` — the steps the
   acceptance features above need: ageing a card's Done arrival, running an
   archival pass, asserting a card is archived and retained, and reading a
   summary. Grows in US3–US5 rather than being rewritten. Numbered with a suffix
@@ -163,33 +163,33 @@ through it.
 
 ### Implementation
 
-- [ ] T422 [US2] `src/domain/archival.ts` — pure
+- [x] T422 [US2] `src/domain/archival.ts` — pure
   `shouldArchive({ arrivedInDoneAt, createdAt, windowDays, now, conflicted })`.
   Takes `now` as an argument so every boundary case is a unit test rather than a
   scenario with a sleep in it.
-- [ ] T423 [US2] `ArchiveRepository.candidates()` — the query in data-model.md,
+- [x] T423 [US2] `ArchiveRepository.candidates()` — the query in data-model.md,
   selecting the most recent Done arrival and whether a conflict is open, in one
   row per candidate. Both facts arrive together so the decision to skip is
   visible beside the decision to archive.
-- [ ] T424 [US2] `ArchiveRepository.archive(cardId)` — sets `archived_at` and
+- [x] T424 [US2] `ArchiveRepository.archive(cardId)` — sets `archived_at` and
   appends the archival history row, **in one transaction per card**. Per card,
   not per pass: batching means one bad card blocks every other card's archival.
-- [ ] T425 [US2] `ArchiveRunRepository` — start, succeed with counts, fail.
-- [ ] T426 [US2] `ArchivalService.runOnce()` — select, decide, archive, count.
+- [x] T425 [US2] `ArchiveRunRepository` — start, succeed with counts, fail.
+- [x] T426 [US2] `ArchivalService.runOnce()` — select, decide, archive, count.
   Re-checks each card under `SELECT … FOR UPDATE` inside its own transaction, so
   a user dragging a card out of Done mid-pass either wins the race or waits for
   it (plan.md, Concurrent writes).
-- [ ] T427 [US2] Skip cards with an open conflict, and count them separately as
+- [x] T427 [US2] Skip cards with an open conflict, and count them separately as
   `skippedConflicted`. **`archived: 0` alone cannot distinguish "nothing was
   due" from "something was due and I refused", and only one of those wants
   investigating.**
-- [ ] T428 [US2] Log each archived card with its id and its age in Done. This is
+- [x] T428 [US2] Log each archived card with its id and its age in Done. This is
   the first process here that changes the board unobserved; slice 3's live check
   found an unrequested write *only* because a log existed to find it in.
-- [ ] T429 [US2] `POST /api/archive/run` (200 with the run, 409
+- [x] T429 [US2] `POST /api/archive/run` (200 with the run, 409
   `ARCHIVE_IN_PROGRESS`). Exists so the pass is testable and observable without
   waiting an hour — the same reason `POST /api/sync/run` does.
-- [ ] T430 [US2] Wire a second `Scheduler` in `app.ts` against
+- [x] T430 [US2] Wire a second `Scheduler` in `app.ts` against
   `archive.interval_seconds`, with its own single-flight guard, re-armed when
   the setting changes. Separate from the sync's so a slow archival cannot delay
   a sync for a reason no user could explain (R-5).

@@ -27,16 +27,22 @@ export const resetBoard = async (): Promise<void> => {
     // migration, so dropping them would leave the app with no query at all.
     // Resetting them matters — a test that changes the query would otherwise
     // leak it into every test that runs after it.
-    `TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, conflicts, cards RESTART IDENTITY CASCADE;
+    `TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, archive_runs, conflicts, cards RESTART IDENTITY CASCADE;
      -- Restored to the migration's seed, not truncated: a test that edits the
      -- mapping would otherwise leak into every later one. Rewritten wholesale
      -- because an unmapped column is the ABSENCE of a row, not a null in one.
      DELETE FROM column_status_mappings;
      INSERT INTO column_status_mappings (column_id, status_name)
        VALUES (1, 'Open'), (2, 'Development'), (4, 'Test'), (5, 'PO Approve');
-     UPDATE settings SET value = '"assignee = currentUser() AND statusCategory != Done"'::jsonb
-      WHERE key = 'jira.jql';
-     UPDATE settings SET value = '300'::jsonb WHERE key = 'sync.interval_seconds';`,
+     -- Restored wholesale, not key by key. Three settings have leaked between
+     -- tests on this project, each fixed by adding one more line here;
+     -- enumerating them means the next one added leaks until someone notices.
+     UPDATE settings SET value = d.value FROM (VALUES
+       ('jira.jql', '"assignee = currentUser() AND statusCategory != Done"'::jsonb),
+       ('sync.interval_seconds', '300'::jsonb),
+       ('archive.window_days', '7'::jsonb),
+       ('archive.interval_seconds', '3600'::jsonb)
+     ) AS d(key, value) WHERE settings.key = d.key;`,
   ]);
 };
 

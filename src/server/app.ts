@@ -18,6 +18,10 @@ import { ConflictRepository } from './repositories/conflict-repository.js';
 import { TransitionService } from './sync/transition-service.js';
 import { registerMappingRoutes } from './routes/mappings.js';
 import { registerConflictRoutes } from './routes/conflicts.js';
+import { registerArchiveRoutes } from './routes/archive.js';
+import { ArchiveRepository } from './repositories/archive-repository.js';
+import { ArchiveRunRepository } from './repositories/archive-run-repository.js';
+import { ArchivalService } from './services/archival-service.js';
 import { ConflictResolutionService } from './sync/conflict-resolution-service.js';
 import { SettingsRepository } from './repositories/settings-repository.js';
 import { JiraLinkRepository } from './repositories/jira-link-repository.js';
@@ -45,6 +49,8 @@ export interface AppOptions {
   lock?: SyncLock;
   /** Called when the poll interval changes, so the scheduler can re-arm. */
   onIntervalChanged?: () => void;
+  /** Same, for the archival pass's own cadence — a separate schedule (R-5). */
+  onArchiveIntervalChanged?: () => void;
 }
 
 /**
@@ -59,6 +65,7 @@ export const buildApp = ({
   jira = null,
   lock = new SyncLock(),
   onIntervalChanged = () => {},
+  onArchiveIntervalChanged = () => {},
 }: AppOptions): FastifyInstance => {
   // Typed separately: inlining a `false | object` union makes TypeScript
   // resolve Fastify's HTTP/2 overload instead of the HTTP/1 one.
@@ -194,7 +201,17 @@ export const buildApp = ({
       )
     : null;
   registerSyncRoutes(app, { sync, lock, runs });
-  registerSettingsRoutes(app, settings, onIntervalChanged);
+  registerSettingsRoutes(app, settings, onIntervalChanged, onArchiveIntervalChanged);
+
+  registerArchiveRoutes(
+    app,
+    new ArchivalService(
+      new ArchiveRepository(pool, events),
+      new ArchiveRunRepository(pool),
+      settings,
+      app.log,
+    ),
+  );
   registerTagRoutes(app, new TagRepository(pool));
 
   if (webRoot && existsSync(webRoot)) {

@@ -3,7 +3,7 @@
   "jira_ref": "",
   "project_id": 115,
   "suite_id": 32733,
-  "last_synced_at": "2026-08-27T01:37:10Z",
+  "last_synced_at": "2026-08-27T02:30:28Z",
   "last_synced_by": "spec-testrail-sync",
   "user_stories": {
     "us1": {
@@ -11,6 +11,12 @@
       "priority": "P1",
       "section_id": 2162686,
       "section_name": "Slice 4 \u2014 Review and Reporting | US1 Filtering"
+    },
+    "us2": {
+      "title": "Finished work leaves without being lost",
+      "priority": "P1",
+      "section_id": 2162687,
+      "section_name": "Slice 4 \u2014 Review and Reporting | US2 Archival"
     }
   },
   "scenarios": {},
@@ -86,6 +92,51 @@
       "hash": "36810a0884f79f7efa01d5c8c88bc5429271f1fdb1a1d215370e5c8fe2a8f290",
       "title_at_last_sync": "TEST-308 \u2014 Reload returns the board to unfiltered",
       "automation_id": "test-308.bh-308"
+    },
+    "TEST-309": {
+      "case_id": 20000077,
+      "pins": "BH-309",
+      "user_story": "us2",
+      "section_id": 2162687,
+      "hash": "2c6eabe1f3f203704e66450086d6abcecf70a7821736b158e16b0262f925c57e",
+      "title_at_last_sync": "TEST-309 \u2014 Only cards past the window and still in Done are archived",
+      "automation_id": "test-309.bh-309"
+    },
+    "TEST-309a": {
+      "case_id": 20000078,
+      "pins": "BH-309a",
+      "user_story": "us2",
+      "section_id": 2162687,
+      "hash": "3f3c1f39c130708fcfe03233cef99b0e86f2006b14043f1cead12e28c5dd17c1",
+      "title_at_last_sync": "TEST-309a \u2014 A conflicted card is never archived, however old",
+      "automation_id": "test-309a.bh-309a"
+    },
+    "TEST-310": {
+      "case_id": 20000079,
+      "pins": "BH-310",
+      "user_story": "us2",
+      "section_id": 2162687,
+      "hash": "fdbedf5ce0aa5c27affb3b605c1e759eb27b952d015df81e8c0da99d7b975fe7",
+      "title_at_last_sync": "TEST-310 \u2014 Changing the window changes which cards archive",
+      "automation_id": "test-310.bh-310"
+    },
+    "TEST-311": {
+      "case_id": 20000080,
+      "pins": "BH-311",
+      "user_story": "us2",
+      "section_id": 2162687,
+      "hash": "68ed6e15282ca2fe62b48f98766370a89cade2be5cff5eb6e3fe23c6513f4fed",
+      "title_at_last_sync": "TEST-311 \u2014 Archived card leaves the board and remains retrievable",
+      "automation_id": "test-311.bh-311"
+    },
+    "TEST-312": {
+      "case_id": 20000081,
+      "pins": "BH-312",
+      "user_story": "us2",
+      "section_id": 2162687,
+      "hash": "3bd72e8f79f62e7ddd5c11918d6e5390354f103b407199b45b5ffd8406baaa2f",
+      "title_at_last_sync": "TEST-312 \u2014 Archival is recorded with the system as actor",
+      "automation_id": "test-312.bh-312"
     }
   }
 }
