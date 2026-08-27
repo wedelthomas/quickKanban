@@ -266,7 +266,7 @@ treatment, keyboard operation, density).
 | `tests/ops/migration-016-021.test.ts` | Ops | BH-401, BH-402, BH-403, BH-404, BH-405, BH-433 — column set, card migration, conflicted card, idempotence, mapping removal, retained history. **NFR-27's no-card-lost assertion lives here.** |
 | `tests/contract/iteration-api.test.ts` | Contract | BH-416, BH-419, BH-420, BH-421 — `GET /api/iteration` shape and its never-5xx guarantee |
 | `tests/contract/board-payload.test.ts` | Contract | BH-406 — new card fields; retired columns absent |
-| `tests/contract/no-jira-writes.test.ts` | Contract | BH-415 — extends the existing assertion to the blocked field |
+| `tests/unit/no-jira-writes.test.ts` | Unit | BH-415 — extends the existing assertion to the blocked field. Already exists at this path; this slice extends it rather than adding a file. |
 | `tests/contract/retired-column.test.ts` | Contract | BH-401 — move into a retired column is refused |
 | `tests/features/blocked-flag.feature` | Acceptance | US1 — set, clear, move while blocked, filter, summary grouping |
 | `tests/features/iteration-banner.feature` | Acceptance | US2 — read, cached, estimated, non-blocking |
