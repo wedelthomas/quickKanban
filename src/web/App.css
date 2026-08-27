@@ -547,8 +547,8 @@ kbd {
 .column[data-column-key='in_progress'] {
   --column-accent: var(--column-in-progress);
 }
-.column[data-column-key='blocked'] {
-  --column-accent: var(--column-blocked);
+.column[data-column-key='iteration_items'] {
+  --column-accent: var(--column-iteration-items);
 }
 .column[data-column-key='test'] {
   --column-accent: var(--column-test);

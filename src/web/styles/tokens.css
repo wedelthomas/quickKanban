@@ -37,11 +37,21 @@
      the card face already spends its colour on priority and the conflict
      badge, which are the two things that must stand out. */
   --column-backlog: #8b93a7;
+  /* White, and the only column with no hue of its own: Iteration Items is a
+     commitment rather than a stage of work, and giving it a colour would put it
+     in the same visual grammar as the five stages it is not one of. */
+  --column-iteration-items: #e6e9ef;
   --column-in-progress: #e0b44b;
-  --column-blocked: #e04b4b;
   --column-test: #4b9fe0;
   --column-po-review: #3fbfb0;
   --column-done: #4bc27a;
+
+  /* Inherited from the retired Blocked column. Slice 5 made blocked something a
+     card carries rather than a place it goes, so the hue moves with it — the
+     card face gains a left edge and a badge in this colour, and the priority
+     dot keeps its own meaning. */
+  --blocked: #e04b4b;
+  --blocked-soft: #e04b4b22;
 
   --priority-high: #e0894b;
   --priority-medium: #8b93a7;
