@@ -91,6 +91,22 @@ export const SettingsDialog = ({
         <h2 className="help-title">Settings</h2>
 
         <label className="field">
+          <span className="field-label">Author</span>
+          <input
+            className="input"
+            value={settings?.author ?? ''}
+            disabled={!settings}
+            placeholder="QUICK KANBAN"
+            onChange={(e) =>
+              settings && setSettings({ ...settings, author: e.target.value })
+            }
+          />
+          <span className="field-note">
+            Shown as the board heading. Leave empty to use the product name.
+          </span>
+        </label>
+
+        <label className="field">
           <span className="field-label">Jira query</span>
           <input
             className="input"

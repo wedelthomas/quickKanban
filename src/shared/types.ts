@@ -154,6 +154,12 @@ export interface Settings {
   workingStartHour: number;
   workingEndHour: number;
 
+  /**
+   * Whose board this is, shown as the page heading. Empty falls back to the
+   * product name, so an unconfigured board is unchanged.
+   */
+  author: string;
+
   /** Configurable so a Jira administration change is not a code change. FR-438. */
   jiraFieldBlocked: string;
   jiraFieldBlockedOption: string;

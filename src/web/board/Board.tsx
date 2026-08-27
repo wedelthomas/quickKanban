@@ -17,6 +17,7 @@ import { SettingsDialog } from '../settings/SettingsDialog.js';
 import { useSync } from '../sync/use-sync.js';
 import { SyncStatusPill } from '../sync/SyncStatus.js';
 import { useConflicts } from '../conflicts/use-conflicts.js';
+import { useAuthor } from '../settings/use-author.js';
 import { ConflictDialog } from '../conflicts/ConflictDialog.js';
 import { SummaryDialog } from '../summary/SummaryDialog.js';
 import { ArchiveView } from '../archive/ArchiveView.js';
@@ -59,6 +60,7 @@ export const Board = () => {
     deleteCard,
   } = useBoard();
   const { status: syncStatus, syncNow } = useSync(refresh);
+  const { author, reloadAuthor } = useAuthor();
   const dialogs = useDialogs();
   const [editing, setEditing] = useState<Card | null>(null);
   const { conflicts, resolve } = useConflicts(board);
@@ -228,7 +230,7 @@ export const Board = () => {
         <div className="board-area">
           <div className="page-head">
             <div>
-              <h1 className="page-title">QUICK KANBAN</h1>
+              <h1 className="page-title">{author || 'QUICK KANBAN'}</h1>
               <p className="page-sub">
                 Everything assigned to you, and everything else you are carrying.
               </p>
@@ -301,7 +303,15 @@ export const Board = () => {
       )}
       {dialogs.isOpen('help') && <HelpOverlay onClose={() => dialogs.hide()} />}
       {dialogs.isOpen('settings') && (
-        <SettingsDialog columns={board.columns} onClose={() => dialogs.hide()} />
+        <SettingsDialog
+          columns={board.columns}
+          onClose={() => {
+            dialogs.hide();
+            // The heading is read once at load; closing settings is the only
+            // moment it can have changed.
+            reloadAuthor();
+          }}
+        />
       )}
       {dialogs.isOpen('summary') && <SummaryDialog onClose={() => dialogs.hide()} />}
       {dialogs.isOpen('archive') && <ArchiveView onClose={() => dialogs.hide()} />}

@@ -17,6 +17,7 @@ const KEYS = {
   jiraFieldBlockedOption: 'jira.field.blocked_option',
   jiraFieldSprint: 'jira.field.sprint',
   jiraFieldStoryPoints: 'jira.field.story_points',
+  author: 'board.author',
 } as const;
 
 const DEFAULT_WORKING_DAYS: WorkingDay[] = ['mon', 'tue', 'wed', 'thu', 'fri'];
@@ -58,6 +59,7 @@ export class SettingsRepository {
       jiraFieldStoryPoints: String(
         byKey.get(KEYS.jiraFieldStoryPoints) ?? 'customfield_10005',
       ),
+      author: String(byKey.get(KEYS.author) ?? ''),
     };
   }
 
@@ -87,6 +89,7 @@ export class SettingsRepository {
       'jiraFieldBlockedOption',
       'jiraFieldSprint',
       'jiraFieldStoryPoints',
+      'author',
     ] as const) {
       if (patch[name] !== undefined) entries.push([KEYS[name], patch[name]]);
     }

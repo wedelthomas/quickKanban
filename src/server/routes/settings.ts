@@ -16,6 +16,9 @@ const updateSchema = z
     // permitted and the user's choice, so the lower bound is zero, not one.
     archiveWindowDays: z.number().int().min(0).max(365).optional(),
     archiveIntervalSeconds: z.number().int().min(300).max(86_400).optional(),
+    // Bounded so a heading cannot push the board off screen. Empty is valid and
+    // means "use the product name".
+    author: z.string().trim().max(60).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, 'Nothing to change.');
 
