@@ -21,7 +21,7 @@ flags the need for integration tests in `tasks.md`.
 | **Failure mode — while running** | `GET /api/health` reports `degraded`; mutations return 503 with a typed code; the board stays interactive and reverts failed changes |
 | **Data classification** | No PII, no account-critical data. Card titles and descriptions are the user's own notes about their own work. |
 
-### Jira Cloud REST API — read only
+### Jira Cloud REST API — read
 
 | Field | Value |
 |---|---|
@@ -46,11 +46,33 @@ interceptor's root CA or every call fails with
 be used: it disables verification entirely and would make the token
 interceptable by anyone on the path.
 
+### Jira Cloud REST API — write (status transitions only)
+
+| Field | Value |
+|---|---|
+| **Direction** | Outbound HTTPS, from the app container |
+| **Introduced in** | Slice 3 (`specs/003-two-way-sync/`) |
+| **Contract** | `GET {JIRA_BASE_URL}/rest/api/3/issue/{key}/transitions?expand=transitions.fields` to read what is legal from where the issue currently sits, then `POST` the same path with a body of exactly `{"transition":{"id":"…"}}`. Also `GET /rest/api/3/status`, read-only, so the column mapping is chosen from Jira's own status names rather than typed. |
+| **Methods used** | `GET` and `POST` to the transitions path, and nothing else. No `PUT`, no field edit, no comment, no worklog. |
+| **What can change in Jira** | The issue's status, and only the status. The POST body carries no field, so no field but status *can* change (FR-209). A unit test asserts the adapter's source contains no other write path. |
+| **Which transition** | Matched on the transition's **destination status** (`transition.to.name`), never on the transition's own name. These differ routinely: on tsgjira.atlassian.net the transition named "To Development" leads to the status "Development", and "Pass" leads to "PO Approve". |
+| **Authentication** | Same credential as the read direction: HTTP Basic, `email:api-token` from environment, built at call time. |
+| **Timeout** | 10s per request (`AbortSignal.timeout`) |
+| **Retries** | **None.** A transition is not idempotent from the board's point of view — a retry after an ambiguous failure could move an issue a second time, past where the user asked. A failed push is reported and left for the user. |
+| **Refusal — no legal transition** | The target status is not reachable from where the issue is now → `NO_LEGAL_TRANSITION`. The card does not move locally either. |
+| **Refusal — transition demands a field** | Jira requires a resolution or similar → `TRANSITION_NEEDS_FIELDS`. Refused rather than guessed: supplying a field the user never chose would write something they did not ask for. |
+| **Refusal — column has no mapping** | The column is local-only; Jira is simply never told (FR-207). Not an error. |
+| **Refusal — card is conflicted** | `CARD_CONFLICTED`. Enforced before Jira is consulted at all, so it holds even when Jira is unconfigured. |
+| **Ordering** | Jira is transitioned **before** the card moves on the board. A refusal therefore leaves nothing half-applied to unwind. |
+| **Failure classes** | Identical to the read direction: `credentials`, `connectivity`, `rate_limit`, `malformed`. |
+| **Data classification** | An issue key and a transition id. No PII. Writes are visible to the user's whole team, which is why nothing but status is ever sent. |
+
+**Blast radius.** This is the only touchpoint in the system that changes data
+other people can see. Everything else is local to the user's machine.
+
 ## Planned touchpoints
 
-| Touchpoint | Arrives in | Shape |
-|---|---|---|
-| Jira Cloud REST API (write) | Slice 3 | Status transitions only, via `POST /rest/api/3/issue/{key}/transitions`. No other field is ever modified. |
+None. Slice 4 (search, archive, summaries) adds no outside touchpoint.
 
 ## Touchpoints deliberately absent
 

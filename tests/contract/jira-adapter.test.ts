@@ -1,3 +1,9 @@
+/**
+ * Over 300 lines, deliberately: one file per adapter, not per endpoint. The
+ * read and write blocks share the credentials, the mock-agent setup and the
+ * injected fetch, and a second file against the same adapter would duplicate
+ * all three — where a drift between the two copies would be invisible.
+ */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MockAgent, fetch as undiciFetch } from 'undici';
 import { JiraAdapter } from '../../src/server/jira/jira-adapter.js';

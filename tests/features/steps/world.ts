@@ -56,6 +56,15 @@ export class BoardWorld extends World {
     await this.pool.query(
       `UPDATE settings SET value = '300'::jsonb WHERE key = 'sync.interval_seconds'`,
     );
+    // Same reasoning for the column mapping, and for the same reason it was
+    // added to settings: a scenario that remaps a column leaked into every
+    // later scenario. Rewritten wholesale rather than updated, because an
+    // unmapped column is the ABSENCE of a row, not a null in one.
+    await this.pool.query('DELETE FROM column_status_mappings');
+    await this.pool.query(
+      `INSERT INTO column_status_mappings (column_id, status_name)
+       VALUES (1, 'Open'), (2, 'Development'), (4, 'Test'), (5, 'PO Approve')`,
+    );
   }
 
   async request(

@@ -113,7 +113,8 @@ flowchart LR
   Browser["Browser SPA"]
   subgraph app["app container"]
     MoveRoute["POST /api/cards/:id/move"]
-    ConflictRoute["/api/conflicts"]
+    Freeze{{"conflicted?<br/>checked before Jira"}}
+    ConflictRoute["/api/conflicts<br/>+ /:id/resolve"]
     MapRoute["/api/settings/mappings"]
     Push["TransitionService<br/>board change -> Jira"]
     Sync["SyncService"]
@@ -127,7 +128,12 @@ flowchart LR
   Browser -->|"drag a card"| MoveRoute
   Browser -->|"resolve a conflict"| ConflictRoute
   Browser -->|"map a column"| MapRoute
-  MoveRoute -->|"mapped column?"| Push
+  MoveRoute --> Freeze
+  Freeze -->|"refuse: CARD_CONFLICTED"| Browser
+  Freeze -->|"mapped column?"| Push
+  ConflictRoute -->|"keep board: transition Jira"| Push
+  ConflictRoute -->|"accept Jira: local only"| Store
+  MapRoute -->|"listStatuses()"| Port
   Push -->|"getTransitions(key)"| Port
   Push -->|"transitionIssue(key, id)"| Port
   Port -->|"GET + POST transitions"| Jira
@@ -163,8 +169,8 @@ every combination of the reconciler's three inputs is covered.
 | Test File | Type | Covers |
 | --- | --- | --- |
 | `tests/unit/reconcile.test.ts` | Unit | The full decision table: every combination of local-changed, remote-changed and agreement — BH-209…BH-214 |
-| `tests/unit/mapping.test.ts` | Unit | Column-to-status lookup, unmapped columns, two columns sharing a status resolving by board order — BH-202, BH-224 |
-| `tests/contract/jira-transitions.test.ts` | Contract | `getTransitions` and `transitionIssue` against recorded fixtures, including the real shape where transition name differs from destination — BH-201, BH-205, BH-208 |
+| `tests/unit/column-mapping.test.ts` | Unit | Column-to-status lookup, unmapped columns, two columns sharing a status resolving by board order — BH-202, BH-224 |
+| `tests/contract/jira-adapter.test.ts` (transitions block) | Contract | `getTransitions` and `transitionIssue` against recorded fixtures, including the real shape where transition name differs from destination — BH-201, BH-205, BH-208 |
 | `tests/features/push-transitions.feature` | Acceptance | Move transitions the issue; unmapped and ad-hoc cards write nothing — BH-201, BH-202, BH-203, BH-204 |
 | `tests/features/push-refusals.feature` | Acceptance | Illegal transition, stale mapping, unreachable Jira, transition needing fields — BH-205…BH-208 |
 | `tests/features/adopt-remote.feature` | Acceptance | Remote-only change adopted and attributed to sync; unmapped inbound status leaves the card — BH-210, BH-211, BH-212 |
@@ -174,7 +180,15 @@ every combination of the reconciler's three inputs is covered.
 | `tests/features/steps/transition.steps.ts` | Acceptance | Steps driving the fake's transition surface |
 | `tests/e2e/conflict.spec.ts` | E2E | The conflict badge and the side-by-side resolution — BH-213, BH-216, BH-217, BH-218 |
 | `tests/e2e/mapping.spec.ts` | E2E | Mapping a column in settings, and an unmapped column staying local |
-| `tests/unit/no-unbounded-writes.test.ts` | Unit | The adapter writes only transitions: no other Jira endpoint, no other field — BH-204 |
+| `tests/unit/no-jira-writes.test.ts` | Unit | The adapter writes only transitions: no other Jira endpoint, no other field — BH-204 |
+
+Three files landed under different names than planned: the mapping unit test
+joined the existing `column-mapping.test.ts`, the transitions contract tests
+were added to `jira-adapter.test.ts` rather than starting a second file against
+the same adapter, and `no-unbounded-writes` was already called
+`no-jira-writes`. The table above names what exists. One more file exists that
+the plan did not foresee — `tests/unit/conflict-freeze.test.ts`, guarding the
+freeze against the Jira port's absence after that turned out to be a live bug.
 
 **TestRail sync point**: each story's first task syncs its `TEST-###` cases
 before any implementation task in that story runs. Cases land under a new

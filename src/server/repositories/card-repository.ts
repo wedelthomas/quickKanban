@@ -1,3 +1,13 @@
+/**
+ * Every SQL statement the card table needs, in one place.
+ *
+ * Over 300 lines, deliberately. Splitting it would mean splitting by verb
+ * (reads here, writes there) while the queries share the same column list,
+ * the same row shape and the same ordering rules — a split that separates
+ * things which have to change together, in exchange for a smaller file. The
+ * alternative that would genuinely reduce this is an ORM, rejected in slice 1's
+ * research for hiding exactly the query behaviour this file exists to control.
+ */
 import type pg from 'pg';
 import type { Card } from '../../shared/types.js';
 import { type BoardRow, toCard } from './board-row.js';

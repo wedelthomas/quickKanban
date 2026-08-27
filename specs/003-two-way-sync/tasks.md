@@ -136,13 +136,13 @@ tidy up later.
 
 ## Phase 9: Polish
 
-- [ ] T346 Update `docs/external-interactions.md` with the write direction: which transitions are attempted, the four refusal causes, and that writes are never retried.
-- [ ] T347 Update `README.md`: what dragging a Jira card now does, and what a conflict means.
-- [ ] T348 Verify plan.md's diagrams against the as-built system.
-- [ ] T349 Verify all 13 test files exist and pass.
-- [ ] T350 Verify SC-201…SC-209, including SC-203's full input matrix and SC-207's zero non-status writes.
-- [ ] T351 Code cleanup; no file over 300 lines without recorded justification.
-- [ ] T352 Security check: no credential in the diff; audit clean at Critical/High.
+- [x] T346 Update `docs/external-interactions.md` with the write direction: which transitions are attempted, the four refusal causes, and that writes are never retried.
+- [x] T347 Update `README.md`: what dragging a Jira card now does, and what a conflict means.
+- [x] T348 Verify plan.md's diagrams against the as-built system.
+- [x] T349 Verify all 13 test files exist and pass.
+- [x] T350 Verify SC-201…SC-209, including SC-203's full input matrix and SC-207's zero non-status writes.
+- [x] T351 Code cleanup; no file over 300 lines without recorded justification.
+- [x] T352 Security check: no credential in the diff; audit clean at Critical/High.
 - [ ] T353 **Live verification against real Jira — requires explicit agreement first.** This is the only task in the project that changes data other people can see. Not to be run as part of any suite.
 - [ ] T354 Run `/speckit.review`; address blocking findings.
 - [ ] T355 Request peer review.

@@ -9,7 +9,7 @@ record for your day. Requests arrive by chat, email and hallway conversation;
 they take real hours and compete with everything else, but no Jira board shows
 them. This board does.
 
-> **Current state: slice 2 (Jira import), complete.**
+> **Current state: slice 3 (two-way sync), complete.**
 
 ## What it does today
 
@@ -30,9 +30,41 @@ them. This board does.
   restored if they come back
 - Sync status is always visible, and a failure never blocks the board
 
-**Not yet:** dragging a Jira card does not tell Jira — that is slice 3. Search,
-the dated archive and standup summaries are slice 4. See
+- **Dragging a Jira card transitions the issue in Jira**, to the status that
+  column is mapped to — and only the status; no other field is ever written
+- Which status each column means is yours to set, chosen from the statuses your
+  Jira actually reports rather than typed
+- A column left unmapped (Blocked ships this way) is local-only: moving a card
+  there changes the board and tells Jira nothing
+- Changes made in Jira are adopted onto the board on the next sync
+- When both sides changed, the board **stops and asks** rather than picking a
+  winner — see below
+
+**Not yet:** search, the dated archive and standup summaries are slice 4. See
 [`docs/brd.md`](docs/brd.md).
+
+## When the board and Jira disagree
+
+If the board moved a card and Jira moved the same issue somewhere else since
+the last sync, that is a conflict. The board never resolves one for you: both
+changes were somebody's deliberate act, and only you know which one is still
+true.
+
+A conflicted card is marked on its face and **frozen** — it refuses to be
+dragged until you decide. A count appears in the board bar; opening it shows
+both sides side by side, with two buttons and no default:
+
+- **Keep this, update Jira** transitions the issue to match the board. If Jira
+  refuses the transition, the conflict stays open — nothing is recorded that
+  Jira did not accept.
+- **Accept this, move the card** moves the card to match Jira and writes
+  nothing to Jira at all.
+
+Either way the card unfreezes, and the choice is recorded.
+
+A push to Jira is never retried. Transitions are not idempotent from the
+board's side, and a retry after an ambiguous failure could move an issue twice,
+past where you asked it to go.
 
 ## Connecting to Jira
 
@@ -96,8 +128,7 @@ docker volume rm quick-kanban-wall_kanban_data
 ```
 
 **`kanban_data` is the volume holding everything.** Removing it deletes every
-card on the board. Once Jira sync exists, Jira-sourced cards will return on the
-next sync — but **ad-hoc cards exist nowhere else, and they are gone for
+card on the board. Jira-sourced cards return on the next sync — but **ad-hoc cards exist nowhere else, and they are gone for
 good.** Reach for this only when you genuinely want an empty board.
 
 ## Configuration
