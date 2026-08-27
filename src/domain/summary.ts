@@ -29,6 +29,11 @@ export interface StateRow {
   issueKey: string | null;
   issueUrl: string | null;
   columnId: number;
+  /**
+   * Slice 5 retired the Blocked column, so "what is blocked" is no longer a
+   * question about which column a card sits in (FR-415).
+   */
+  blocked: boolean;
 }
 
 export interface SummaryInput {
@@ -40,7 +45,11 @@ export interface SummaryInput {
 }
 
 export const IN_PROGRESS_COLUMN_ID = 2;
-export const BLOCKED_COLUMN_ID = 3;
+/**
+ * Retired by slice 5. Kept only because the movement history still resolves
+ * against it (FR-446); nothing groups by it any more.
+ */
+export const RETIRED_BLOCKED_COLUMN_ID = 3;
 
 const asCard = (row: StateRow): SummaryCard => ({
   cardId: row.cardId,
@@ -71,10 +80,19 @@ export const buildSummary = ({
   // than re-sorted so there is one place that decides it.
   const moved: SummaryMovement[] = movements.map((m) => ({ ...m }));
 
+  // Blocked wins over in-progress, so the two groups stay disjoint.
+  //
+  // They were mutually exclusive by construction until slice 5, because a card
+  // was in one column or the other. Now that blocked is a flag they can overlap,
+  // and a card listed under both would be read out twice at standup — which is
+  // exactly the friction the generated summary exists to remove.
   const inProgress = current
-    .filter((c) => c.columnId === IN_PROGRESS_COLUMN_ID)
+    .filter((c) => c.columnId === IN_PROGRESS_COLUMN_ID && !c.blocked)
     .map(asCard);
-  const blocked = current.filter((c) => c.columnId === BLOCKED_COLUMN_ID).map(asCard);
+  // By the flag, not the column. A blocked card now sits wherever the work
+  // actually is — in progress, in test, in review — and grouping by column
+  // would report an empty list forever (FR-415).
+  const blocked = current.filter((c) => c.blocked).map(asCard);
 
   return {
     period,

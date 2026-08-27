@@ -3,7 +3,6 @@ import type { Actor, CardSource } from '../../shared/types.js';
 import type { MovementRow, StateRow } from '../../domain/summary.js';
 
 const IN_PROGRESS = 2;
-const BLOCKED = 3;
 
 /**
  * The two reads a summary needs.
@@ -75,15 +74,18 @@ export class SummaryRepository {
       issue_key: string | null;
       url: string | null;
       column_id: number;
+      blocked: boolean;
     }>(
-      `SELECT c.id, c.title, c.source, jl.issue_key, jl.url, c.column_id
+      // In progress OR blocked-anywhere. Two conditions rather than a column
+      // list, because since slice 5 a blocked card sits wherever the work is.
+      `SELECT c.id, c.title, c.source, jl.issue_key, jl.url, c.column_id, c.blocked
          FROM cards c
          LEFT JOIN jira_links jl ON jl.card_id = c.id
-        WHERE c.column_id = ANY($1)
+        WHERE (c.column_id = $1 OR c.blocked)
           AND c.archived_at IS NULL
           AND c.deleted_at IS NULL
         ORDER BY c.column_id, c.position`,
-      [[IN_PROGRESS, BLOCKED]],
+      [IN_PROGRESS],
     );
 
     return rows.map((r) => ({
@@ -93,6 +95,7 @@ export class SummaryRepository {
       issueKey: r.issue_key,
       issueUrl: r.url,
       columnId: r.column_id,
+      blocked: r.blocked,
     }));
   }
 }

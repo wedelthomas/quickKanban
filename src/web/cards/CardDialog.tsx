@@ -8,6 +8,11 @@ export interface CardDraft {
   priority: Priority;
   dueDate: string | null;
   tags: string[];
+  /**
+   * Settable on any card, including Jira-sourced ones: the board keeps its own
+   * opinion of whether work is stuck and never writes it back (FR-412, FR-417).
+   */
+  blocked: boolean;
 }
 
 export const CardDialog = ({
@@ -28,6 +33,7 @@ export const CardDialog = ({
   const [title, setTitle] = useState(initial?.title ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? 'medium');
+  const [blocked, setBlocked] = useState<boolean>(initial?.blocked ?? false);
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? '');
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +65,7 @@ export const CardDialog = ({
         priority,
         dueDate: dueDate === '' ? null : dueDate,
         tags,
+        blocked,
       });
     } catch (failure) {
       // Without this the dialog sits open with no explanation and the
@@ -134,6 +141,20 @@ export const CardDialog = ({
           <span className="field-label">Tags</span>
           <TagInput tags={tags} onChange={setTags} />
         </div>
+
+        <label className="filter-toggle">
+          <input
+            type="checkbox"
+            data-testid="card-blocked-toggle"
+            checked={blocked}
+            onChange={(e) => setBlocked(e.target.checked)}
+          />
+          Blocked
+        </label>
+        <p className="field-note">
+          Marks the card as stuck without moving it. A blocked card still moves between
+          columns.
+        </p>
 
         <div className="dialog-actions">
           {onDelete && !jiraOwned && !confirmingDelete && (

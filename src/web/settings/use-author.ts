@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
+/** Static fallback, and the first half of the tab title once an author is set. */
+const PRODUCT_NAME = 'QUICK KANBAN';
+
 /**
  * Whose board this is, for the page heading.
  *
@@ -21,6 +24,13 @@ export const useAuthor = (): { author: string; reloadAuthor: () => void } => {
   }, []);
 
   useEffect(reloadAuthor, [reloadAuthor]);
+
+  // The browser tab names the product first, so a window among many is still
+  // identifiable as this board, then whose board it is. Uppercase to match the
+  // heading, which is shouted in CSS the tab cannot reach.
+  useEffect(() => {
+    document.title = author ? `${PRODUCT_NAME} - ${author.toUpperCase()}` : PRODUCT_NAME;
+  }, [author]);
 
   return { author, reloadAuthor };
 };

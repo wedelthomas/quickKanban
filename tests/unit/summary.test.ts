@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BLOCKED_COLUMN_ID,
   IN_PROGRESS_COLUMN_ID,
   buildSummary,
   type MovementRow,
@@ -35,6 +34,7 @@ const state = (over: Partial<StateRow> = {}): StateRow => ({
   issueKey: null,
   issueUrl: null,
   columnId: IN_PROGRESS_COLUMN_ID,
+  blocked: false,
   ...over,
 });
 
@@ -70,7 +70,7 @@ describe('the three groups (BH-316)', () => {
   });
 
   it('lists what is blocked now', () => {
-    const s = buildSummary(input({ current: [state({ columnId: BLOCKED_COLUMN_ID })] }));
+    const s = buildSummary(input({ current: [state({ blocked: true })] }));
     expect(s.blocked.map((c) => c.title)).toEqual(['Draft the quarterly report']);
     expect(s.inProgress).toEqual([]);
   });
@@ -90,7 +90,7 @@ describe('the three groups (BH-316)', () => {
     const s = buildSummary(
       input({
         movements: [movement({ cardId: 'card-9', toColumn: 'Blocked' })],
-        current: [state({ cardId: 'card-9', columnId: BLOCKED_COLUMN_ID })],
+        current: [state({ cardId: 'card-9', blocked: true })],
       }),
     );
     expect(s.moved).toHaveLength(1);
@@ -162,9 +162,9 @@ describe('an empty period (BH-321)', () => {
   });
 
   it('is NOT empty when only blocked work exists', () => {
-    expect(
-      buildSummary(input({ current: [state({ columnId: BLOCKED_COLUMN_ID })] })).empty,
-    ).toBe(false);
+    expect(buildSummary(input({ current: [state({ blocked: true })] })).empty).toBe(
+      false,
+    );
   });
 });
 

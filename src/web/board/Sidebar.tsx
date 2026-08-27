@@ -239,6 +239,16 @@ export const Sidebar = ({
               Overdue only
             </label>
 
+            <label className="filter-toggle">
+              <input
+                type="checkbox"
+                data-testid="filter-blocked"
+                checked={filter.blockedOnly}
+                onChange={(e) => onChange('blockedOnly', e.target.checked)}
+              />
+              Blocked only
+            </label>
+
             {active && (
               <button className="button" data-testid="filter-clear" onClick={onClear}>
                 Clear filter

@@ -36,7 +36,7 @@ export const CardView = ({
   return (
     <article
       ref={setNodeRef}
-      className={`card${isDragging ? ' card--dragging' : ''}`}
+      className={`card${isDragging ? ' card--dragging' : ''}${card.blocked ? ' card--blocked' : ''}`}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       data-testid="card"
       data-card-id={card.id}
@@ -59,6 +59,28 @@ export const CardView = ({
             data-overdue={card.overdue}
           >
             {formatDue(card.dueDate)}
+          </span>
+        )}
+        {card.blocked && (
+          // Named, not just coloured: the text is what makes this survive
+          // greyscale and a colour-blind reader (FR-411).
+          <span
+            className="badge badge--blocked"
+            data-testid="card-blocked"
+            title="Blocked — this card still moves"
+          >
+            Blocked
+          </span>
+        )}
+        {card.blockedDivergesFromJira && (
+          // Not a conflict, and deliberately not styled like one: the card is
+          // not frozen and needs no decision (FR-419).
+          <span
+            className="badge badge--blocked-diverges"
+            data-testid="card-blocked-diverges"
+            title="Jira disagrees about this card being blocked. Your setting is the one in force."
+          >
+            ≠ Jira
           </span>
         )}
         {card.hasConflict && (

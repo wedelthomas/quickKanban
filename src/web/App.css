@@ -404,6 +404,34 @@ kbd {
 
 /* --- conflicts ---------------------------------------------------------- */
 
+/* Blocked reads twice on purpose (FR-410, FR-411): a left edge that survives a
+   glance across fifty cards, and a badge that names the state so it survives
+   greyscale and colour-vision deficiency. Colour alone would satisfy neither.
+   The priority dot keeps its own meaning — recolouring it would have erased
+   priority on exactly the cards most needing triage. */
+.card--blocked {
+  border-left: 3px solid var(--blocked);
+  padding-left: calc(var(--space-3) - 2px);
+}
+
+.badge--blocked {
+  border-color: var(--blocked);
+  background: var(--blocked-soft);
+  color: var(--blocked);
+  font-weight: 600;
+}
+
+/* The board and Jira disagree, and the board's value is the one in force
+   (FR-418). Outlined rather than solid so it never reads as "this card is
+   blocked" — it says the two sources differ, which is a different fact
+   (FR-443). */
+.badge--blocked-diverges {
+  border-color: var(--blocked);
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-muted);
+}
+
 .badge--conflict {
   border-color: var(--warning);
   background: var(--warning-soft);

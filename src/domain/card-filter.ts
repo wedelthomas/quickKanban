@@ -11,6 +11,12 @@ export interface Filter {
   priority: Priority | null;
   source: CardSource | null;
   overdueOnly: boolean;
+  /**
+   * Blocked was a column until slice 5, so "show me what is stuck" used to be
+   * answered by looking at one place on the board. Making it a card attribute
+   * removed that, and this filter is what replaces it (FR-413).
+   */
+  blockedOnly: boolean;
 }
 
 export const EMPTY_FILTER: Filter = {
@@ -19,6 +25,7 @@ export const EMPTY_FILTER: Filter = {
   priority: null,
   source: null,
   overdueOnly: false,
+  blockedOnly: false,
 };
 
 /**
@@ -32,7 +39,8 @@ export const isActive = (filter: Filter): boolean =>
   filter.tag !== null ||
   filter.priority !== null ||
   filter.source !== null ||
-  filter.overdueOnly;
+  filter.overdueOnly ||
+  filter.blockedOnly;
 
 /**
  * Whether a card survives a filter.
@@ -56,6 +64,7 @@ export const matches = (card: Card, filter: Filter): boolean => {
   if (filter.priority !== null && card.priority !== filter.priority) return false;
   if (filter.source !== null && card.source !== filter.source) return false;
   if (filter.overdueOnly && !card.overdue) return false;
+  if (filter.blockedOnly && !card.blocked) return false;
 
   return true;
 };
