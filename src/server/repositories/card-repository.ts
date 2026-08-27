@@ -241,6 +241,10 @@ export class CardRepository {
       if (input.description !== undefined) set('description', input.description);
       if (input.priority !== undefined) set('priority', input.priority);
       if (input.dueDate !== undefined) set('due_date', input.dueDate);
+      // Permitted on a Jira-sourced card, unlike title: the jira-owned guard
+      // above deliberately names only the fields Jira is authoritative for, and
+      // blocked is not one of them (FR-412, FR-418).
+      if (input.blocked !== undefined) set('blocked', input.blocked);
 
       if (sets.length > 0) {
         values.push(id);
@@ -353,7 +357,8 @@ export class CardRepository {
              WHERE ct.card_id = c.id),
            ARRAY[]::text[]
          ) AS tags,
-         jl.issue_key, jl.url AS issue_url,
+         jl.issue_key, jl.url AS issue_url, jl.blocked_in_jira,
+         c.blocked, c.carried_iterations,
          (cf.card_id IS NOT NULL) AS has_conflict
        FROM cards c
        JOIN columns col ON col.id = c.column_id

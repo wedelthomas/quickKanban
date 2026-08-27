@@ -49,6 +49,10 @@ export const updateCardSchema = z
       .transform((value) => value ?? null)
       .optional(),
     tags: z.array(z.string()).transform(normalizeTags).optional(),
+    // Settable on any card, local or Jira-sourced (FR-412). Unlike `title`,
+    // this is not a field Jira owns — the board keeps its own opinion and never
+    // writes it back (FR-417).
+    blocked: z.boolean().optional(),
   })
   .refine(
     (value) => Object.keys(value).length > 0,
