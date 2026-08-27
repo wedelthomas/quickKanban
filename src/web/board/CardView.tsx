@@ -87,6 +87,20 @@ export const CardView = ({
             ≠ Jira
           </span>
         )}
+        {card.carriedIterations > 0 && (
+          // Only when it has actually carried. A "0" on every card would be
+          // noise on the one row the board can least afford to crowd, and would
+          // make the marker mean nothing where it does appear.
+          <span
+            className="badge badge--carried"
+            data-testid="card-carried"
+            title={`Unfinished across ${card.carriedIterations} iteration${
+              card.carriedIterations === 1 ? '' : 's'
+            }`}
+          >
+            ↻{card.carriedIterations}
+          </span>
+        )}
         {card.hasConflict && (
           // Frozen, not decorated: this badge is the only warning the user gets
           // that dragging this card will be refused until they decide (FR-236).

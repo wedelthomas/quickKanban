@@ -38,6 +38,7 @@ import type { JiraPort } from './jira/jira-port.js';
 import type { IterationPort } from './jira/iteration-port.js';
 import { IterationRepository } from './repositories/iteration-repository.js';
 import { IterationService } from './services/iteration-service.js';
+import { CarryOverService } from './services/carry-over-service.js';
 import { registerIterationRoutes } from './routes/iteration.js';
 import { CardRepository } from './repositories/card-repository.js';
 import { BoardRepository } from './repositories/board-repository.js';
@@ -203,7 +204,13 @@ export const buildApp = ({
 
   registerIterationRoutes(
     app,
-    new IterationService(settings, new IterationRepository(pool), iterations),
+    new IterationService(
+      settings,
+      new IterationRepository(pool),
+      iterations,
+      () => new Date(),
+      new CarryOverService(pool),
+    ),
   );
 
   const runs = new SyncRunRepository(pool);

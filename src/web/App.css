@@ -445,6 +445,15 @@ kbd {
   color: var(--text-muted);
 }
 
+/* Amber like the conflict badge, and for a related reason: carry-over is
+   something to notice and decide about, not something broken. Distinct from the
+   blocked red, which means the work is stopped right now. */
+.badge--carried {
+  border-color: var(--warning);
+  color: var(--warning);
+  font-weight: 600;
+}
+
 .badge--conflict {
   border-color: var(--warning);
   background: var(--warning-soft);

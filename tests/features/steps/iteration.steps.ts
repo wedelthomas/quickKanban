@@ -176,3 +176,14 @@ When(
     assert.equal(res.statusCode, 200, res.body);
   },
 );
+
+Then(
+  'the card {string} has carried through {int} iteration(s)',
+  async function (this: BoardWorld, title: string, expected: number) {
+    const res = await this.app.inject({ method: 'GET', url: '/api/board' });
+    const board = res.json() as { columns: { cards: Record<string, unknown>[] }[] };
+    const card = board.columns.flatMap((c) => c.cards).find((c) => c.title === title);
+    assert.ok(card, `no card titled ${title} on the board`);
+    assert.equal(card.carriedIterations, expected);
+  },
+);

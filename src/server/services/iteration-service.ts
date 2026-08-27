@@ -5,6 +5,7 @@ import type { SettingsRepository } from '../repositories/settings-repository.js'
 import { selectSprint } from '../../domain/sprint-selection.js';
 import { decideIteration } from '../../domain/iteration-provenance.js';
 import { workingDaysRemaining } from '../../domain/working-days.js';
+import type { CarryOverService } from './carry-over-service.js';
 
 /**
  * What iteration it is, established as honestly as the circumstances allow.
@@ -22,6 +23,12 @@ export class IterationService {
     /** Absent when Jira is not configured — a supported state, not a failure. */
     private readonly source: IterationPort | null,
     private readonly now: () => Date = () => new Date(),
+    /**
+     * Applied here because resolving the iteration is the only moment a
+     * boundary can be observed. Optional so the service stays constructible in
+     * tests that care only about the banner.
+     */
+    private readonly carryOver?: CarryOverService,
   ) {}
 
   async current(): Promise<Iteration | null> {
@@ -52,6 +59,10 @@ export class IterationService {
       now,
     });
     if (!decided) return null;
+
+    // A boundary can only be noticed here. Failures are swallowed: a stale
+    // carry-over badge must not cost the user their banner.
+    await this.carryOver?.observe(decided.ordinalName).catch(() => {});
 
     return {
       ...decided,

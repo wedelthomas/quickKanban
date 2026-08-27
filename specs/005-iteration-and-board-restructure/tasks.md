@@ -259,17 +259,24 @@ have carried.
 
 ### Tests for User Story 5
 
-- [ ] T062 [US5] Author or sync TestRail cases for BH-423, BH-424 and BH-432 via `spec-testrail-sync`, before the implementation tasks below.
-- [ ] T063 [P] [US5] Unit test `tests/unit/carry-over.test.ts` — TEST-424 (a twice-carried card shows two), TEST-432 (returning to Backlog resets), plus reaching Done resetting (FR-444).
-- [ ] T064 [P] [US5] Acceptance feature `tests/features/carry-over.feature` and steps — TEST-423: unfinished cards survive a boundary in place.
+- [x] T062 [US5] Author or sync TestRail cases for BH-423, BH-424 and BH-432 via `spec-testrail-sync`, before the implementation tasks below.
+- [x] T063 [P] [US5] Unit test `tests/unit/carry-over.test.ts` — TEST-424 (a twice-carried card shows two), TEST-432 (returning to Backlog resets), plus reaching Done resetting (FR-444).
+- [x] T064 [P] [US5] Acceptance feature `tests/features/carry-over.feature` and steps — TEST-423: unfinished cards survive a boundary in place.
 
 ### Implementation for User Story 5
 
-- [ ] T065 [P] [US5] Pure `src/domain/carry-over.ts` — given a card's column, its `iteration_seen` and the current iteration, decide increment, reset or leave alone.
-- [ ] T066 [US5] `src/server/services/carry-over-service.ts` — apply that decision when `iteration-service` observes a new iteration. Reaching Done or Backlog resets (FR-444); the working columns increment (FR-435).
-- [ ] T067 [US5] Show the count on the card face in `src/web/board/CardView.tsx`, only when greater than zero.
+- [x] T065 [P] [US5] Pure `src/domain/carry-over.ts` — given a card's column, its `iteration_seen` and the current iteration, decide increment, reset or leave alone.
+- [x] T066 [US5] `src/server/services/carry-over-service.ts` — apply that decision when `iteration-service` observes a new iteration. Reaching Done or Backlog resets (FR-444); the working columns increment (FR-435).
+- [x] T067 [US5] Show the count on the card face in `src/web/board/CardView.tsx`, only when greater than zero.
 
-**Checkpoint**: US1–US5 work independently. **Run the Story-Complete Review Gate.**
+**Checkpoint**: US1–US5 work independently. **Story-Complete Review Gate PASSED.**
+
+One decision worth recording. The count increments once per OBSERVED boundary,
+not once per ordinal skipped: a board left unopened for six weeks saw one
+transition, not three, and claiming otherwise would mean reconstructing a
+calendar it never read. The assumption in spec.md already says the count
+depends on the app having observed each boundary; this is what that means in
+practice.
 
 ---
 
