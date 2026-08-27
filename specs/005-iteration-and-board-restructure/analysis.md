@@ -3,7 +3,7 @@
 **Branch:** 005-iteration-and-board-restructure
 **When:** 2026-08-27T04:40:57Z
 **Artifacts:** spec.md, plan.md, tasks.md (+ research.md, data-model.md, contracts/api.md)
-**Result:** **2 blocking**, 3 non-blocking
+**Result:** **2 blocking**, 3 non-blocking — **all five resolved 2026-08-27T04:44:36Z**
 
 ---
 
@@ -156,7 +156,24 @@ and production code must remain ignorant of it. No requirement changes.
 
 ---
 
+## Resolution
+
+All five findings were addressed in the same pass. Re-verified afterwards: 19
+plan test files each with a task, 33 verification cases each named by a task, 22
+Architecture Review rows filled, no clarification markers.
+
+| # | Resolution |
+|---|---|
+| **B-1** | `tests/ops/no-live-services.test.ts` added to plan.md's Test Strategy against BH-429, and **T083** added to Foundational — it guards every story, so it does not belong to US2. Its number is out of sequence because existing task ids are stable anchors and are never renumbered. |
+| **B-2** | Recorded as a **carried deviation** in plan.md's Constitution Check rather than asserting a gate nobody can evaluate. The coverage target is struck from the Test Strategy; T076 and the Story-Complete checkbox now ask what is actually done — every pathway has a passing test — and claim no percentage. No dependency added. |
+| **N-1** | plan.md's Source Code section now names all eleven additionally-changed files, plus four listed as read-not-modified. The drift heuristic will now fire only on genuine drift. |
+| **N-2** | **T051 withdrawn.** A tombstone records why; the id is retired, not reused. |
+| **N-3** | T048 now states that TEST-410's fixture carries a sprint while production code must remain ignorant of the field. |
+
+**B-2 leaves the constitution's coverage gate unmet.** That is a deliberate,
+recorded choice, not an oversight — it was unmet across slices 1–4 too. It is
+now visible in plan.md instead of implied by an unexecutable task.
+
 ## Next steps
 
-Resolve **B-1** and **B-2**, then `/speckit.implement`. N-1 and N-2 are cheap
-and worth doing in the same pass; N-3 is a one-line note.
+Ready for `/speckit.implement`.

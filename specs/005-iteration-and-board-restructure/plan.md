@@ -66,6 +66,7 @@ one new port, one new table, three new card attributes.
 | VIII | Compliant | PASS (exempt) | No PII. Sprint names and dates are the user's own team's schedule. |
 | IX | Reproducible | PASS | Zero new dependencies. |
 | X | Testable | PASS | The three pieces of real logic — sprint selection, working-day arithmetic, carry-over transition — are pure and take their clock as an argument. The new port has a fake, so no test in the standard suite reaches Jira (FR-442). |
+| — | *Quality gate: ≥90% coverage* | **DEVIATION (carried)** | No coverage provider is installed, and slices 1–4 never measured one either. The suite passes and every behavior pathway is pinned to a test, but **no percentage is claimed**. Raised by `/speckit.analyze` (B-2); resolved by recording the deviation rather than asserting a gate nobody can evaluate. |
 | XI | Documented | **ACTION REQUIRED** | This slice **adds an external touchpoint**: the Jira Agile API. `docs/external-interactions.md` gains an entry in the same change, per the standing quality gate. This is the first slice since Slice 3 to move that file. |
 | XII | Simplicity First | PASS | No iteration lookahead, no per-card sprint badge, no sprint sync, no burndown. All named out of scope in the spec and none has crept in. |
 | XIII | Lean Footprint | PASS | Zero new dependencies; the banner is markup and the marker is CSS. |
@@ -136,6 +137,27 @@ src/
     ├── settings/SettingsDialog.tsx     # CHANGED: iteration + working days + field ids
     └── styles/tokens.css               # CHANGED: --column-blocked retires into --blocked
 ```
+
+**Also changed, named here so the drift heuristic does not fire on them**
+(raised by `/speckit.analyze`, N-1):
+
+```text
+src/server/app.ts                                # register the iteration route
+src/server/jira/jira-adapter.ts                  # read the blocked field (FR-416)
+src/server/repositories/jira-link-repository.ts  # persist blocked_in_jira
+src/server/repositories/summary-repository.ts    # blocked grouping by flag (FR-415)
+src/server/repositories/board-row.ts             # project the three new card fields
+src/server/services/card-service.ts              # reject a retired target (FR-402)
+src/server/services/summary-service.ts           # blocked grouping by flag (FR-415)
+src/web/App.tsx                                  # mount the banner outside board load
+src/web/board/Board.tsx                          # the six new columns
+src/web/board/ColumnView.tsx                     # column colours
+src/web/board/Sidebar.tsx                        # blocked filter control
+```
+
+**Read, not modified** — referenced by tasks as existing mechanism:
+`src/server/errors.ts`, `src/domain/backoff.ts`, `src/server/sync/sync-lock.ts`,
+`src/server/sync/transition-service.ts`.
 
 **Structure Decision**: The existing layout is kept exactly. Pure logic goes to
 `src/domain/` beside `jql.ts`, which is where this codebase already puts
@@ -244,9 +266,11 @@ stateDiagram-v2
 
 ## Test Strategy
 
-**Coverage Target**: ≥90% line and branch across unit and integration, per the
-constitution's standing gate. Every entry in the External Interactions Register
-must be exercised by an integration test — including the new Agile touchpoint.
+**Coverage Target**: **Not measured — carried deviation, see the Constitution
+Check above.** No coverage provider is installed and no slice has ever recorded
+a figure. What is enforced instead: every behavior pathway is pinned to a test,
+and every entry in the External Interactions Register is exercised by an
+integration test — including the new Agile touchpoint.
 
 **Test Framework**: Vitest (unit, contract, ops), cucumber-js (acceptance),
 Playwright (end-to-end).
@@ -276,6 +300,7 @@ treatment, keyboard operation, density).
 | `tests/features/iteration-settings.feature` | Acceptance | US6 — change board and team, persist across restart |
 | `tests/e2e/blocked-card.spec.ts` | E2E | BH-427 — edge and badge visible, distinguishable without colour, keyboard-operable |
 | `tests/e2e/iteration-banner.spec.ts` | E2E | BH-428 — banner present with ~50 cards, no column scrolling |
+| `tests/ops/no-live-services.test.ts` | Ops | BH-429 — no adapter resolving to a real network client is constructed anywhere in the standard suite |
 
 **TestRail sync point**: the first task in each user story's phase that carries
 a `BH-###`/`TEST-###` pair authors or syncs that case through
@@ -285,7 +310,7 @@ TEST-406…TEST-408 before the migration is written.
 
 ## TradeStation SDD — Required plan close-outs
 
-- **Test Strategy is mandatory.** All eighteen test files above MUST become
+- **Test Strategy is mandatory.** All nineteen test files above MUST become
   tasks in `/speckit.tasks`.
 - **Constitution Check** ran before Phase 0 research and again after Phase 1
   design; both recorded above.

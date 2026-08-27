@@ -7,7 +7,7 @@ generated and before `/speckit.implement` begins.
 
 **Tests**: MANDATORY. The constitution requires ≥90% line and branch coverage
 before merge, spec.md carries success criteria referencing the test suite
-(SC-405, SC-407), and plan.md names eighteen test files. Every one becomes a
+(SC-405, SC-407), and plan.md names nineteen test files. Every one becomes a
 task below, and every test task precedes the implementation it covers.
 
 ## Format: `[ID] [P?] [Story] Description`
@@ -60,6 +60,7 @@ in filename order at process start).
 - [ ] T012 [US1] Update `src/shared/types.ts`: replace `blocked` with `iteration_items` in `COLUMN_KEYS` in the new order; add `blocked`, `blockedDivergesFromJira` and `carriedIterations` to `Card`; add the `Iteration` type from contracts/api.md.
 - [ ] T013 [US1] Update `src/server/repositories/board-repository.ts` and `board-row.ts` to filter `columns.retired_at IS NULL` and project the three new card fields.
 - [ ] T014 [P] [US6] Extend `src/server/repositories/settings-repository.ts` to read and write the eleven new keys.
+- [ ] T083 [P] Ops test `tests/ops/no-live-services.test.ts` — TEST-429: no adapter resolving to a real network client is constructed anywhere in the standard suite. Guards every story, so it lives in Foundational. *(Number out of sequence: added by `/speckit.analyze` finding B-1; existing task ids are stable anchors and are never renumbered.)*
 - [ ] T015 Run the migrations against the snapshot from T003 and confirm T005 now passes. Re-run them a second time and confirm nothing changes (FR-407).
 
 **Checkpoint**: Schema is in place, the board query no longer sees a retired
@@ -150,13 +151,16 @@ there automatically.
 ### Tests for User Story 3
 
 - [ ] T047 [US3] Author or sync TestRail cases for BH-409, BH-410 and BH-425 via `spec-testrail-sync`, before the implementation tasks below.
-- [ ] T048 [P] [US3] Acceptance feature `tests/features/iteration-items.feature` and steps — TEST-409 (moving a Jira card in issues no Jira request), TEST-410 (sync never places a card there), TEST-425 (placement survives a reload).
+- [ ] T048 [P] [US3] Acceptance feature `tests/features/iteration-items.feature` and steps — TEST-409 (moving a Jira card in issues no Jira request), TEST-410 (sync never places a card there), TEST-425 (placement survives a reload). **Note**: TEST-410's fixture carries a sprint on the issue, but production code must remain ignorant of the sprint field — reading it onto cards is out of scope. The assertion is negative: nothing happens.
 
 ### Implementation for User Story 3
 
 - [ ] T049 [US3] Confirm Iteration Items has no `column_status_mappings` row and therefore takes the existing unmapped-column path in `src/server/sync/transition-service.ts` unchanged (FR-408). This is expected to require **no production change** — the mechanism is Slice 3's. If a change proves necessary, that is a finding worth recording.
 - [ ] T050 [US3] Confirm `src/server/sync/sync-service.ts` never assigns a card to Iteration Items, and add the guard if any path could (FR-434).
-- [ ] T051 [P] [US3] Expose Iteration Items in `src/web/settings/MappingEditor.tsx` as mappable-but-unmapped, so its local-only status is visible rather than implied.
+> **T051 withdrawn** by `/speckit.analyze` finding N-2: it exposed Iteration
+> Items in the mapping editor, which no requirement asks for. The column's
+> local-only status is already observable — moving a Jira card into it issues no
+> Jira request, which T048 proves. The id is retired, not reused.
 
 **Checkpoint**: US1–US3 work independently. **Run the Story-Complete Review Gate.**
 
@@ -243,8 +247,8 @@ Story-Complete Review Gate before Polish.**
 
 - [ ] T073 [P] Update repo-root `README.md`: the new column set, blocked as a flag, the iteration banner, and every new setting with its default. Include the upgrade note for plan.md risk P-1 — rolling back the image without rolling back the data leaves cards in In Progress that older code expects in Blocked.
 - [ ] T074 Verify the **Architecture Diagram** in `plan.md` still reflects the as-built system; update both diagrams if the implementation diverged, and label every edge.
-- [ ] T075 Verify every one of the eighteen test files named in plan.md exists and passes.
-- [ ] T076 Verify coverage meets the constitution's ≥90% line and branch gate — run the coverage report and record the figure.
+- [ ] T075 Verify every one of the nineteen test files named in plan.md exists and passes.
+- [ ] T076 Verify every behavior pathway has a passing test and every test file named in plan.md exists. **No coverage percentage is claimed** — see plan.md's Constitution Check, where the absent coverage provider is recorded as a carried deviation (`/speckit.analyze` B-2).
 - [ ] T077 Confirm the new Agile touchpoint added in T046 is exercised by an integration test, per the standing quality gate on the External Interactions Register.
 - [ ] T078 [P] Run `npm run lint` and the full suite: unit, contract, ops, acceptance, e2e.
 - [ ] T079 Run `quickstart.md` end to end against a live stack, including the two degraded iteration paths and the team-filter check.
@@ -338,7 +342,7 @@ design, coverage and spec alignment that a mechanical checklist misses.
 - [ ] Every test file plan.md lists for this story exists and passes
 - [ ] Tests assert behaviour, not implementation
 - [ ] Tests would fail if the implementation regressed
-- [ ] Coverage target met for this story
+- [ ] Every behavior pathway for this story has a passing test (no percentage is claimed — carried deviation)
 
 **Security & data**
 - [ ] Untrusted input validated at the boundary it enters
