@@ -13,7 +13,7 @@ them. This board does.
 
 ## What it does today
 
-- Six fixed columns: Backlog, In Progress, Blocked, Test, PO Review, Done
+- Six fixed columns: Backlog, Iteration Items, In Progress, Test, PO Review, Done
 - Cards with a title, description, priority, due date and tags
 - Tags come from a shared vocabulary with autocomplete, so they cannot drift
 - Drag between columns or reorder within one; the move applies instantly and
@@ -34,8 +34,8 @@ them. This board does.
   column is mapped to — and only the status; no other field is ever written
 - Which status each column means is yours to set, chosen from the statuses your
   Jira actually reports rather than typed
-- A column left unmapped (Blocked ships this way) is local-only: moving a card
-  there changes the board and tells Jira nothing
+- A column left unmapped (Iteration Items ships this way) is local-only: moving
+  a card there changes the board and tells Jira nothing
 - Changes made in Jira are adopted onto the board on the next sync
 - When both sides changed, the board **stops and asks** rather than picking a
   winner — see below
@@ -50,7 +50,31 @@ them. This board does.
 - **Generate your standup update** — what moved, what is in progress, what is
   blocked — and copy it as plain text. Daily or weekly
 
-See [`docs/brd.md`](docs/brd.md) for how the four slices were scoped.
+- **The board knows which TradeStation iteration it is** — read from your
+  team's Jira board and shown in the banner with its dates and the working days
+  left. When Jira is unreachable it shows the last one it read, marked as such,
+  and falls back to a calculated estimate rather than to nothing
+- **Blocked is a flag, not a column.** Mark a card stuck wherever the work
+  actually is; it keeps its real column and still moves. Blockers your team
+  recorded in Jira arrive automatically, and your setting always wins
+- **Iteration Items** holds what you have committed to this iteration. You put
+  cards there; Jira never does
+- **Cards that slip say so**, showing how many iterations they have carried
+
+See [`docs/brd.md`](docs/brd.md) for how the first four slices were scoped, and
+[`docs/brd-2.md`](docs/brd-2.md) for the two that follow.
+
+### Upgrading from v1
+
+The upgrade moves every card that was in the Blocked column into **In
+Progress**, carrying the blocked flag — not to Backlog, which would discard the
+fact that the work is in flight. The Blocked column's record is kept rather
+than deleted, because the movement history refers to it; deleting it would
+break the archive and every report.
+
+One caveat worth knowing: rolling back to a v1 image without restoring the
+database leaves those cards in In Progress, unflagged. Nothing is lost, but the
+older code has no idea they were blocked.
 
 ## When the board and Jira disagree
 
@@ -159,16 +183,20 @@ The board is built to be driven without a mouse.
 | Key | Action |
 |---|---|
 | `n` | Create a new card |
-| `j` / `k` | Focus the next / previous card |
+| `k` / `j` | Focus the next / previous card |
 | `Enter` | Open the focused card |
-| `1`–`6` | Send the focused card to that column |
+| `1`–`6` | Send the focused card to that column, left to right |
+| `/` | Filter the board |
+| `,` | Open settings |
 | `?` | Show this list |
 | `Esc` | Close a dialog |
 
 Press `?` in the board for the same list. It is generated from the shortcut
 registry the key handler reads, so it cannot fall out of date.
 
-Search (`/`) arrives with filtering in slice 4.
+The numbers are board POSITIONS, not column ids: Iteration Items sits second
+and its id is 7. The two matched until slice 5 retired a column and added
+another.
 
 ## Development
 

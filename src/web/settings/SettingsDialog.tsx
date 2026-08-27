@@ -88,7 +88,7 @@ export const SettingsDialog = ({
   return (
     <div className="dialog-backdrop" onKeyDown={(e) => e.key === 'Escape' && onClose()}>
       <form
-        className="dialog dialog--wide"
+        className="dialog dialog--settings"
         role="dialog"
         aria-label="Settings"
         onSubmit={save}

@@ -151,8 +151,14 @@
   position: fixed;
   inset: 0;
   background: #00000099;
-  display: grid;
-  place-items: center;
+  /* Flex, not grid with place-items:center. Under that, the column track sizes
+     to the dialog's own content, so a percentage width inside it resolves
+     against the shrunken track — `width: min(1180px, 100%)` collapsed to 760px
+     and the three-column settings layout silently rendered as two. Measured,
+     not guessed. In flex the percentage resolves against the container. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--space-4);
 }
 
@@ -174,11 +180,16 @@
 
 /* Settings carries far more than a form's worth of fields since slice 5: the
    Jira query, two schedules, the iteration, the working week, three field
-   identifiers and the column mapping. Stacked in one 520px column that is a
-   scroll, not a form — and a scroll deep enough that the browser suite found
-   the Save button unreachable. Wider, and genuinely laid out for the width
-   rather than merely allowed to overflow. */
-.dialog--wide {
+   identifiers and the column mapping. Stacked in one column that is a scroll,
+   not a form — deep enough that the browser suite found the Save button
+   unreachable.
+   
+   Its OWN class, not .dialog--wide. That already existed at 760px and is worn
+   by the archive, summary and conflict dialogs; widening it would have quietly
+   resized all three. The first attempt did reuse it, lost to the later rule,
+   and rendered two columns while the CSS said three — found by measuring the
+   dialog in a browser rather than by reading the stylesheet. */
+.dialog--settings {
   width: min(1180px, 100%);
 }
 
@@ -200,25 +211,25 @@
   min-width: 0;
 }
 
-.dialog--wide .field-row {
+.dialog--settings .field-row {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
 }
 
-.dialog--wide .field-row > .field {
+.dialog--settings .field-row > .field {
   flex: 1 1 200px;
   min-width: 0;
 }
 
-.dialog--wide fieldset.field {
+.dialog--settings fieldset.field {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: var(--space-3);
   margin: 0;
 }
 
-.dialog--wide legend {
+.dialog--settings legend {
   padding: 0 var(--space-1);
 }
 
