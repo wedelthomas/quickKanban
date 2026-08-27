@@ -3,6 +3,7 @@ import { runMigrations } from './db/migrate.js';
 import { buildApp, defaultWebRoot } from './app.js';
 import { readJiraCredentials } from './jira/credentials.js';
 import { JiraAdapter } from './jira/jira-adapter.js';
+import { IterationAdapter } from './jira/iteration-adapter.js';
 import { SyncRunRepository } from './repositories/sync-run-repository.js';
 import { ArchiveRunRepository } from './repositories/archive-run-repository.js';
 import { SettingsRepository } from './repositories/settings-repository.js';
@@ -42,6 +43,10 @@ const main = async (): Promise<void> => {
   // (FR-105). The board serves ad-hoc cards exactly as it did in slice 1.
   const credentials = readJiraCredentials();
   const jira = credentials ? new JiraAdapter(credentials) : null;
+  // Same credentials, different API surface. Absent when Jira is not
+  // configured, which leaves the banner on its estimated fallback rather than
+  // breaking anything.
+  const iterations = credentials ? new IterationAdapter(credentials) : null;
   console.error(
     jira
       ? `Jira configured: ${credentials!.baseUrl}`
@@ -59,6 +64,7 @@ const main = async (): Promise<void> => {
     pool,
     webRoot: defaultWebRoot(),
     jira,
+    iterations,
     lock,
     onIntervalChanged: () => scheduler?.reschedule(),
     onArchiveIntervalChanged: () => archiveScheduler?.reschedule(),

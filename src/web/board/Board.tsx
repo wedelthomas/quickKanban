@@ -18,6 +18,7 @@ import { useSync } from '../sync/use-sync.js';
 import { SyncStatusPill } from '../sync/SyncStatus.js';
 import { useConflicts } from '../conflicts/use-conflicts.js';
 import { useAuthor } from '../settings/use-author.js';
+import { IterationBanner } from './IterationBanner.js';
 import { ConflictDialog } from '../conflicts/ConflictDialog.js';
 import { SummaryDialog } from '../summary/SummaryDialog.js';
 import { ArchiveView } from '../archive/ArchiveView.js';
@@ -138,7 +139,8 @@ export const Board = () => {
 
       if (match.action === 'focus-next' || match.action === 'focus-previous') {
         const step = match.action === 'focus-next' ? 1 : -1;
-        // No card focused yet: j starts at the first, k at the last.
+        // No card focused yet: focus-next starts at the first, focus-previous
+        // at the last. Since the j/k swap, that means k starts at the first.
         const next =
           index === -1
             ? step === 1
@@ -235,6 +237,7 @@ export const Board = () => {
               <p className="page-sub">
                 Everything assigned to you, and everything else you are carrying.
               </p>
+              <IterationBanner />
             </div>
             <div className="board-bar">
               {moveError && (

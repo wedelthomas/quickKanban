@@ -33,7 +33,9 @@ test.describe('keyboard operation', () => {
       .poll(() => cardTitlesIn(page, 'backlog'))
       .toEqual(['Typed with no mouse']);
 
-    await page.keyboard.press('j');
+    // k, not j: the two were swapped by request, so k is focus-next and picks
+    // the first card when nothing is focused yet.
+    await page.keyboard.press('k');
     await expect(page.getByTestId('card').first()).toBeFocused();
 
     // 4 is the Test column.
@@ -45,7 +47,7 @@ test.describe('keyboard operation', () => {
     await expect(page.getByTestId('card').first()).toBeFocused();
   });
 
-  test('focus moves between cards with j and k (BH-014)', async ({ page }) => {
+  test('focus moves between cards with k and j (BH-014)', async ({ page }) => {
     for (const title of ['Third', 'Second', 'First']) {
       await page.keyboard.press('n');
       await page.keyboard.type(title);
@@ -56,11 +58,11 @@ test.describe('keyboard operation', () => {
       .poll(() => cardTitlesIn(page, 'backlog'))
       .toEqual(['First', 'Second', 'Third']);
 
-    await page.keyboard.press('j');
-    await expect(page.getByTestId('card').nth(0)).toBeFocused();
-    await page.keyboard.press('j');
-    await expect(page.getByTestId('card').nth(1)).toBeFocused();
     await page.keyboard.press('k');
+    await expect(page.getByTestId('card').nth(0)).toBeFocused();
+    await page.keyboard.press('k');
+    await expect(page.getByTestId('card').nth(1)).toBeFocused();
+    await page.keyboard.press('j');
     await expect(page.getByTestId('card').nth(0)).toBeFocused();
   });
 
@@ -109,7 +111,7 @@ test.describe('keyboard operation', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog')).toBeHidden();
 
-    await page.keyboard.press('j');
+    await page.keyboard.press('k');
     const card = page.getByTestId('card').first();
     await expect(card).toBeFocused();
 

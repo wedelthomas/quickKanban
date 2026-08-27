@@ -40,7 +40,7 @@ test.describe('a conflicted card', () => {
 
     // Moved by keyboard rather than by drag: the refusal is the same either
     // way, and a synthetic drag would test dnd-kit rather than the refusal.
-    await page.keyboard.press('j');
+    await page.keyboard.press('k');
     await page.keyboard.press('5');
 
     await expect(page.getByTestId('move-error')).toContainText(/conflict/i);

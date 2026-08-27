@@ -24,8 +24,8 @@ export interface Shortcut {
 
 export const SHORTCUTS: readonly Shortcut[] = [
   { label: 'n', description: 'Create a new card', action: 'new-card' },
-  { label: 'j', description: 'Focus the next card', action: 'focus-next' },
-  { label: 'k', description: 'Focus the previous card', action: 'focus-previous' },
+  { label: 'k', description: 'Focus the next card', action: 'focus-next' },
+  { label: 'j', description: 'Focus the previous card', action: 'focus-previous' },
   { label: 'Enter', description: 'Open the focused card', action: 'open-card' },
   {
     label: '1–6',
@@ -52,8 +52,10 @@ export const matchShortcut = (event: KeyboardEvent): ShortcutMatch | null => {
   if (event.key === 'Escape') return { action: 'close' };
   if (event.key === '?') return { action: 'help' };
   if (event.key === 'n') return { action: 'new-card' };
-  if (event.key === 'j' || event.key === 'ArrowDown') return { action: 'focus-next' };
-  if (event.key === 'k' || event.key === 'ArrowUp') return { action: 'focus-previous' };
+  // j and k are swapped relative to vim, by explicit request. The arrows keep
+  // their obvious meaning: ArrowDown still moves down regardless.
+  if (event.key === 'k' || event.key === 'ArrowDown') return { action: 'focus-next' };
+  if (event.key === 'j' || event.key === 'ArrowUp') return { action: 'focus-previous' };
   if (event.key === 'Enter') return { action: 'open-card' };
   if (event.key === '/') return { action: 'focus-filter' };
 

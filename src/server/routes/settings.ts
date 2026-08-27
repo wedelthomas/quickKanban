@@ -19,8 +19,52 @@ const updateSchema = z
     // Bounded so a heading cannot push the board off screen. Empty is valid and
     // means "use the product name".
     author: z.string().trim().max(60).optional(),
+
+    // Slice 5. Every bound below is a real constraint rather than a round
+    // number: a cadence outside 1–90 days is not an iteration, an end hour at
+    // or before the start hour is not a working day, and a working week with no
+    // days in it would make "days remaining" permanently zero.
+    iterationBoardId: z.number().int().positive().optional(),
+    iterationTeamName: z.string().trim().min(1).max(80).optional(),
+    iterationAnchorDate: z
+      .string()
+      .regex(
+        /^\d{4}-\d{2}-\d{2}$/,
+        'The anchor date must be a calendar date, YYYY-MM-DD.',
+      )
+      .optional(),
+    iterationCadenceDays: z.number().int().min(1).max(90).optional(),
+    workingDays: z
+      .array(z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']))
+      .min(1, 'At least one working day is required.')
+      .optional(),
+    workingStartHour: z.number().int().min(0).max(23).optional(),
+    workingEndHour: z.number().int().min(0).max(23).optional(),
+
+    // A Jira administration change should be a settings edit, not a code change
+    // (FR-438). The pattern is what Jira actually issues.
+    jiraFieldBlocked: z
+      .string()
+      .regex(/^customfield_\d+$/)
+      .optional(),
+    jiraFieldBlockedOption: z.string().trim().min(1).max(60).optional(),
+    jiraFieldSprint: z
+      .string()
+      .regex(/^customfield_\d+$/)
+      .optional(),
+    jiraFieldStoryPoints: z
+      .string()
+      .regex(/^customfield_\d+$/)
+      .optional(),
   })
-  .refine((v) => Object.keys(v).length > 0, 'Nothing to change.');
+  .refine((v) => Object.keys(v).length > 0, 'Nothing to change.')
+  .refine(
+    (v) =>
+      v.workingStartHour === undefined ||
+      v.workingEndHour === undefined ||
+      v.workingStartHour < v.workingEndHour,
+    'The working day must start before it ends.',
+  );
 
 export const registerSettingsRoutes = (
   app: FastifyInstance,
@@ -44,6 +88,9 @@ export const registerSettingsRoutes = (
     }
     const updated = await settings.write(parsed.data);
     if (parsed.data.syncIntervalSeconds !== undefined) onIntervalChanged();
+    // Changing which board or team the iteration comes from takes effect on the
+    // next read rather than next poll: the banner is fetched per page load, so
+    // there is no schedule to re-arm.
     if (parsed.data.archiveIntervalSeconds !== undefined) onArchiveIntervalChanged();
     return updated;
   });

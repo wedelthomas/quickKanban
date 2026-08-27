@@ -84,7 +84,7 @@ test.describe('card face', () => {
     await page.keyboard.type('Finished work');
     await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog')).toBeHidden();
-    await page.keyboard.press('j');
+    await page.keyboard.press('k');
     await page.keyboard.press('6');
 
     await expect

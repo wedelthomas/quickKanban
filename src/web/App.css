@@ -873,6 +873,36 @@ kbd {
   padding-bottom: var(--space-3);
 }
 
+/* The iteration, under the heading. Horizontal and small: it is context for
+   everything below it, not a thing to look at. */
+.iteration {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.iteration-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.iteration-days {
+  color: var(--accent);
+}
+
+/* Only rendered when the value is NOT freshly read, so its presence is the
+   signal. Muted rather than alarming: a cached iteration is usually correct,
+   and the board is meant to keep working while Jira is away (FR-427). */
+.iteration-provenance {
+  border-color: var(--border);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .page-title {
   margin: 0;
   font-size: 22px;

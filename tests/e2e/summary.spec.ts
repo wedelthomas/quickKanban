@@ -20,7 +20,7 @@ test.describe('the summary', () => {
     await createCard(page, 'Rotate staging certificates');
 
     // Move it to In Progress so there is both a movement and current state.
-    await page.keyboard.press('j');
+    await page.keyboard.press('k');
     // 3 is In Progress since the restructure: Iteration Items took position 2.
     await page.keyboard.press('3');
     await expect(
@@ -46,7 +46,7 @@ test.describe('the summary', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/');
     await createCard(page, 'Rotate staging certificates');
-    await page.keyboard.press('j');
+    await page.keyboard.press('k');
     // 3 is In Progress since the restructure: Iteration Items took position 2.
     await page.keyboard.press('3');
 

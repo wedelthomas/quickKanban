@@ -35,6 +35,10 @@ import { SyncLock } from './sync/sync-lock.js';
 import { registerSyncRoutes } from './routes/sync.js';
 import { registerSettingsRoutes } from './routes/settings.js';
 import type { JiraPort } from './jira/jira-port.js';
+import type { IterationPort } from './jira/iteration-port.js';
+import { IterationRepository } from './repositories/iteration-repository.js';
+import { IterationService } from './services/iteration-service.js';
+import { registerIterationRoutes } from './routes/iteration.js';
 import { CardRepository } from './repositories/card-repository.js';
 import { BoardRepository } from './repositories/board-repository.js';
 
@@ -49,6 +53,11 @@ export interface AppOptions {
    * given the real adapter.
    */
   jira?: JiraPort | null;
+  /**
+   * Separate from `jira` on purpose: a different API surface, and failures here
+   * degrade silently where JiraPort's must be loud. See iteration-port.ts.
+   */
+  iterations?: IterationPort | null;
   /** Exposed so the scheduler can share the lock the routes use. */
   lock?: SyncLock;
   /** Called when the poll interval changes, so the scheduler can re-arm. */
@@ -67,6 +76,7 @@ export const buildApp = ({
   webRoot,
   logger = true,
   jira = null,
+  iterations = null,
   lock = new SyncLock(),
   onIntervalChanged = () => {},
   onArchiveIntervalChanged = () => {},
@@ -190,6 +200,12 @@ export const buildApp = ({
   );
 
   const settings = new SettingsRepository(pool);
+
+  registerIterationRoutes(
+    app,
+    new IterationService(settings, new IterationRepository(pool), iterations),
+  );
+
   const runs = new SyncRunRepository(pool);
   const sync = jira
     ? new SyncService(
