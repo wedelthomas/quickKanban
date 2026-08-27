@@ -50,6 +50,17 @@ this slice directly.
   iterations it has carried through, so chronic carry-over is visible on the
   board rather than only in a report.
 
+### Session 2026-08-26 (spec review)
+
+- Q: How is a blocked divergence from Jira distinguished on the card from plain
+  blocked? → A: A distinct marker on the card face, rendered outlined rather
+  than solid so it reads as "the two sources disagree" and not as "this card is
+  blocked". The solid badge and red edge remain reserved for actually blocked.
+- Q: What resets the carry-over count? → A: Reaching Done, or returning to
+  Backlog. The count measures one continuous stretch of being committed but
+  unfinished; pulling a card back to Backlog is a deliberate withdrawal of that
+  commitment and starts the next stretch fresh.
+
 ---
 
 ## User Scenarios & Testing *(mandatory)*
@@ -318,11 +329,11 @@ setting survived.
 - **FR-418**: Where the local blocked state differs from the state last imported
   from Jira, the local state MUST prevail and subsequent syncs MUST NOT
   overwrite it.
-- **FR-419**: A divergence under FR-418 MUST be visible on the card, MUST NOT be
-  treated as a conflict, and MUST NOT freeze the card.
-  [NEEDS CLARIFICATION: how the divergence is distinguished on the card from
-  plain blocked — a distinct marker, a modifier on the existing badge, or
-  detail visible only when the card is opened?]
+- **FR-419**: A divergence under FR-418 MUST be visible on the card face, MUST
+  NOT be treated as a conflict, and MUST NOT freeze the card.
+- **FR-443**: The divergence marker MUST be visually distinct from the blocked
+  indicator itself, so that "the board and Jira disagree" is never mistaken for
+  "this card is blocked".
 - **FR-420**: When the local and Jira blocked states converge, the divergence
   indication MUST cease.
 
@@ -363,8 +374,9 @@ setting survived.
   iteration ends MUST remain on the board in their columns.
 - **FR-436**: A card that has remained unfinished across one or more iteration
   boundaries MUST show on its face how many iterations it has carried through.
-  [NEEDS CLARIFICATION: what resets the count — reaching Done, returning to
-  Backlog, both, or neither?]
+- **FR-444**: The carry-over count MUST reset when a card reaches Done or
+  returns to Backlog. Re-committing a card after it has returned to Backlog
+  MUST start a fresh count.
 
 #### Settings
 
@@ -391,7 +403,7 @@ setting survived.
   gains Iteration Items. Retains its optional Jira status mapping.
 - **Card**: Gains a blocked indicator independent of its column, a record of the
   blocked state last seen in Jira (to detect divergence), and a count of
-  iterations carried.
+  iterations carried since it was last in Done or Backlog.
 - **Iteration**: An ordinal name, a start date, an end date, and a provenance
   saying whether it was freshly read, served from cache, or estimated.
 - **Movement record**: Unchanged in shape. Gains entries attributed to the
@@ -616,6 +628,19 @@ setting survived.
   - **When** resolution runs
   - **Then** the reported ordinal is displayed, not a counted successor
 
+- **BH-431** (satisfies FR-419, FR-443): Divergence reads differently from blocked
+  - **Given** one card blocked in agreement with Jira and one card whose
+    blocked state diverges from Jira's
+  - **When** both are displayed
+  - **Then** the two carry visibly different markers, and the diverging card
+    does not present as blocked
+
+- **BH-432** (satisfies FR-444): The carry-over count resets
+  - **Given** a card showing a carry-over count of two
+  - **When** it is moved to Backlog and later committed to an iteration again
+  - **Then** it shows no carry-over count until it next crosses a boundary
+    unfinished
+
 ## Verification
 
 | ID | Test name | Pins |
@@ -650,3 +675,5 @@ setting survived.
 | TEST-428 | Fifty cards plus the iteration display fit without scrolling | BH-428 |
 | TEST-429 | No test in the standard suite contacts a live service | BH-429 |
 | TEST-430 | A lower reported ordinal is displayed as reported | BH-430 |
+| TEST-431 | Divergence marker is distinguishable from the blocked indicator | BH-431 |
+| TEST-432 | Returning a carried card to Backlog resets its count | BH-432 |
