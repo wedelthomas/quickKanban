@@ -22,8 +22,9 @@ attention goes.
 Three decisions shape it, all argued in [research.md](research.md): filtering
 runs entirely in the browser over data already loaded (R-1); the archival window
 is measured from the movement history rather than a maintained column (R-2); and
-archival needs a second *kind* of history row, which requires a schema change the
-spec's Out-of-Scope section appears to forbid (R-3, flagged below).
+archival needs a second *kind* of history row, which required a schema change
+the spec's Out-of-Scope section forbade until planning surfaced the
+contradiction and the spec was amended (R-3, and the section below).
 
 ## Technical Context
 
@@ -155,24 +156,32 @@ slice adds no new layer and no new top-level directory.
 | `archive_runs`, a second run-log table shaped like `sync_runs` | This is the first process in the system that changes the board with nobody watching. Slice 3's live check found an unrequested write *only* because a log existed to find it in. An unobserved automatic process is exactly where the next such defect will hide. | Logging to stdout only: gone on container restart, and not answerable from the interface when a user asks where a card went. |
 | Principle V — no Confluence runbook | Carried from slices 1–3. | Unchanged. |
 
-## ⚠️ Spec contradiction to resolve
+## Spec contradiction — raised here, resolved in the spec
 
-`spec.md`'s Out of Scope says:
+When this plan was first written, `spec.md`'s Out of Scope said:
 
 > Any change to how movement history is written, which Slices 1 through 3 own.
 
-FR-317 requires archival to be recorded in that history, and BH-312 verifies it.
-As shown in R-3, that record cannot be written under the current schema. The two
-statements cannot both hold.
+FR-317 requires archival to be recorded in that history, and BH-312 verifies it
+— but as R-3 shows, an eligible card is already in Done, so the record the
+requirement demands was one the history could not hold. The two statements could
+not both stand, and the choice between them would otherwise have been made
+silently, inside a migration.
 
-**This plan proceeds on FR-317**, treating the exclusion as meaning "do not
-change how *movements* are recorded" — which this does not: `kind` defaults to
-`'moved'`, and every existing row and writer keeps its exact meaning.
+**Resolved in the spec on 2026-08-27**, not here. The exclusion now reads "any
+change to how **movements** are recorded", FR-317 states that archival is a
+distinct kind of record, and the reasoning is in the spec's Clarifications under
+Session 2026-08-27. `spec-verification.md` re-ran the full gate afterwards and
+passes.
 
-**Recommended spec amendment** (one line each): narrow the exclusion to
-"how *movements* are recorded", and add to FR-317 that archival is a distinct
-kind of history record. Raised here so `/speckit.analyze` sees it rather than a
-future reader discovering it in a migration.
+The same amendment added **FR-318a** — a card with an unresolved conflict is
+never archived — with BH-309a and TEST-309a. That rule began as this plan's R-4:
+the spec predates slice 3 and did not contemplate conflicts and archival
+meeting, so without the amendment the behaviour would have been decided by
+whichever code happened to run first. It is now a requirement with a pathway and
+a test, which is where a rule like that belongs.
+
+**Twenty-three pathways, twenty-three verification rows**, one-to-one.
 
 ## Architecture Review
 
@@ -267,7 +276,8 @@ stateDiagram-v2
 
 ## Test Strategy
 
-**Coverage Target**: all 22 behavior pathways (BH-301…BH-322), plus SC-302's
+**Coverage Target**: all 23 behavior pathways (BH-301…BH-322, including
+BH-309a), plus SC-302's
 requirement that filter combinations return exactly their intersection and
 SC-303/SC-308's requirement that filtering and summarising mutate nothing.
 
@@ -285,7 +295,7 @@ to record.
 | `tests/unit/summary.test.ts` | Unit | Grouping into moved, in progress and blocked; sync-attributed movements marked; the empty period — BH-316, BH-319, BH-321 |
 | `tests/unit/summary-text.test.ts` | Unit | The rendered plain text, line by line, including issue keys — BH-318, BH-320 |
 | `tests/features/filtering.feature` | Acceptance | Filters narrow the board and nothing moves — BH-305 |
-| `tests/features/archival.feature` | Acceptance | Eligibility, the configurable window, the card that left Done and returned, and the conflicted card that is never archived (R-4) — BH-309…BH-312 |
+| `tests/features/archival.feature` | Acceptance | Eligibility, the configurable window, the card that left Done and returned, and the conflicted card that is never archived — BH-309, BH-309a, BH-310…BH-312 |
 | `tests/features/archive-view.feature` | Acceptance | Date range, grouping, retained detail, recorded reason, empty range — BH-313…BH-315 |
 | `tests/features/summaries.feature` | Acceptance | Daily and weekly, archived cards included, both sources, mutating nothing across twenty generations — BH-317, BH-322 |
 | `tests/features/steps/reporting.steps.ts` | Acceptance | Steps for ageing a card into Done, running an archival pass, and reading a summary |
@@ -308,5 +318,6 @@ suite 32733.
 - **This slice writes nothing outside the board.** Unlike slice 3, no live
   verification against another system is needed — but archival acts unobserved,
   so `archive_runs` and per-card logging take that role.
-- **One spec contradiction is outstanding** (see the section above). It does not
-  block planning; it should be settled before implementation reaches T-archival.
+- **The spec contradiction this plan raised is resolved** in the spec itself
+  (see the section above), not worked around here. The spec re-passed
+  verification afterwards.

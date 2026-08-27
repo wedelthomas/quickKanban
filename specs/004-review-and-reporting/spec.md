@@ -24,6 +24,20 @@ sync-attributed movements, which appear in what it displays.
 - Q: Does a filter survive a page reload? → A: No. The board always opens
   unfiltered, so a filtered board is never mistaken for a lost one
 
+### Session 2026-08-27
+
+- Q: FR-317 requires archival in the movement history, but a card eligible for
+  archival is already in Done and the history forbids an event whose from- and
+  to-column match — while Out of Scope forbade changing how that history is
+  written. Which holds? → A: FR-317. The exclusion is narrowed to how
+  *movements* are recorded; archival becomes a distinct kind of record. Raised
+  by `/speckit.plan`; see plan.md and research.md R-3.
+- Q: May archival take a card that has an unresolved conflict on it? → A: No.
+  Slice 3 freezes a conflicted card so the disagreement is resolved
+  deliberately; archiving it would dispose of the evidence and remove the
+  user's ability to act. The spec predates Slice 3, so this was not previously
+  contemplated.
+
 ---
 
 ## User Scenarios & Testing *(mandatory)*
@@ -246,9 +260,15 @@ archive for a chosen date range and confirm only cards from that range appear.
 - **FR-316**: An archived card MUST remain retrievable and MUST NOT be
   deleted. *(BR-32)*
 - **FR-317**: Archival MUST be recorded in the movement history and attributed
-  to the system rather than the user. *(BR-31)*
+  to the system rather than the user. Archival is a distinct kind of history
+  record from a movement: an archived card does not change column, so this
+  record states that the card was archived, not that it moved. *(BR-31)*
 - **FR-318**: A card moved out of Done before the window elapses MUST NOT be
   archived. *(BR-32)*
+- **FR-318a**: A card with an unresolved conflict MUST NOT be archived,
+  regardless of how long it has been in Done. Archival would remove the card
+  from the board while the disagreement stands, leaving the user unable to
+  resolve it. *(BR-32, and Slice 3's FR-227)*
 
 **The archive**
 
@@ -307,7 +327,9 @@ the movement history that Slices 1 through 3 wrote.
 - **SC-303**: Zero cards change column, position or content as a result of
   filtering, across the full test suite. *(FR-311)*
 - **SC-304**: 100% of cards in Done longer than the window are archived on the
-  next archival run, and zero cards younger than the window are. *(BR-32)*
+  next archival run, and zero cards younger than the window are — excepting
+  cards with an unresolved conflict, of which zero are archived at any age.
+  *(BR-32, FR-318a)*
 - **SC-305**: Zero archived cards are deleted; 100% remain retrievable by date. *(BR-32)*
 - **SC-306**: A standup update is produced in one interaction — open the
   summary — and copied in one more. *(M-6)*
@@ -350,7 +372,9 @@ the movement history that Slices 1 through 3 wrote.
   Jira-sourced card automatically when its issue returns to the query; there is
   no manual un-archive.
 - Scheduled or automatic delivery of a summary anywhere.
-- Any change to how movement history is written, which Slices 1 through 3 own.
+- Any change to how **movements** are recorded, which Slices 1 through 3 own.
+  Adding a distinct kind of history record for archival is in scope and is
+  required by FR-317; what a *movement* row means is not touched.
 
 ---
 
@@ -412,6 +436,12 @@ the movement history that Slices 1 through 3 wrote.
     that left Done and returned yesterday
   - **When** archival runs
   - **Then** only the first is archived
+
+- **BH-309a** (satisfies FR-318a): A conflicted card is never archived
+  - **Given** a card in Done far past the window, with an unresolved conflict
+  - **When** archival runs
+  - **Then** the card remains on the board, and the run reports that it was
+    skipped for that reason
 
 - **BH-310** (satisfies FR-313): The window is the user's
   - **Given** the default window of 7 days and a card 5 days in Done
@@ -497,6 +527,7 @@ the movement history that Slices 1 through 3 wrote.
 | TEST-307 | Filter can be opened, applied and cleared by keyboard | BH-307 |
 | TEST-308 | Reload returns the board to unfiltered | BH-308 |
 | TEST-309 | Only cards past the window and still in Done are archived | BH-309 |
+| TEST-309a | A conflicted card is never archived, however old | BH-309a |
 | TEST-310 | Changing the window changes which cards archive | BH-310 |
 | TEST-311 | Archived card leaves the board and remains retrievable | BH-311 |
 | TEST-312 | Archival is recorded with the system as actor | BH-312 |
