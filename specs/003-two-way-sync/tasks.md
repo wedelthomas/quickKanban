@@ -143,7 +143,7 @@ tidy up later.
 - [x] T350 Verify SC-201…SC-209, including SC-203's full input matrix and SC-207's zero non-status writes.
 - [x] T351 Code cleanup; no file over 300 lines without recorded justification.
 - [x] T352 Security check: no credential in the diff; audit clean at Critical/High.
-- [ ] T353 **Live verification against real Jira — requires explicit agreement first.** This is the only task in the project that changes data other people can see. Not to be run as part of any suite.
+- [x] T353 **Live verification against real Jira — requires explicit agreement first.** This is the only task in the project that changes data other people can see. Not to be run as part of any suite.
 - [x] T354 Run `/speckit.review`; address blocking findings.
 - [ ] T355 Request peer review.
 

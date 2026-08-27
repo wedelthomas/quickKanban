@@ -16,6 +16,18 @@ export interface ReconcileInput {
   mappings: readonly Mapping[];
   /** Where the card sits on the board now. */
   localColumn: number;
+  /**
+   * Which column the last sync left this card in, or null if no sync has
+   * recorded one yet.
+   *
+   * The board "moved" if this differs from `localColumn` — a comparison of
+   * column identity, not of status names. Deriving it from names instead was a
+   * live defect: a column can be mapped to only one status, so an issue whose
+   * real status is a synonym of that one ("In Progress" where the column is
+   * mapped to "Development") looked moved on every sync, and the board tried
+   * to transition an issue nobody had touched.
+   */
+  lastKnownColumn: number | null;
   /** What Jira says now. */
   remoteStatus: string;
   /** What Jira said at the last successful sync. */
@@ -34,22 +46,28 @@ const same = (a: string | null, b: string | null): boolean =>
  * to a system other people can see, so it is the one most worth being able to
  * exercise exhaustively.
  *
- * "Changed" is defined against the last-known Jira status, not against a
- * timestamp. The board moved if the column it sits in no longer means what
- * Jira last said; Jira moved if its status differs from what was recorded.
+ * "Changed" is defined against what the last sync recorded, not against a
+ * timestamp. The board moved if the card is in a different column than the one
+ * last recorded; Jira moved if its status differs from the status last
+ * recorded. Neither test involves comparing two names for the same thing.
  */
 export const reconcile = ({
   mappings,
   localColumn,
+  lastKnownColumn,
   remoteStatus,
   lastKnownStatus,
 }: ReconcileInput): Decision => {
   const localStatus = statusForColumn(mappings, localColumn);
   const remoteChanged = !same(remoteStatus, lastKnownStatus);
 
-  // An unmapped column cannot express a status, so it cannot have "moved" in
-  // Jira's terms — the user parked the card somewhere Jira has no word for.
-  const localChanged = localStatus !== null && !same(localStatus, lastKnownStatus);
+  // A card with no recorded column counts as unmoved. Guessing the other way
+  // would push every card on the board the first time this ran.
+  //
+  // An unmapped column still cannot be pushed — the user parked the card
+  // somewhere Jira has no word for — so both conditions have to hold.
+  const localChanged =
+    localStatus !== null && lastKnownColumn !== null && localColumn !== lastKnownColumn;
 
   if (!remoteChanged) {
     return localChanged

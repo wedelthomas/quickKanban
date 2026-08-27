@@ -67,6 +67,14 @@ export class JiraLinkRepository {
   }
 
   /** After our own transition, so the next sync sees no difference. */
+  /**
+   * Records what the last sync knew: the issue's status, and the column the
+   * card was in at that moment.
+   *
+   * The column is taken from the card itself rather than passed in, so the two
+   * cannot drift apart — whatever the caller just decided, this records where
+   * the card actually ended up.
+   */
   async recordStatus(
     cardId: string,
     statusName: string,
@@ -74,7 +82,11 @@ export class JiraLinkRepository {
   ): Promise<void> {
     const runner = client ?? this.pool;
     await runner.query(
-      'UPDATE jira_links SET status_name = $2, last_synced_at = now() WHERE card_id = $1',
+      `UPDATE jira_links
+          SET status_name = $2,
+              synced_column_id = (SELECT column_id FROM cards WHERE id = $1),
+              last_synced_at = now()
+        WHERE card_id = $1`,
       [cardId, statusName],
     );
   }

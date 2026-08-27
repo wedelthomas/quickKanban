@@ -69,15 +69,29 @@ export class JiraCardRepository {
   async currentState(
     client: pg.PoolClient,
     cardId: string,
-  ): Promise<{ columnId: number; lastKnownStatus: string } | null> {
-    const { rows } = await client.query<{ column_id: number; status_name: string }>(
-      `SELECT c.column_id, jl.status_name
+  ): Promise<{
+    columnId: number;
+    lastKnownColumn: number | null;
+    lastKnownStatus: string;
+  } | null> {
+    const { rows } = await client.query<{
+      column_id: number;
+      synced_column_id: number | null;
+      status_name: string;
+    }>(
+      `SELECT c.column_id, jl.synced_column_id, jl.status_name
          FROM cards c JOIN jira_links jl ON jl.card_id = c.id
         WHERE c.id = $1 AND c.deleted_at IS NULL`,
       [cardId],
     );
     const r = rows[0];
-    return r ? { columnId: r.column_id, lastKnownStatus: r.status_name } : null;
+    return r
+      ? {
+          columnId: r.column_id,
+          lastKnownColumn: r.synced_column_id,
+          lastKnownStatus: r.status_name,
+        }
+      : null;
   }
 
   /** Moves a card because Jira moved, attributing the movement to sync. */

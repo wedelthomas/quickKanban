@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { reconcile, type Decision } from '../../src/domain/reconcile.js';
-import type { Mapping } from '../../src/domain/column-mapping.js';
+import { columnForJiraStatus, type Mapping } from '../../src/domain/column-mapping.js';
 
 /**
  * Covers BH-209 through BH-214, and SC-203's requirement that every
@@ -17,8 +17,20 @@ const mappings: Mapping[] = [
   // Column 3 (Blocked) is unmapped on purpose.
 ];
 
+/**
+ * The recorded column is derived from the last-known status here, which models
+ * the ordinary case: the previous sync left the card wherever that status
+ * belongs. Cases where the two come apart — the reason this input exists at
+ * all — are exercised in "a card nobody moved" below, with it passed directly.
+ */
 const decide = (localColumn: number, remoteStatus: string, lastKnown: string): Decision =>
-  reconcile({ mappings, localColumn, remoteStatus, lastKnownStatus: lastKnown });
+  reconcile({
+    mappings,
+    localColumn,
+    lastKnownColumn: columnForJiraStatus(mappings, lastKnown),
+    remoteStatus,
+    lastKnownStatus: lastKnown,
+  });
 
 describe('reconcile — the four outcomes', () => {
   it('neither side changed: nothing to do', () => {
@@ -127,5 +139,66 @@ describe('reconcile — properties that must always hold', () => {
   it('is deterministic across repeated evaluation (SC-204)', () => {
     const first = decide(4, 'Development', 'Open');
     for (let i = 0; i < 100; i++) expect(decide(4, 'Development', 'Open')).toEqual(first);
+  });
+});
+
+/**
+ * Found by the live check against real Jira (T353), not by any fixture.
+ *
+ * PMO-11976 was imported with the real status "In Progress" and placed in the
+ * In Progress column — correctly. That column is mapped to "Development",
+ * because a column can only be mapped to one status. The reconciler then
+ * compared the column's mapped status name against the issue's actual status,
+ * found them different, concluded the *board* had changed, and tried to
+ * transition a real issue nobody had touched. It failed only because that
+ * project's workflow has no "Development" status.
+ *
+ * "The board changed" has to mean the card moved columns, not that two names
+ * for the same column disagree.
+ */
+describe('reconcile — a card nobody moved', () => {
+  const mappings = [
+    { columnId: 1, columnPosition: 1, statusName: 'Open' },
+    { columnId: 2, columnPosition: 2, statusName: 'Development' },
+  ];
+
+  it('does not push when the issue sits in the column it was imported into', () => {
+    const decision = reconcile({
+      mappings,
+      localColumn: 2,
+      lastKnownColumn: 2,
+      // A real status that means the same stage as the column's mapped status
+      // without being spelled the same way.
+      remoteStatus: 'In Progress',
+      lastKnownStatus: 'In Progress',
+    });
+
+    expect(decision).toEqual({ kind: 'no-op' });
+  });
+
+  it('still pushes when the card actually moved columns', () => {
+    const decision = reconcile({
+      mappings,
+      localColumn: 2,
+      lastKnownColumn: 1,
+      remoteStatus: 'Open',
+      lastKnownStatus: 'Open',
+    });
+
+    expect(decision).toEqual({ kind: 'push-local', toStatus: 'Development' });
+  });
+
+  it('treats a card with no recorded column as unmoved rather than as moved', () => {
+    // A link written before this column was recorded. Guessing "moved" here
+    // would push every pre-existing card on the first sync after upgrade.
+    const decision = reconcile({
+      mappings,
+      localColumn: 2,
+      lastKnownColumn: null,
+      remoteStatus: 'In Progress',
+      lastKnownStatus: 'In Progress',
+    });
+
+    expect(decision).toEqual({ kind: 'no-op' });
   });
 });

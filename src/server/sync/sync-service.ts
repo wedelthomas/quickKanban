@@ -100,6 +100,7 @@ export class SyncService {
     const decision = reconcile({
       mappings,
       localColumn: state.columnId,
+      lastKnownColumn: state.lastKnownColumn,
       remoteStatus: issue.statusName,
       lastKnownStatus: state.lastKnownStatus,
     });
