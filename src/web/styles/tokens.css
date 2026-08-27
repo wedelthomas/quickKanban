@@ -21,6 +21,9 @@
   --accent: #3b5bfd;
   --accent-soft: #3b5bfd28;
   --destructive: #e04b4b;
+  /* Amber, not red: a conflict is something to decide, not something broken. */
+  --warning: #e0894b;
+  --warning-soft: #e0894b22;
 
   --priority-high: #e0894b;
   --priority-medium: #8b93a7;

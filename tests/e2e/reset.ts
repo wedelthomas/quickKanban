@@ -21,7 +21,13 @@ export const resetBoard = async (): Promise<void> => {
     // migration, so dropping them would leave the app with no query at all.
     // Resetting them matters — a test that changes the query would otherwise
     // leak it into every test that runs after it.
-    `TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, cards RESTART IDENTITY CASCADE;
+    `TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, conflicts, cards RESTART IDENTITY CASCADE;
+     -- Restored to the migration's seed, not truncated: a test that edits the
+     -- mapping would otherwise leak into every later one. Rewritten wholesale
+     -- because an unmapped column is the ABSENCE of a row, not a null in one.
+     DELETE FROM column_status_mappings;
+     INSERT INTO column_status_mappings (column_id, status_name)
+       VALUES (1, 'Open'), (2, 'Development'), (4, 'Test'), (5, 'PO Approve');
      UPDATE settings SET value = '"assignee = currentUser() AND statusCategory != Done"'::jsonb
       WHERE key = 'jira.jql';
      UPDATE settings SET value = '300'::jsonb WHERE key = 'sync.interval_seconds';`,
@@ -55,6 +61,26 @@ export const seedJiraCard = async (opts: {
            $$https://tsgjira.atlassian.net/browse/${key}$$,
            $$${status}$$, '10000', now()
       FROM new_card;`;
+  await run('docker', [
+    'compose', 'exec', '-T', 'db',
+    'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',
+    '-d', process.env.POSTGRES_DB ?? 'kanban', '-c', sql,
+  ]);
+};
+
+/**
+ * Raises a conflict against an already-seeded Jira card, the way a sync that
+ * found both sides changed would have.
+ */
+export const seedConflict = async (opts: {
+  key: string;
+  boardColumnId: number;
+  jiraStatus: string;
+}): Promise<void> => {
+  const sql = `
+    INSERT INTO conflicts (card_id, board_column_id, jira_status_at_detection, jira_status_current)
+    SELECT card_id, ${opts.boardColumnId}, $$${opts.jiraStatus}$$, $$${opts.jiraStatus}$$
+      FROM jira_links WHERE issue_key = $$${opts.key}$$;`;
   await run('docker', [
     'compose', 'exec', '-T', 'db',
     'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',

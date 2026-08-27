@@ -17,6 +17,8 @@ import { MappingRepository } from './repositories/mapping-repository.js';
 import { ConflictRepository } from './repositories/conflict-repository.js';
 import { TransitionService } from './sync/transition-service.js';
 import { registerMappingRoutes } from './routes/mappings.js';
+import { registerConflictRoutes } from './routes/conflicts.js';
+import { ConflictResolutionService } from './sync/conflict-resolution-service.js';
 import { SettingsRepository } from './repositories/settings-repository.js';
 import { JiraLinkRepository } from './repositories/jira-link-repository.js';
 import { SyncRunRepository } from './repositories/sync-run-repository.js';
@@ -128,13 +130,33 @@ export const buildApp = ({
   const conflicts = new ConflictRepository(pool);
   const cardService = new CardService(
     cardRepository,
+    conflicts,
     () => new Date(),
     jira
-      ? { transitions: new TransitionService(jira), mappings, links: new JiraLinkRepository(pool), conflicts }
+      ? { transitions: new TransitionService(jira), mappings, links: new JiraLinkRepository(pool) }
       : undefined,
   );
   registerCardRoutes(app, cardService, events);
   registerMappingRoutes(app, mappings, jira);
+
+  const jiraCards = new JiraCardRepository(events);
+  registerConflictRoutes(
+    app,
+    conflicts,
+    new ConflictResolutionService(
+      pool,
+      conflicts,
+      new JiraLinkRepository(pool),
+      jiraCards,
+      mappings,
+      jira ? new TransitionService(jira) : null,
+    ),
+    cardRepository,
+    async (id) => {
+      const { rows } = await pool.query<{ name: string }>('SELECT name FROM columns WHERE id = $1', [id]);
+      return rows[0]?.name ?? String(id);
+    },
+  );
 
   const settings = new SettingsRepository(pool);
   const runs = new SyncRunRepository(pool);
@@ -142,7 +164,7 @@ export const buildApp = ({
     ? new SyncService(
         pool,
         jira,
-        new JiraCardRepository(events),
+        jiraCards,
         new JiraLinkRepository(pool),
         runs,
         settings,

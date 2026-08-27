@@ -29,6 +29,15 @@ export class FakeJiraAdapter implements JiraPort {
   /** Every transition actually performed, so tests can assert what was written. */
   readonly transitionsPerformed: { issueKey: string; transitionId: string }[] = [];
 
+  /**
+   * Draws a line under the writes so far so a test can assert about the writes
+   * a single action made, rather than every write the setup happened to leave
+   * behind. Clears nothing else — the issues and their statuses stay put.
+   */
+  forgetTransitionsPerformed(): void {
+    this.transitionsPerformed.length = 0;
+  }
+
   setTransitions(issueKey: string, transitions: JiraTransition[]): void {
     this.transitions.set(issueKey, transitions);
   }

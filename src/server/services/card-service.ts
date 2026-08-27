@@ -15,13 +15,19 @@ import { statusForColumn } from '../../domain/column-mapping.js';
 export class CardService {
   constructor(
     private readonly cards: CardRepository,
+    /**
+     * Not part of the Jira bundle below, deliberately. A conflict outlives the
+     * connection that produced it: freezing the card only while Jira happens
+     * to be configured would let an unreachable Jira quietly unfreeze every
+     * disagreement the board had already recorded.
+     */
+    private readonly conflicts: ConflictRepository,
     private readonly now: () => Date = () => new Date(),
     /** Absent when Jira is not configured; the board then behaves as slice 2. */
     private readonly jira?: {
       transitions: TransitionService;
       mappings: MappingRepository;
       links: JiraLinkRepository;
-      conflicts: ConflictRepository;
     },
   ) {}
 
@@ -48,6 +54,12 @@ export class CardService {
     id: string,
     input: MoveCardInput,
   ): Promise<{ card: Card; moved: boolean; jira?: { transitioned: boolean; toStatus: string } }> {
+    // Checked before anything else, and regardless of Jira: a conflicted card
+    // is frozen against the user too, not only against sync. Dragging it would
+    // otherwise let someone paper over a disagreement without ever learning
+    // Jira had one (FR-228).
+    if (await this.conflicts.hasOpen(id)) throw cardConflicted();
+
     const jiraOutcome = await this.pushToJiraFirst(id, input.toColumnId);
 
     const result = await this.cards.move(id, input, this.now());
@@ -71,11 +83,6 @@ export class CardService {
 
     const link = await this.jira.links.findByCardId(cardId);
     if (!link) return null; // an ad-hoc card: Jira is never told (FR-208)
-
-    // A conflicted card is frozen against the user too, not only against sync.
-    // Dragging it would otherwise let someone paper over a disagreement
-    // without ever learning Jira had one.
-    if (await this.jira.conflicts.hasOpen(cardId)) throw cardConflicted();
 
     const mappings = await this.jira.mappings.forDomain();
     const targetStatus = statusForColumn(mappings, toColumnId);

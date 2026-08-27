@@ -19,6 +19,8 @@ import { HelpOverlay } from '../keyboard/HelpOverlay.js';
 import { SettingsDialog } from '../settings/SettingsDialog.js';
 import { useSync } from '../sync/use-sync.js';
 import { SyncStatusPill } from '../sync/SyncStatus.js';
+import { useConflicts } from '../conflicts/use-conflicts.js';
+import { ConflictDialog } from '../conflicts/ConflictDialog.js';
 import type { ShortcutMatch } from '../keyboard/shortcuts.js';
 import type { Board as BoardData, Card } from '../../shared/types.js';
 
@@ -79,6 +81,8 @@ export const Board = () => {
   const [editing, setEditing] = useState<Card | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [conflictsOpen, setConflictsOpen] = useState(false);
+  const { conflicts, resolve } = useConflicts(board);
   // Held by id rather than by element, because the board re-renders after every
   // move and the element the user focused is gone by the time it lands.
   const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
@@ -167,7 +171,7 @@ export const Board = () => {
   // Suspended while a dialog owns the screen, so the board's shortcuts cannot
   // reach past it and claim keys the dialog's own controls need.
   useShortcuts(handleShortcut, {
-    suspended: creating || editing !== null || settingsOpen,
+    suspended: creating || editing !== null || settingsOpen || conflictsOpen,
   });
 
   if (error) return <p className="board-message board-message--error">{error}</p>;
@@ -195,6 +199,17 @@ export const Board = () => {
           </p>
         )}
         <SyncStatusPill status={syncStatus} onRefresh={() => void syncNow()} />
+        {conflicts.length > 0 && (
+          // Only shown when there is something to decide: a permanent control
+          // for a rare event trains the eye to stop seeing it.
+          <button
+            className="button button--warning"
+            data-testid="conflict-count"
+            onClick={() => setConflictsOpen(true)}
+          >
+            {conflicts.length} conflict{conflicts.length === 1 ? '' : 's'}
+          </button>
+        )}
         <button className="button" onClick={() => setSettingsOpen(true)}>
           Settings
         </button>
@@ -219,7 +234,19 @@ export const Board = () => {
         />
       )}
       {helpOpen && <HelpOverlay onClose={() => setHelpOpen(false)} />}
-      {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <SettingsDialog columns={board.columns} onClose={() => setSettingsOpen(false)} />
+      )}
+      {conflictsOpen && (
+        <ConflictDialog
+          conflicts={conflicts}
+          onResolve={async (id, resolution) => {
+            await resolve(id, resolution);
+            await refresh();
+          }}
+          onClose={() => setConflictsOpen(false)}
+        />
+      )}
       {editing && (
         <CardDialog
           initial={editing}

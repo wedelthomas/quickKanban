@@ -50,11 +50,11 @@ tidy up later.
 - [x] T306 [US5] Author or sync TestRail cases for BH-223 and BH-224 via `spec-testrail-sync`.
 - [x] T307 [P] [US5] `tests/unit/mapping.test.ts` — lookup both directions, unmapped columns, two columns sharing a status resolving by board order (BH-224).
 - [x] T308 [P] [US5] `tests/features/mapping-settings.feature` — set, remove, persist across restart (BH-223).
-- [ ] T309 [P] [US5] `tests/e2e/mapping.spec.ts` — mapping chosen from Jira's own statuses, not typed.
+- [x] T309 [P] [US5] `tests/e2e/mapping.spec.ts` — mapping chosen from Jira's own statuses, not typed.
 - [x] T310 [US5] `src/domain/column-mapping.ts` — pure lookup both ways, first-in-board-order for a shared status (FR-201, FR-205).
 - [x] T311 [US5] `src/server/repositories/mapping-repository.ts` — mappings persist across restarts (FR-203).
 - [x] T312 [US5] `GET|PUT /api/settings/mappings`, and `GET /api/jira/statuses` so the mapping is chosen from what Jira reports rather than typed (FR-202). Removing a mapping returns the column to local-only (FR-204).
-- [ ] T313 [US5] Mapping editor in the settings dialog, choosing from Jira's statuses rather than free text.
+- [x] T313 [US5] Mapping editor in the settings dialog, choosing from Jira's statuses rather than free text.
 
 **Checkpoint**: columns mean something in Jira terms. **Story-Complete Review Gate.**
 
@@ -65,7 +65,7 @@ tidy up later.
 - [x] T314 [US1] Author or sync TestRail cases for BH-201, BH-203, BH-204, BH-209, BH-211, BH-225, BH-226.
 - [x] T315 [P] [US1] `tests/unit/reconcile.test.ts` — the full decision table, every combination of the three inputs (BH-209, BH-211, SC-203).
 - [x] T316 [P] [US1] `tests/unit/no-unbounded-writes.test.ts` — the adapter writes only transitions, touches no other endpoint and no other field (BH-204).
-- [ ] T317 [P] [US1] `tests/contract/jira-transitions.test.ts` — `getTransitions` and `transitionIssue` against recorded fixtures, **including the real case where a transition's name differs from its destination** (BH-201).
+- [x] T317 [P] [US1] `tests/contract/jira-transitions.test.ts` — `getTransitions` and `transitionIssue` against recorded fixtures, **including the real case where a transition's name differs from its destination** (BH-201).
 - [x] T318 [P] [US1] `tests/features/push-transitions.feature` — a move transitions the issue; ad-hoc cards write nothing (BH-201, BH-203, BH-204).
 - [x] T319 [US1] `src/domain/reconcile.ts` — pure. Four outcomes from three inputs, nothing else consulted (FR-216, FR-217): unchanged on both sides is a no-op (FR-220), a local-only change is pushed (FR-219), and no path may leave the two sides silently disagreeing (FR-236).
 - [x] T320 [US1] Extend `jira-adapter.ts` with `getTransitions` and `transitionIssue`. **Match on `transition.to.name`, never on `transition.name`** — verified against real workflows where `Pass → PO Approve`. The transition body carries only the transition id, so no field other than status is ever modified (FR-209). Writes are not retried (research.md).
@@ -111,10 +111,10 @@ tidy up later.
 
 - [x] T333 [US3] Author or sync TestRail cases for BH-213, BH-214, BH-215, BH-221, BH-222.
 - [x] T334 [P] [US3] `tests/features/conflicts.feature` — raised on divergence, not on convergence; the card does not move and nothing is sent to Jira; twenty syncs leave it alone; a second detection updates rather than duplicates; a vanished issue closes it as moot (BH-213, BH-214, BH-215, BH-221, BH-222).
-- [ ] T335 [P] [US3] `tests/e2e/conflict.spec.ts` — the badge is visible on the card face without opening it (BH-213).
+- [x] T335 [P] [US3] `tests/e2e/conflict.spec.ts` — the badge is visible on the card face without opening it (BH-213).
 - [x] T336 [US3] `src/server/repositories/conflict-repository.ts` — raise, update in place, resolve, list.
 - [x] T337 [US3] Apply the reconciler's `Conflict` outcome (FR-223). Convergent changes raise nothing and simply bring the last-known state up to date (FR-224); raising a conflict neither moves the card nor sends anything to Jira (FR-225); a conflicted card is skipped by every later sync (FR-227), updated rather than duplicated on a second detection (FR-234), and closed as moot if its issue leaves the query (FR-235).
-- [ ] T338 [US3] Conflict badge on the card face without opening it (FR-226), derived from the conflicts table rather than stored on the card, so there is no second source of truth to drift.
+- [x] T338 [US3] Conflict badge on the card face without opening it (FR-226), derived from the conflicts table rather than stored on the card, so there is no second source of truth to drift.
 
 **Checkpoint**: nothing diverges silently. **Story-Complete Review Gate.**
 
@@ -123,12 +123,12 @@ tidy up later.
 ## Phase 8: US4 — I resolve a conflict by choosing a side (P1)
 
 - [x] T339 [US4] Author or sync TestRail cases for BH-216, BH-217, BH-218, BH-219, BH-220.
-- [ ] T340 [P] [US4] `tests/features/conflict-resolution.feature` — both resolutions, each recorded; a failed `kept_board` leaves the conflict open (BH-217…BH-220).
-- [ ] T341 [P] [US4] Extend `tests/e2e/conflict.spec.ts` — side-by-side view, two buttons, dragging a conflicted card refused (BH-216, BH-217, BH-218).
-- [ ] T342 [US4] `POST /api/conflicts/:id/resolve` with exactly two outcomes (FR-229, FR-230). A successful resolution clears the conflict and brings the recorded last-known state up to date (FR-231); a refused one leaves it open (FR-233).
-- [ ] T343 [US4] A conflicted card refuses a user move and directs to resolution (FR-228).
-- [ ] T344 [US4] Resolution is recorded in the movement history with the side chosen (FR-232).
-- [ ] T345 [US4] The resolution dialog: board state and Jira state side by side, two buttons, nothing else.
+- [x] T340 [P] [US4] `tests/features/conflict-resolution.feature` — both resolutions, each recorded; a failed `kept_board` leaves the conflict open (BH-217…BH-220).
+- [x] T341 [P] [US4] Extend `tests/e2e/conflict.spec.ts` — side-by-side view, two buttons, dragging a conflicted card refused (BH-216, BH-217, BH-218).
+- [x] T342 [US4] `POST /api/conflicts/:id/resolve` with exactly two outcomes (FR-229, FR-230). A successful resolution clears the conflict and brings the recorded last-known state up to date (FR-231); a refused one leaves it open (FR-233).
+- [x] T343 [US4] A conflicted card refuses a user move and directs to resolution (FR-228).
+- [x] T344 [US4] Resolution is recorded in the movement history with the side chosen (FR-232).
+- [x] T345 [US4] The resolution dialog: board state and Jira state side by side, two buttons, nothing else.
 
 **Checkpoint**: a conflict is always clearable. **Story-Complete Review Gate.**
 

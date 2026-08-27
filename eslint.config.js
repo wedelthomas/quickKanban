@@ -6,6 +6,12 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // The cucumber config has to be CommonJS — cucumber reads it with require —
+    // so `module` is a real global there, not an undefined reference.
+    files: ['**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs', globals: { module: 'writable' } },
+  },
+  {
     rules: {
       'no-console': ['error', { allow: ['error'] }],
       '@typescript-eslint/no-unused-vars': [

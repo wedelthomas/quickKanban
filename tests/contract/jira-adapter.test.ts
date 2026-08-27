@@ -177,3 +177,109 @@ describe('JiraAdapter against recorded Jira responses', () => {
     expect(seenPath).toContain('jql=assignee%20%3D%20currentUser()');
   });
 });
+
+/**
+ * The write side, against the shapes tsgjira.atlassian.net returned on
+ * 2026-08-26 for ABSARCH-44. Two facts here were discovered by asking real
+ * Jira and would not have been guessed from documentation: a transition's name
+ * is not its destination status, and the legal set is narrow and depends on
+ * where the issue currently sits.
+ *
+ * Nothing here reaches the network (NFR-23).
+ */
+describe('JiraAdapter transitions against recorded Jira responses', () => {
+  let agent: MockAgent;
+
+  beforeEach(() => {
+    agent = new MockAgent();
+    agent.disableNetConnect();
+  });
+
+  afterEach(async () => {
+    await agent.close();
+  });
+
+  const adapter = () =>
+    new JiraAdapter(credentials, async () => {}, ((input, init) =>
+      undiciFetch(input as string, { ...init, dispatcher: agent } as never)) as typeof fetch);
+
+  it('reads a transition by its destination status, not by its own name', async () => {
+    agent
+      .get(BASE)
+      .intercept({ path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/, method: 'GET' })
+      .reply(200, {
+        expand: 'transitions',
+        transitions: [
+          { id: '11', name: 'To Development', to: { id: '3', name: 'Development' }, fields: {} },
+          { id: '41', name: 'Pass', to: { id: '10001', name: 'PO Approve' }, fields: {} },
+        ],
+      });
+
+    const transitions = await adapter().getTransitions('ABSARCH-44');
+
+    expect(transitions).toEqual([
+      { id: '11', name: 'To Development', toStatusName: 'Development', requiresFields: false },
+      { id: '41', name: 'Pass', toStatusName: 'PO Approve', requiresFields: false },
+    ]);
+  });
+
+  it('marks a transition that demands a field, so it can be refused rather than half-attempted', async () => {
+    agent
+      .get(BASE)
+      .intercept({ path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/, method: 'GET' })
+      .reply(200, {
+        transitions: [
+          {
+            id: '51',
+            name: 'Close',
+            to: { name: 'Closed' },
+            fields: { resolution: { required: true }, comment: { required: false } },
+          },
+        ],
+      });
+
+    const [transition] = await adapter().getTransitions('ABSARCH-44');
+    expect(transition?.requiresFields).toBe(true);
+  });
+
+  it('sends only the transition id, so no field but status can change', async () => {
+    let sentBody: string | undefined;
+    agent
+      .get(BASE)
+      .intercept({ path: '/rest/api/3/issue/ABSARCH-44/transitions', method: 'POST' })
+      .reply(204, (options) => {
+        sentBody = options.body as string;
+        return '';
+      });
+
+    await adapter().transitionIssue('ABSARCH-44', '11');
+
+    // The whole of FR-209 in one assertion: an extra key here would be a field
+    // this board silently overwrote in someone else's issue.
+    expect(JSON.parse(sentBody ?? '{}')).toEqual({ transition: { id: '11' } });
+  });
+
+  it('reports a refused transition as malformed rather than reporting success', async () => {
+    agent
+      .get(BASE)
+      .intercept({ path: '/rest/api/3/issue/ABSARCH-44/transitions', method: 'POST' })
+      .reply(400, { errorMessages: ['Transition id 999 is not valid for this issue.'], errors: {} });
+
+    await expect(adapter().transitionIssue('ABSARCH-44', '999')).rejects.toBeInstanceOf(JiraError);
+  });
+
+  it('reads the status list, de-duplicated, for the column mapping to choose from', async () => {
+    agent
+      .get(BASE)
+      .intercept({ path: '/rest/api/3/status', method: 'GET' })
+      .reply(200, [
+        { id: '1', name: 'Open' },
+        { id: '3', name: 'Development' },
+        // The same name appears once per workflow scheme in real responses.
+        { id: '3', name: 'Development' },
+        { id: '10001', name: 'PO Approve' },
+      ]);
+
+    expect(await adapter().listStatuses()).toEqual(['Development', 'Open', 'PO Approve']);
+  });
+});

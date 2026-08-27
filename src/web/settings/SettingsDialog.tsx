@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { Settings } from '../../shared/types.js';
+import type { Column, Settings } from '../../shared/types.js';
+import { MappingEditor, type Mapping } from './MappingEditor.js';
 
 /**
  * The query and the cadence — the two things the user changes.
@@ -9,16 +10,22 @@ import type { Settings } from '../../shared/types.js';
  * lives in the environment and the board only ever tells you whether it is
  * present.
  */
-export const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
+export const SettingsDialog = ({ columns, onClose }: { columns: Column[]; onClose: () => void }) => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [mappings, setMappings] = useState<Mapping[] | null>(null);
 
   useEffect(() => {
     fetch('/api/settings')
       .then((r) => r.json())
       .then((s: Settings) => setSettings(s))
       .catch(() => setError('Settings could not be loaded.'));
+
+    fetch('/api/settings/mappings')
+      .then((r) => r.json())
+      .then((body: { mappings: Mapping[] }) => setMappings(body.mappings))
+      .catch(() => setError('The column mapping could not be loaded.'));
   }, []);
 
   const save = async (event: React.FormEvent): Promise<void> => {
@@ -43,6 +50,22 @@ export const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
         setError(problem?.detail ?? 'Those settings could not be saved.');
         return;
       }
+
+      if (mappings) {
+        const mappingResponse = await fetch('/api/settings/mappings', {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            mappings: mappings.map(({ columnId, statusName }) => ({ columnId, statusName })),
+          }),
+        });
+        if (!mappingResponse.ok) {
+          const problem = (await mappingResponse.json().catch(() => null)) as { detail?: string } | null;
+          setError(problem?.detail ?? 'The column mapping could not be saved.');
+          return;
+        }
+      }
+
       onClose();
     } finally {
       setSaving(false);
@@ -81,6 +104,20 @@ export const SettingsDialog = ({ onClose }: { onClose: () => void }) => {
             }
           />
         </label>
+
+        <MappingEditor
+          columns={columns}
+          mappings={mappings}
+          onChange={(columnId, statusName) =>
+            setMappings((current) => {
+              const rest = (current ?? []).filter((m) => m.columnId !== columnId);
+              const existing = (current ?? []).find((m) => m.columnId === columnId);
+              const name = columns.find((c) => c.id === columnId)?.name ?? '';
+              return [...rest, { columnId, columnName: existing?.columnName ?? name, statusName }]
+                .sort((a, b) => a.columnId - b.columnId);
+            })
+          }
+        />
 
         <p className="field-note" data-testid="credentials-note">
           Jira credentials are read from the environment and are never shown,

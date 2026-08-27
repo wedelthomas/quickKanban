@@ -1,4 +1,4 @@
-import { Given, Then } from '@cucumber/cucumber';
+import { Given, Then, When } from '@cucumber/cucumber';
 import { strict as assert } from 'node:assert';
 import type { BoardWorld } from './world.js';
 import type { Board, Card } from '../../../src/shared/types.js';
@@ -118,4 +118,47 @@ Given("issue {string}'s last recorded status is {string}", async function (
     key,
     status,
   ]);
+});
+
+const openConflictId = async (world: BoardWorld): Promise<number> => {
+  const { rows } = await world.pool.query<{ id: string }>(
+    'SELECT id FROM conflicts WHERE resolved_at IS NULL ORDER BY id LIMIT 1',
+  );
+  assert.ok(rows[0], 'expected an open conflict');
+  return Number(rows[0].id);
+};
+
+When('the open conflicts are listed', async function (this: BoardWorld) {
+  await this.request('GET', '/api/conflicts');
+});
+
+Then('the conflict names the board column {string}', function (this: BoardWorld, name: string) {
+  const body = this.response.body as { conflicts: { board: { columnName: string } }[] };
+  assert.equal(body.conflicts[0]?.board.columnName, name);
+});
+
+const resolve = async (world: BoardWorld, resolution: string): Promise<void> => {
+  const id = await openConflictId(world);
+  await world.request('POST', `/api/conflicts/${id}/resolve`, { resolution });
+};
+
+// Registered once each: cucumber matches on text, not keyword, so the same
+// phrase under both Given and When is ambiguous rather than convenient.
+When('the conflict is resolved by keeping the board state', async function (this: BoardWorld) {
+  await resolve(this, 'kept_board');
+});
+
+When('the conflict is resolved by accepting the Jira state', async function (this: BoardWorld) {
+  await resolve(this, 'accepted_jira');
+});
+
+Then('the conflict was resolved as {string}', async function (this: BoardWorld, resolution: string) {
+  const { rows } = await this.pool.query<{ resolution: string }>(
+    'SELECT resolution FROM conflicts ORDER BY id DESC LIMIT 1',
+  );
+  assert.equal(rows[0]?.resolution, resolution);
+});
+
+Given('the record of Jira writes so far is set aside', function (this: BoardWorld) {
+  this.jira.forgetTransitionsPerformed();
 });

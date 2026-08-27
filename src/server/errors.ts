@@ -106,5 +106,5 @@ export const cardConflicted = (): DomainError =>
     'CARD_CONFLICTED',
     409,
     'This card disagrees with Jira',
-    'The board and Jira both changed since the last sync. Open the card and choose which one is right.',
+    'The board and Jira both changed since the last sync. Open Conflicts and choose which one is right before moving this card.',
   );

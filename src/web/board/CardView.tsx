@@ -54,6 +54,13 @@ export const CardView = ({ card, onOpen }: { card: Card; onOpen: (card: Card) =>
             {formatDue(card.dueDate)}
           </span>
         )}
+        {card.hasConflict && (
+          // Frozen, not decorated: this badge is the only warning the user gets
+          // that dragging this card will be refused until they decide (FR-236).
+          <span className="badge badge--conflict" data-testid="card-conflict" title="Conflict with Jira — resolve to move this card">
+            Conflict
+          </span>
+        )}
         {card.issueKey && (
           // The key doubles as the source marker: it says both "this is Jira's"
           // and which issue, in the space a generic badge would have used to
