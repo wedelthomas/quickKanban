@@ -344,7 +344,8 @@ Story-Complete Review Gate before Polish.**
 - [x] T464 `npm audit` clean at Critical and High.
 - [x] T465 Run `quickstart.md` end to end from a clean `docker compose up`.
 - [x] T466 Run `/speckit.review`; address blocking findings.
-- [ ] T467 Request peer review.
+- [x] T467 Request peer review.
+  **Reviewed by twedel, 2026-08-27.**
 
 ---
 

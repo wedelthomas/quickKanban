@@ -273,7 +273,8 @@ Stories are ordered by dependency, then priority:
 - [x] T268 Security check: no credential in the diff; dependency audit clean at Critical/High.
 - [x] T269 Run `quickstart.md` end to end — including the no-token path, which must work.
 - [x] T270 Run `/speckit.review` against the diff; address blocking findings.
-- [ ] T271 Request peer review.
+- [x] T271 Request peer review.
+  **Reviewed by twedel, 2026-08-27.**
 
 ---
 

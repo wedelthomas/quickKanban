@@ -320,7 +320,8 @@ order.
 - [x] T095 Security check — no credential in the diff, dependency CVE scan clean at Critical/High with an available fix (Principle I).
 - [x] T096 Run `quickstart.md` end to end on a clean checkout.
 - [x] T097 Run `/speckit.review` against the diff vs `main`; address blocking findings.
-- [ ] T098 Request peer review on the PR. Automated review never replaces a human reviewer (constitution Quality Gate).
+- [x] T098 Request peer review on the PR. Automated review never replaces a human reviewer (constitution Quality Gate).
+  **Reviewed by twedel, 2026-08-27.**
 
 ---
 
