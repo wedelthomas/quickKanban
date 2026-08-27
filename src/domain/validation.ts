@@ -56,7 +56,13 @@ export const updateCardSchema = z
   );
 
 export const moveCardSchema = z.object({
-  toColumnId: z.number().int().min(1).max(6),
+  // Deliberately NOT a literal range. This was `.max(6)` until slice 5, which
+  // was correct only while the columns happened to be ids 1..6 — retiring
+  // Blocked and adding Iteration Items as id 7 made every move into the new
+  // column fail validation, with a message about the number 6 that told the
+  // user nothing. Which columns exist is a fact about the database, so it is
+  // checked there (COLUMN_RETIRED / COLUMN_NOT_FOUND) rather than guessed here.
+  toColumnId: z.number().int().positive(),
   /** 1-based within the destination column, matching contracts/api.md. */
   toIndex: z.number().int().min(1),
 });

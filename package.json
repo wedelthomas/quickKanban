@@ -17,7 +17,7 @@
     "lint": "eslint . && prettier --check .",
     "start": "node dist/server/index.js",
     "test:acceptance": "npm run test:db:up && NODE_OPTIONS=\"--import tsx/esm\" cucumber-js; e=$?; npm run test:db:down; exit $e",
-    "test:contract": "vitest run --config vitest.contract.config.ts",
+    "test:contract": "npm run test:db:up && NODE_OPTIONS=\"\" vitest run --config vitest.contract.config.ts; e=$?; npm run test:db:down; exit $e",
     "test:db:down": "docker compose -f docker-compose.test.yml down -v",
     "test:db:up": "docker compose -f docker-compose.test.yml up -d --wait",
     "test:e2e": "docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --wait && playwright test",

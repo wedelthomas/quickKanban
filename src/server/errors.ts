@@ -44,6 +44,15 @@ export const columnNotFound = (id: number): DomainError =>
     `No column exists with id ${id}. The board has exactly six, and they are fixed.`,
   );
 
+export const columnRetired = (id: number): DomainError =>
+  new DomainError(
+    'COLUMN_RETIRED',
+    422,
+    'That column no longer exists',
+    `Column ${id} was retired. Its record is kept so the movement history still ` +
+      `resolves, but no card may be placed there.`,
+  );
+
 export const deleteForbiddenNonLocal = (): DomainError =>
   new DomainError(
     'DELETE_FORBIDDEN_NON_LOCAL',

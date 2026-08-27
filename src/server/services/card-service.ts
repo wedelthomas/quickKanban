@@ -8,6 +8,8 @@ import type { CardRepository } from '../repositories/card-repository.js';
 import {
   cardConflicted,
   cardNotFound,
+  columnNotFound,
+  columnRetired,
   deleteForbiddenNonLocal,
   editForbiddenJiraOwned,
 } from '../errors.js';
@@ -63,6 +65,13 @@ export class CardService {
     moved: boolean;
     jira?: { transitioned: boolean; toStatus: string };
   }> {
+    // The target column is checked first, because a retired or absent column is
+    // a fact about the request rather than about the card. Verified against the
+    // running board before this guard existed: a move into the retired column
+    // answered 200 and the card disappeared, since the board query excludes
+    // retired columns while the move path did not know they existed (FR-402).
+    await this.assertColumnAcceptsCards(input.toColumnId);
+
     // Checked before anything else, and regardless of Jira: a conflicted card
     // is frozen against the user too, not only against sync. Dragging it would
     // otherwise let someone paper over a disagreement without ever learning
@@ -78,6 +87,19 @@ export class CardService {
       moved: result.moved,
       ...(jiraOutcome ? { jira: jiraOutcome } : {}),
     };
+  }
+
+  /**
+   * A column may receive cards only if it exists and is not retired.
+   *
+   * Retirement is not deletion: the row survives so that the movement history
+   * still resolves (FR-446), which is exactly why it is still reachable by id
+   * and has to be refused explicitly.
+   */
+  private async assertColumnAcceptsCards(columnId: number): Promise<void> {
+    const state = await this.cards.columnState(columnId);
+    if (state === 'absent') throw columnNotFound(columnId);
+    if (state === 'retired') throw columnRetired(columnId);
   }
 
   /**

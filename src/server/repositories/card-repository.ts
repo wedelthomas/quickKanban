@@ -96,6 +96,23 @@ export class CardRepository {
    * read, so two rapid moves serialise instead of interleaving into a column
    * with duplicate positions.
    */
+  /**
+   * Whether a column exists and may still receive cards.
+   *
+   * Retirement is not deletion (FR-446): a retired column's row survives so the
+   * movement history resolves, which is precisely why it stays reachable by id
+   * and must be refused explicitly rather than by absence.
+   */
+  async columnState(id: number): Promise<'open' | 'retired' | 'absent'> {
+    const { rows } = await this.pool.query<{ retired: boolean }>(
+      'SELECT retired_at IS NOT NULL AS retired FROM columns WHERE id = $1',
+      [id],
+    );
+    const column = rows[0];
+    if (!column) return 'absent';
+    return column.retired ? 'retired' : 'open';
+  }
+
   async move(
     id: string,
     input: MoveCardInput,
