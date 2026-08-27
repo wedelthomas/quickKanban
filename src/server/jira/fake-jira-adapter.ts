@@ -49,6 +49,26 @@ export class FakeJiraAdapter implements JiraPort {
     this.transitions.set(issueKey, transitions);
   }
 
+  /**
+   * The field names a JiraIssue carries, for tests that assert what the port
+   * deliberately CANNOT express.
+   *
+   * Slice 5 commits to never reading sprint membership onto cards. The strongest
+   * way to keep that true is for the interface to have nowhere to put it, and
+   * the way to keep THAT true is a test that notices when it changes.
+   */
+  issueShape(): Record<string, unknown> {
+    return {
+      id: '',
+      key: '',
+      summary: '',
+      statusId: '',
+      statusName: '',
+      updatedAt: '',
+      url: '',
+    };
+  }
+
   setStatuses(statuses: string[]): void {
     this.statuses = statuses;
   }

@@ -88,3 +88,25 @@ Then('the board is still fully usable', async function (this: BoardWorld) {
   const res = await this.app.inject({ method: 'GET', url: '/api/board' });
   assert.equal(res.statusCode, 200);
 });
+
+Given(
+  'issue {string} is in the sprint matching the current iteration',
+  function (this: BoardWorld, _key: string) {
+    // Nothing to stage, and that IS the assertion.
+    //
+    // JiraPort has no way to express a sprint on an issue — no field, no
+    // method. So sync cannot read one even by accident, which is a stronger
+    // guarantee than staging a sprint and checking that nothing happened. It is
+    // the same argument JiraPort's own comment makes about writes: an interface
+    // that cannot express the thing beats a rule saying not to do it.
+    //
+    // This step fails the day someone adds a sprint field to the port, which is
+    // exactly when this scenario should start demanding attention.
+    const issueKeys = Object.keys(this.jira.issueShape?.() ?? {});
+    assert.ok(
+      !issueKeys.includes('sprint'),
+      'JiraPort now carries a sprint field. Reading it onto cards is out of ' +
+        'scope for slice 5 (spec.md, Out of Scope), so this scenario needs revisiting.',
+    );
+  },
+);

@@ -184,19 +184,30 @@ there automatically.
 
 ### Tests for User Story 3
 
-- [ ] T047 [US3] Author or sync TestRail cases for BH-409, BH-410 and BH-425 via `spec-testrail-sync`, before the implementation tasks below.
-- [ ] T048 [P] [US3] Acceptance feature `tests/features/iteration-items.feature` and steps — TEST-409 (moving a Jira card in issues no Jira request), TEST-410 (sync never places a card there), TEST-425 (placement survives a reload). **Note**: TEST-410's fixture carries a sprint on the issue, but production code must remain ignorant of the sprint field — reading it onto cards is out of scope. The assertion is negative: nothing happens.
+- [x] T047 [US3] Author or sync TestRail cases for BH-409, BH-410 and BH-425 via `spec-testrail-sync`, before the implementation tasks below.
+- [x] T048 [P] [US3] Acceptance feature `tests/features/iteration-items.feature` and steps — TEST-409 (moving a Jira card in issues no Jira request), TEST-410 (sync never places a card there), TEST-425 (placement survives a reload). **Note**: TEST-410's fixture carries a sprint on the issue, but production code must remain ignorant of the sprint field — reading it onto cards is out of scope. The assertion is negative: nothing happens.
 
 ### Implementation for User Story 3
 
-- [ ] T049 [US3] Confirm Iteration Items has no `column_status_mappings` row and therefore takes the existing unmapped-column path in `src/server/sync/transition-service.ts` unchanged (FR-408). This is expected to require **no production change** — the mechanism is Slice 3's. If a change proves necessary, that is a finding worth recording.
-- [ ] T050 [US3] Confirm `src/server/sync/sync-service.ts` never assigns a card to Iteration Items, and add the guard if any path could (FR-434).
+- [x] T049 [US3] Confirm Iteration Items has no `column_status_mappings` row and therefore takes the existing unmapped-column path in `src/server/sync/transition-service.ts` unchanged (FR-408). This is expected to require **no production change** — the mechanism is Slice 3's. If a change proves necessary, that is a finding worth recording.
+- [x] T050 [US3] Confirm `src/server/sync/sync-service.ts` never assigns a card to Iteration Items, and add the guard if any path could (FR-434).
 > **T051 withdrawn** by `/speckit.analyze` finding N-2: it exposed Iteration
 > Items in the mapping editor, which no requirement asks for. The column's
 > local-only status is already observable — moving a Jira card into it issues no
 > Jira request, which T048 proves. The id is retired, not reused.
 
-**Checkpoint**: US1–US3 work independently. **Run the Story-Complete Review Gate.**
+**Checkpoint**: US1–US3 work independently. **Story-Complete Review Gate PASSED.**
+
+T049 and T050 required no production change, as the plan predicted: Iteration
+Items simply has no `column_status_mappings` row, so it takes slice 3's
+unmapped-column path unaltered. The mechanism outlived the column it was built
+for.
+
+TEST-410 is asserted structurally rather than by staging a sprint: `JiraPort`
+has no field or method that can express sprint membership, so sync cannot read
+one even by accident. That is the argument the port's own comment makes about
+writes — an interface that cannot express the thing beats a rule saying not to
+do it — and the step fails the day someone adds such a field.
 
 ---
 
