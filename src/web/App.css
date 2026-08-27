@@ -708,24 +708,42 @@ kbd {
   color: var(--text-muted);
 }
 
-/* Tiny, uppercase, letter-spaced — the reference's section headings. */
+/*
+ * Uppercase, letter-spaced section headings.
+ *
+ * 11px rather than the reference's 10, and at full text colour rather than
+ * muted: at 10px muted they were legible as decoration but not as structure,
+ * and the eye could not find where one section ended.
+ */
 .sidebar-label {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin: 0 0 var(--space-1);
+  margin: 0 0 var(--space-2);
   padding-left: var(--space-2);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .sidebar-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+}
+
+/*
+ * A rule between sections, on the second and every one after — never above the
+ * first, which already sits under the brand block's own border. Written as an
+ * adjacent-sibling rule rather than a class so adding a section cannot forget
+ * it.
+ */
+.sidebar-section + .sidebar-section {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
 }
 
 .sidebar-row {
