@@ -147,7 +147,7 @@ even though it is a separate interface.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| `columns.retired_at` and nullable `columns.position` — a column table that outlives the board | `card_events` holds foreign keys into every column a card has ever occupied (R-1). Deleting the Blocked row breaks the append-only history the whole product's reporting rests on. | Deleting the row breaks referential integrity. Repurposing the row as Iteration Items keeps the keys valid but retroactively rewrites history — every past "moved to Blocked" would render as "moved to Iteration Items". |
+| `columns.retired_at` and nullable `columns.position` — a column table that outlives the board | `card_events` holds foreign keys into every column a card has ever occupied (R-1), which FR-446 now states as an obligation in the spec itself. Deleting the Blocked row breaks the append-only history the whole product's reporting rests on. | Deleting the row breaks referential integrity. Repurposing the row as Iteration Items keeps the keys valid but retroactively rewrites history — every past "moved to Blocked" would render as "moved to Iteration Items". |
 | A second Jira port rather than two more methods on `JiraPort` | The iteration source fails *silently by design* (FR-430), where every existing `JiraPort` failure must be loud. Same host, opposite contract. | Extending `JiraPort` is one file cheaper but puts degrade-silently and fail-loudly methods behind one interface, which is precisely the distinction its doc comment exists to protect. |
 | Four settings written but not read in this slice | `jira.field.sprint`, `jira.field.story_points`, `working.start_hour`, `working.end_hour` are consumed by Slice 6. Their values are verified live *today*. | A settings migration in Slice 6 for values already known and validated now, at the cost of a second migration touching the same table. |
 
@@ -263,7 +263,7 @@ treatment, keyboard operation, density).
 | `tests/unit/carry-over.test.ts` | Unit | BH-424, BH-432 — increment on boundary, reset on Done and on Backlog |
 | `tests/unit/blocked-divergence.test.ts` | Unit | BH-412, BH-414 — local wins, convergence clears |
 | `tests/unit/iteration-provenance.test.ts` | Unit | BH-419, BH-420, BH-422 — read/cached/estimated selection and elapsed-iteration handling |
-| `tests/ops/migration-016-021.test.ts` | Ops | BH-401, BH-402, BH-403, BH-404, BH-405 — column set, card migration, conflicted card, idempotence, mapping removal. **NFR-27's no-card-lost assertion lives here.** |
+| `tests/ops/migration-016-021.test.ts` | Ops | BH-401, BH-402, BH-403, BH-404, BH-405, BH-433 — column set, card migration, conflicted card, idempotence, mapping removal, retained history. **NFR-27's no-card-lost assertion lives here.** |
 | `tests/contract/iteration-api.test.ts` | Contract | BH-416, BH-419, BH-420, BH-421 — `GET /api/iteration` shape and its never-5xx guarantee |
 | `tests/contract/board-payload.test.ts` | Contract | BH-406 — new card fields; retired columns absent |
 | `tests/contract/no-jira-writes.test.ts` | Contract | BH-415 — extends the existing assertion to the blocked field |

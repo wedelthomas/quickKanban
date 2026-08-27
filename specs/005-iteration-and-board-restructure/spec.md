@@ -47,6 +47,10 @@ this slice directly.
   stands; status remains the only field the board writes.
 - Q: Where do blocked cards go during the migration? → A: In Progress, not
   Backlog. Backlog would discard the fact that the work is in flight.
+- Q: Is the Blocked column removed outright? → A: No — it is retired. It leaves
+  the board entirely, but its record is kept because the movement history refers
+  to it. An earlier draft of FR-402 asked for outright removal, which turned out
+  to be impossible without destroying the history. Raised by planning.
 - Q: How is carry-over surfaced? → A: A badge on the card face showing how many
   iterations it has carried through, so chronic carry-over is visible on the
   board rather than only in a report.
@@ -261,6 +265,9 @@ setting survived.
 
 ### Edge Cases
 
+- **The Blocked column's record outlives the board column.** Removing it would
+  orphan every historical movement into or out of it, so it is retired rather
+  than removed. A later change that "tidies it away" breaks the archive.
 - **A card in Blocked also has an unresolved conflict.** The conflict model
   freezes such a card against moves, but the column it sits in is being
   removed. The migration must still move it, or it would be stranded in a
@@ -298,7 +305,11 @@ setting survived.
 - **FR-401**: The board MUST present exactly six ordered columns: Backlog,
   Iteration Items, In Progress, Test, PO Review, Done. Columns remain fixed and
   not user-editable. Supersedes the v1 column set.
-- **FR-402**: The Blocked column MUST NOT exist after this feature is applied.
+- **FR-402**: The Blocked column MUST NOT appear on the board, MUST NOT be a
+  valid move target, and MUST hold no cards.
+- **FR-446**: The Blocked column's record MUST be retained. The movement history
+  references every column a card has ever occupied, so removing the record would
+  break the history the archive and all reporting rest on.
 - **FR-403**: A card MUST carry a blocked indicator that is independent of which
   column it occupies.
 - **FR-404**: On upgrade, every card in the Blocked column MUST be placed in In
@@ -483,7 +494,13 @@ setting survived.
   - **Given** a board built on the v1 column set
   - **When** the upgrade is applied
   - **Then** the board presents Backlog, Iteration Items, In Progress, Test, PO
-    Review and Done, and no Blocked column exists
+    Review and Done, no card occupies the Blocked column, and it is refused as a
+    move target
+
+- **BH-433** (satisfies FR-446): Retiring preserves the history
+  - **Given** cards with movements into and out of the Blocked column
+  - **When** the upgrade is applied
+  - **Then** those historical movements still resolve to the Blocked column
 
 - **BH-402** (satisfies FR-404, FR-405): Blocked cards migrate to In Progress
   - **Given** cards occupying the Blocked column
@@ -661,7 +678,8 @@ setting survived.
 
 | ID | Test name | Pins |
 |---|---|---|
-| TEST-401 | Upgrade produces the six-column set with no Blocked column | BH-401 |
+| TEST-401 | Upgrade produces the six-column set and refuses Blocked as a target | BH-401 |
+| TEST-433 | Movements into and out of Blocked still resolve after the upgrade | BH-433 |
 | TEST-402 | Every blocked-column card lands in In Progress, flagged, with a system-attributed record | BH-402 |
 | TEST-403 | A conflicted blocked card migrates with its conflict intact | BH-403 |
 | TEST-404 | Re-applying the upgrade changes nothing | BH-404 |

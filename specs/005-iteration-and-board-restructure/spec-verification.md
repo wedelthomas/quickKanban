@@ -1,7 +1,7 @@
 # Spec Verification — 005-iteration-and-board-restructure
 
 **Branch:** 005-iteration-and-board-restructure
-**When:** 2026-08-27T04:20:00Z
+**When:** 2026-08-27T04:30:46Z
 **Result:** PASS
 
 ## Blocking checks
@@ -17,6 +17,19 @@
 - [PASS] W1. Stories independently testable — each story's scenarios establish their own setup; US5 depends on the iteration existing but states that as given state rather than borrowing another story's outcome
 - [PASS] W2. Out-of-scope section present — "Out of Scope for This Feature" lists eight exclusions
 - [PASS] W3. No implementation phrasing — requirements are stated as obligations on the system, not as chosen mechanisms
+
+## Re-verification 2 — after the FR-402 correction
+
+Planning established that the Blocked column's record cannot be removed:
+`card_events` references every column a card has ever occupied. FR-402 had
+asked for outright removal, which was impossible without destroying the
+history. FR-402 now states what is achievable (absent from the board, refused
+as a move target, holding no cards) and FR-446 states the retention obligation
+and why. BH-433 and TEST-433 were added to cover it.
+
+Re-run of every blocking check after that edit: all PASS. FR-401…FR-446 with no
+gaps, 33 pathways, 33 verification rows, none orphaned, no clarification
+markers, no technology tokens.
 
 ## Notes
 

@@ -6,7 +6,7 @@ Six migrations, `016` through `021`. No entity is removed; one is retired.
 
 ## 016 — Retire the Blocked column, add Iteration Items
 
-Carries R-1 through R-4. Runs as one transaction.
+Carries FR-402, FR-446 and R-1 through R-4. Runs as one transaction.
 
 ```sql
 ALTER TABLE columns ADD COLUMN retired_at timestamptz;
