@@ -207,43 +207,43 @@ blocked — copyable in one action.
 **Independent Test**: move several cards over two days, generate the daily
 summary, confirm it names all three groups and copies as plain text.
 
-- [ ] T431 [US3] Sync TestRail cases TEST-316, TEST-318, TEST-319, TEST-320, TEST-321 via
+- [x] T431 [US3] Sync TestRail cases TEST-316, TEST-318, TEST-319, TEST-320, TEST-321 via
   `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
-- [ ] T432 [P] [US3] `tests/unit/summary.test.ts` — grouping into moved, in
+- [x] T432 [P] [US3] `tests/unit/summary.test.ts` — grouping into moved, in
   progress and blocked; sync-attributed movements marked; the empty period
   producing `empty: true` rather than three empty groups — BH-316, BH-319,
   BH-321.
-- [ ] T433 [P] [US3] `tests/unit/summary-text.test.ts` — the rendered text
+- [x] T433 [P] [US3] `tests/unit/summary-text.test.ts` — the rendered text
   asserted line by line, including issue keys and the sync marker. Rendering
   server-side is what makes the exact bytes the user pastes an assertable value
   (R-6) — BH-318, BH-320.
-- [ ] T434 [P] [US3] `tests/e2e/summary.spec.ts` — open the summary and copy it.
+- [x] T434 [P] [US3] `tests/e2e/summary.spec.ts` — open the summary and copy it.
   Two interactions, which is exactly SC-306's budget — BH-320.
 
 ### Implementation
 
-- [ ] T435 [US3] `src/domain/summary.ts` — pure: history rows plus current board
+- [x] T435 [US3] `src/domain/summary.ts` — pure: history rows plus current board
   rows in, structured summary out. Takes the period boundaries as arguments.
-- [ ] T436 [US3] `src/domain/summary-text.ts` — pure: structured summary in,
+- [x] T436 [US3] `src/domain/summary-text.ts` — pure: structured summary in,
   plain text out (FR-329).
-- [ ] T437 [US3] Period boundaries via `toCalendarDate` from `overdue.ts` — the
+- [x] T437 [US3] Period boundaries via `toCalendarDate` from `overdue.ts` — the
   same local-calendar-day rule due dates already use (R-7). Daily covers
   yesterday *and* today, because a standup update is about what you did
   yesterday and what you are on now.
-- [ ] T438 [US3] `SummaryRepository` — the two reads in data-model.md. Note that
+- [x] T438 [US3] `SummaryRepository` — the two reads in data-model.md. Note that
   the join to `cards` filters `deleted_at` but *not* `archived_at`: that is how
   archived work stays in a summary while deleted work drops out.
-- [ ] T439 [US3] `SummaryService` + `GET /api/summary?period=daily`, returning
+- [x] T439 [US3] `SummaryService` + `GET /api/summary?period=daily`, returning
   structure and text together so the two cannot disagree.
-- [ ] T440 [US3] Mark movements whose actor is not `user`, in both the structure
+- [x] T440 [US3] Mark movements whose actor is not `user`, in both the structure
   and the text (FR-328). **This exists so the user does not read out a
   transition a teammate made as their own progress.**
-- [ ] T441 [US3] `src/web/summary/SummaryDialog.tsx` — three distinguishable
+- [x] T441 [US3] `src/web/summary/SummaryDialog.tsx` — three distinguishable
   groups and a Copy control using the platform clipboard API. No new dependency.
-- [ ] T442 [US3] An empty period states there was no activity rather than
+- [x] T442 [US3] An empty period states there was no activity rather than
   rendering three empty headings, which reads like a bug (FR-330).
 
 **Checkpoint**: **Run the Story-Complete Review Gate.**
@@ -258,25 +258,25 @@ summary, confirm it names all three groups and copies as plain text.
 completed, in-progress and blocked work, and confirm it covers seven days
 including archived cards.
 
-- [ ] T443 [US4] Sync TestRail cases TEST-317 and TEST-322 via
+- [x] T443 [US4] Sync TestRail cases TEST-317 and TEST-322 via
   `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
-- [ ] T444 [P] [US4] `tests/features/summaries.feature` — daily and weekly; a
+- [x] T444 [P] [US4] `tests/features/summaries.feature` — daily and weekly; a
   card completed and archived inside the period still appearing; both sources
   with issue keys; and **twenty consecutive generations mutating no card, no
   column and no history row** (SC-308, BH-322) — BH-317, BH-322.
 
 ### Implementation
 
-- [ ] T445 [US4] `period=weekly` — the last seven calendar days including today.
+- [x] T445 [US4] `period=weekly` — the last seven calendar days including today.
   The window is the only difference from daily; if it turns out not to be, the
   split was wrong and the summary builder needs the seam instead.
-- [ ] T446 [US4] Confirm archived cards appear (FR-326). **A week's work that
+- [x] T446 [US4] Confirm archived cards appear (FR-326). **A week's work that
   vanished from the report because it was tidied away would make the weekly
   summary useless for the one conversation it exists for.**
-- [ ] T447 [US4] Period selector in `SummaryDialog`.
+- [x] T447 [US4] Period selector in `SummaryDialog`.
 
 **Checkpoint**: **Run the Story-Complete Review Gate.**
 

@@ -818,7 +818,9 @@ kbd {
   margin: 0;
   font-size: 22px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  /* Positive tracking, not negative: uppercase needs room to breathe where
+     mixed case needs tightening, and this matches the rail's wordmark. */
+  letter-spacing: 0.04em;
 }
 
 .page-sub {

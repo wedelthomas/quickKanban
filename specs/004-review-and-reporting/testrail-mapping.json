@@ -3,7 +3,7 @@
   "jira_ref": "",
   "project_id": 115,
   "suite_id": 32733,
-  "last_synced_at": "2026-08-27T02:46:48Z",
+  "last_synced_at": "2026-08-27T03:05:45Z",
   "last_synced_by": "spec-testrail-sync",
   "user_stories": {
     "us1": {
@@ -23,6 +23,12 @@
       "priority": "P2",
       "section_id": 2162688,
       "section_name": "Slice 4 \u2014 Review and Reporting | US3 Daily summary"
+    },
+    "us4": {
+      "title": "Look back over the week",
+      "priority": "P2",
+      "section_id": 2162689,
+      "section_name": "Slice 4 \u2014 Review and Reporting | US4 Weekly summary"
     }
   },
   "scenarios": {},
@@ -188,6 +194,24 @@
       "hash": "44b6e59d0d734bbd67748c0f085cdf8952520c4c140dcf67f20c812fa3fb712a",
       "title_at_last_sync": "TEST-321 \u2014 Period with no activity produces a stated empty summary",
       "automation_id": "test-321.bh-321"
+    },
+    "TEST-317": {
+      "case_id": 20000089,
+      "pins": "BH-317",
+      "user_story": "us4",
+      "section_id": 2162689,
+      "hash": "c73a7c259101f8d608529202710923ced34f523735c4813b3f3cef62fbc5e895",
+      "title_at_last_sync": "TEST-317 \u2014 Weekly summary includes cards archived within the period",
+      "automation_id": "test-317.bh-317"
+    },
+    "TEST-322": {
+      "case_id": 20000090,
+      "pins": "BH-322",
+      "user_story": "us4",
+      "section_id": 2162689,
+      "hash": "3d72793880bdbc6f49a088efb7e07a12984f170d2247c2a34b3bb9e9445e74ff",
+      "title_at_last_sync": "TEST-322 \u2014 Twenty summary generations mutate nothing",
+      "automation_id": "test-322.bh-322"
     }
   }
 }
