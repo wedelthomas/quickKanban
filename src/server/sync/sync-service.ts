@@ -82,18 +82,20 @@ export class SyncService {
     issue: JiraIssue,
     mappings: Awaited<ReturnType<MappingRepository['forDomain']>>,
     openConflicts: Set<string>,
-  ): Promise<void> {
+  ): Promise<'conflict' | 'none'> {
     if (openConflicts.has(cardId)) {
       // Frozen against movement (FR-227) but not against the truth: the
       // resolution screen must show what Jira says *now*, not what it said
       // when the disagreement was first noticed (FR-234). A screen offering a
       // stale choice is worse than no screen.
       await this.conflicts.refreshJiraStatus(cardId, issue.statusName, client);
-      return;
+      // Not counted: this run did not raise it, it inherited it. Counting it
+      // every sync would make one disagreement look like an epidemic.
+      return 'none';
     }
 
     const state = await this.cards.currentState(client, cardId);
-    if (!state) return;
+    if (!state) return 'none';
 
     const decision = reconcile({
       mappings,
@@ -108,12 +110,12 @@ export class SyncService {
         // Nothing to do, but the recorded state still catches up so the next
         // sync does not keep rediscovering the same difference.
         await this.links.recordStatus(cardId, issue.statusName, client);
-        return;
+        return 'none';
 
       case 'apply-remote':
         await this.cards.moveBySync(client, cardId, decision.toColumnId);
         await this.links.recordStatus(cardId, decision.status, client);
-        return;
+        return 'none';
 
       case 'push-local':
         // Deliberately outside the transaction's control: a Jira write cannot
@@ -130,9 +132,12 @@ export class SyncService {
             await this.links.recordStatus(cardId, outcome.toStatus, client);
           }
         } catch {
-          // Reported through the run's outcome; the board is untouched.
+          // Swallowed on purpose: one issue's refused push must not fail a sync
+          // that reconciled everything else correctly. It is not silent — the
+          // attempt and its reason are on the write log, and the card stays
+          // where the user put it for the next sync to reconcile again.
         }
-        return;
+        return 'none';
 
       case 'conflict':
         await this.conflicts.raiseOrUpdate(client, {
@@ -140,7 +145,7 @@ export class SyncService {
           boardColumnId: decision.boardColumnId,
           jiraStatus: decision.jiraStatus,
         });
-        return;
+        return 'conflict';
     }
   }
 
@@ -154,6 +159,7 @@ export class SyncService {
       updated: 0,
       archived: 0,
       restored: 0,
+      conflictsRaised: 0,
     };
     const existing = await this.links.allKeys(client);
     const mappings = await this.mappings.forDomain(client);
@@ -190,7 +196,14 @@ export class SyncService {
         // known* Jira status, which is the whole basis for deciding what
         // changed — overwriting it first makes every remote change invisible,
         // because the recorded status would already equal the new one.
-        await this.reconcileCard(client, cardId, issue, mappings, openConflicts);
+        const reconciled = await this.reconcileCard(
+          client,
+          cardId,
+          issue,
+          mappings,
+          openConflicts,
+        );
+        if (reconciled === 'conflict') counts.conflictsRaised += 1;
         await this.links.upsertMetadata(client, cardId, issue);
       }
     }

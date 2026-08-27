@@ -27,11 +27,13 @@ interface RawIssue {
 }
 
 /**
- * Jira Cloud REST, read only.
+ * Jira Cloud REST.
  *
- * There is no request in this file that is not a GET, and there is no method
- * on the port that could express a write. A unit test asserts both, because
- * "we agreed not to" is not a guarantee.
+ * Reads anything the query returns; writes exactly one thing — an issue's
+ * status, by posting a transition id and nothing else. There is no request in
+ * this file that touches any other field, and no method on the port that could
+ * express one. A unit test asserts it, because "we agreed not to" is not a
+ * guarantee.
  *
  * Errors never carry the request, the headers or the credential. The usual way
  * a token leaks is not a log statement someone wrote on purpose; it is an

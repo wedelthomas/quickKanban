@@ -21,12 +21,14 @@ const putMapping = async (
   key: string,
   status: string | null,
 ): Promise<void> => {
+  // Every column, every time: the endpoint replaces the whole set, so a
+  // partial payload would erase the columns it left out. GET already returns
+  // all six, unmapped ones carrying null.
   const mappings = await currentMappings(world);
-  const rest = mappings.filter((m) => m.columnId !== columnId(key));
-  const next = [
-    ...rest.map(({ columnId: id, statusName }) => ({ columnId: id, statusName })),
-    ...(status === null ? [] : [{ columnId: columnId(key), statusName: status }]),
-  ];
+  const next = mappings.map(({ columnId: id, statusName }) => ({
+    columnId: id,
+    statusName: id === columnId(key) ? status : statusName,
+  }));
   await world.request('PUT', '/api/settings/mappings', { mappings: next });
   assert.equal(world.response.status, 200, 'the mapping should have been accepted');
 };

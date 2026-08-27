@@ -12,6 +12,7 @@ interface Row {
   updated: number;
   archived: number;
   restored: number;
+  conflicts_raised: number;
 }
 
 const toRun = (r: Row): SyncRun => ({
@@ -26,6 +27,7 @@ const toRun = (r: Row): SyncRun => ({
     updated: r.updated,
     archived: r.archived,
     restored: r.restored,
+    conflictsRaised: r.conflicts_raised,
   },
 });
 
@@ -43,7 +45,8 @@ export class SyncRunRepository {
     const { rows } = await this.pool.query<Row>(
       `UPDATE sync_runs
           SET finished_at = now(), outcome = 'succeeded',
-              issues_seen = $2, created = $3, updated = $4, archived = $5, restored = $6
+              issues_seen = $2, created = $3, updated = $4, archived = $5, restored = $6,
+              conflicts_raised = $7
         WHERE id = $1 RETURNING *`,
       [
         id,
@@ -52,6 +55,7 @@ export class SyncRunRepository {
         counts.updated,
         counts.archived,
         counts.restored,
+        counts.conflictsRaised,
       ],
     );
     return toRun(rows[0]!);

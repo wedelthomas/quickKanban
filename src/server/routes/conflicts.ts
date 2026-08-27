@@ -45,9 +45,14 @@ export const registerConflictRoutes = (
     async (request, reply) => {
       const parsed = resolveSchema.safeParse(request.body);
       if (!parsed.success) throw validationFailed(parsed.error.issues[0]!.message);
-      const id = Number(request.params.id);
-      if (parsed.data.resolution === 'kept_board') await resolution.keepBoard(id);
-      else await resolution.acceptJira(id);
+      // Parsed, not coerced blindly: `Number('abc')` is NaN, which misses the
+      // lookup and surfaces as "Card NaN not found" — a 404 naming a card, for
+      // what is really a malformed conflict id.
+      const id = z.coerce.number().int().positive().safeParse(request.params.id);
+      if (!id.success)
+        throw validationFailed('The conflict id must be a positive whole number.');
+      if (parsed.data.resolution === 'kept_board') await resolution.keepBoard(id.data);
+      else await resolution.acceptJira(id.data);
 
       return reply.status(204).send();
     },

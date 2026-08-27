@@ -60,6 +60,33 @@ export const databaseUnavailable = (): DomainError =>
     'The change was not saved. The board has reverted it rather than show you a state it could not store.',
   );
 
+/**
+ * Jira could not be reached, or answered in a way that says try later.
+ *
+ * Deliberately not folded into `databaseUnavailable`: the board's own data
+ * store is fine, and telling the user otherwise sends them to look at the
+ * wrong system. FR-213 asks for a connectivity failure, distinctly.
+ */
+export const jiraUnreachable = (): DomainError =>
+  new DomainError(
+    'JIRA_UNREACHABLE',
+    503,
+    'Jira could not be reached',
+    'The move was not made, in Jira or on the board. Nothing is half-applied — try again when Jira is back.',
+  );
+
+/**
+ * Separate from unreachable, because the user's next action differs: waiting
+ * fixes one and never fixes the other.
+ */
+export const jiraCredentialsRejected = (): DomainError =>
+  new DomainError(
+    'JIRA_CREDENTIALS_REJECTED',
+    502,
+    'Jira rejected the credentials',
+    'The move was not made. Check the API token in the environment; the board cannot fix this by retrying.',
+  );
+
 export const jiraNotConfigured = (): DomainError =>
   new DomainError(
     'JIRA_NOT_CONFIGURED',

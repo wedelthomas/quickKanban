@@ -133,13 +133,21 @@ export const buildApp = ({
   registerBoardRoutes(app, new BoardService(new BoardRepository(pool)));
   const mappings = new MappingRepository(pool);
   const conflicts = new ConflictRepository(pool);
+  // Every attempt to change something in Jira leaves a line, whatever the
+  // outcome. Never the credential — only the issue, the target and what
+  // happened.
+  const transitionService = (): TransitionService =>
+    new TransitionService(jira!, (entry) =>
+      app.log.info({ jiraWrite: entry }, 'Jira transition attempted'),
+    );
+
   const cardService = new CardService(
     cardRepository,
     conflicts,
     () => new Date(),
     jira
       ? {
-          transitions: new TransitionService(jira),
+          transitions: transitionService(),
           mappings,
           links: new JiraLinkRepository(pool),
         }
@@ -158,7 +166,7 @@ export const buildApp = ({
       new JiraLinkRepository(pool),
       jiraCards,
       mappings,
-      jira ? new TransitionService(jira) : null,
+      jira ? transitionService() : null,
     ),
     cardRepository,
     async (id) => {
@@ -182,7 +190,7 @@ export const buildApp = ({
         settings,
         mappings,
         conflicts,
-        new TransitionService(jira),
+        transitionService(),
       )
     : null;
   registerSyncRoutes(app, { sync, lock, runs });

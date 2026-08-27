@@ -32,11 +32,24 @@ Feature: A refused move fails loudly and safely
     Then the request is refused with code "TRANSITION_NEEDS_FIELDS"
     And the card for issue "AIHUB-1" is in the "backlog" column
 
+  # Named for the system that actually failed. Telling the user the database
+  # is unavailable when Jira is unreachable sends them to look at the wrong
+  # thing, and the board's own data store is fine (FR-213).
   Scenario: Jira cannot be reached
     Given the application is running
     And Jira has an issue "AIHUB-1" with status "Open"
     And a sync runs
     And Jira is unreachable
     When the card for issue "AIHUB-1" is moved to the "test" column
-    Then the request is refused with code "DATABASE_UNAVAILABLE"
+    Then the request is refused with code "JIRA_UNREACHABLE"
+    And the card for issue "AIHUB-1" is in the "backlog" column
+
+  Scenario: Jira rejects the credentials mid-drag
+    Given the application is running
+    And Jira has an issue "AIHUB-1" with status "Open"
+    And a sync runs
+    And Jira rejects the credentials
+    When the card for issue "AIHUB-1" is moved to the "test" column
+    # Distinct from unreachable: one is fixed by waiting, the other never is.
+    Then the request is refused with code "JIRA_CREDENTIALS_REJECTED"
     And the card for issue "AIHUB-1" is in the "backlog" column

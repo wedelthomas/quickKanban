@@ -72,6 +72,7 @@ export interface SyncRun {
     updated: number;
     archived: number;
     restored: number;
+    conflictsRaised: number;
   };
 }
 
@@ -142,7 +143,9 @@ export type ProblemCode =
   | 'NO_LEGAL_TRANSITION'
   | 'STALE_MAPPING'
   | 'TRANSITION_NEEDS_FIELDS'
-  | 'CARD_CONFLICTED';
+  | 'CARD_CONFLICTED'
+  | 'JIRA_UNREACHABLE'
+  | 'JIRA_CREDENTIALS_REJECTED';
 
 export interface Problem {
   type: string;
