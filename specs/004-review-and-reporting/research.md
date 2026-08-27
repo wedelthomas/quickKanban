@@ -65,7 +65,7 @@ flat.
 
 ---
 
-## R-3. Archival needs a second kind of history row — and this contradicts the spec
+## R-3. Archival needs a second kind of history row — and the spec contradiction that exposed
 
 **Decision.** `card_events` gains a `kind` column (`'moved' | 'archived'`), and
 its "an event is a real column change" constraint becomes conditional on
@@ -89,21 +89,23 @@ disappearance archival writes an event only when the card was *not* already in
 Done (`jira-card-repository.ts:138`). For slice 4 that condition is false by
 definition, so every archival would write nothing at all and BH-312 would fail.
 
-**⚠️ This contradicts the spec's own Out of Scope.** `spec.md` lists:
+**This contradicted the spec's own Out of Scope**, which at the time read:
 
 > Any change to how movement history is written, which Slices 1 through 3 own.
 
-FR-317 and this exclusion cannot both stand. **The plan proceeds on the reading
-that FR-317 wins** — it is a numbered requirement with a behavior pathway and a
+FR-317 and that exclusion could not both stand. **The plan proceeded on the
+reading that FR-317 wins** — it is a numbered requirement with a behavior pathway and a
 verification row, while the exclusion is a scope note whose evident intent is
 "do not change how *movements* are recorded", which this does not. `kind`
 defaults to `'moved'`, so every existing row and every existing writer means
 precisely what it meant before.
 
-**This should be resolved in the spec rather than left to a reader of this
-file.** Recommended amendment: narrow the exclusion to "Any change to how
-*movements* are recorded", and note under FR-317 that archival is a distinct
-kind of history record. Flagged for `/speckit.analyze`.
+**Resolved in the spec on 2026-08-27**, rather than left to a reader of this
+file. The exclusion now reads "any change to how **movements** are recorded",
+and FR-317 states that archival is a distinct kind of record and why. The spec
+re-passed verification afterwards. This entry is kept in the past tense on
+purpose: the reasoning is still the reason, and a future reader asking "why does
+`card_events` have a `kind` column" should find it here.
 
 **Rejected: relaxing the constraint outright.** It encodes something true and
 worth keeping — a reorder within a column writes no row (FR-028). Dropping it
@@ -129,10 +131,12 @@ disagreement stands — and the user would then be unable to do the one thing th
 freeze exists to make them do. An automatic process quietly disposing of the
 evidence of an unresolved problem is the worst available outcome.
 
-**Not stated in the spec.** The spec was written before slice 3 existed, so it
-does not contemplate conflicts and archival meeting. This is a plan-level
-decision; it is recorded here, in the Architecture Review, and as an explicit
-test so it is a deliberate behaviour rather than an accident of ordering.
+**Was not in the spec; now is.** The spec was written before slice 3 existed
+and did not contemplate conflicts and archival meeting, so this began as a
+plan-level decision. Left there, the behaviour would have been settled by
+whichever code happened to run first. It was raised into the spec on 2026-08-27
+as **FR-318a**, with **BH-309a** and **TEST-309a** — which is where a rule about
+what the system must never do belongs.
 
 ---
 
