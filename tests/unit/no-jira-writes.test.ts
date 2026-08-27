@@ -65,3 +65,49 @@ describe('the Jira adapter writes only transitions', () => {
     }
   });
 });
+
+/**
+ * TEST-415 (BH-415), FR-417.
+ *
+ * Slice 5 reads two more things from Jira — the blocked field, and sprints for
+ * the iteration — and writes neither. The guarantee is the same shape as above:
+ * asserted by the absence of the capability rather than by a rule saying not to.
+ */
+describe('slice 5 adds reads to Jira and no writes', () => {
+  const jiraAdapter = readFileSync('src/server/jira/jira-adapter.ts', 'utf8');
+  const iterationAdapter = readFileSync('src/server/jira/iteration-adapter.ts', 'utf8');
+  const port = readFileSync('src/server/jira/jira-port.ts', 'utf8');
+  const iterationPort = readFileSync('src/server/jira/iteration-port.ts', 'utf8');
+
+  it('never sends the blocked field in a request body', () => {
+    // The field name is configuration, so it can only appear where a request is
+    // BUILT. It legitimately appears in the query string of a read (`fields=`);
+    // what must never happen is it reaching a body.
+    const bodies = jiraAdapter.match(/body:\s*JSON\.stringify\(([^)]*)\)/g) ?? [];
+    for (const body of bodies) {
+      expect(body).not.toMatch(/blocked/i);
+      expect(body).not.toMatch(/customfield/i);
+    }
+  });
+
+  it('the iteration adapter issues only GET requests', () => {
+    const methods = iterationAdapter.match(/method:\s*'(\w+)'/g) ?? [];
+    expect(methods.length).toBeGreaterThan(0);
+    for (const method of methods) expect(method).toMatch(/'GET'/);
+  });
+
+  it('the iteration port cannot express a write at all', () => {
+    // One method, and it reads. An interface with nowhere to put a write is a
+    // stronger guarantee than a rule against writing.
+    expect(iterationPort).toContain('listActiveSprints');
+    expect(iterationPort).not.toMatch(
+      /\b(update|set|write|create|delete|transition)\w*\(/i,
+    );
+  });
+
+  it('the Jira port still exposes exactly one write', () => {
+    // transitionIssue, and nothing that could send a blocked value or a sprint.
+    expect(port).toContain('transitionIssue(');
+    expect(port).not.toMatch(/setBlocked|updateBlocked|writeBlocked|setSprint/i);
+  });
+});

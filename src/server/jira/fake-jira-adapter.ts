@@ -65,6 +65,7 @@ export class FakeJiraAdapter implements JiraPort {
       statusId: '',
       statusName: '',
       updatedAt: '',
+      blockedInJira: null,
       url: '',
     };
   }
@@ -140,13 +141,29 @@ export class FakeJiraAdapter implements JiraPort {
     this.failure = kind;
   }
 
-  async searchIssues(jql: string): Promise<JiraIssue[]> {
+  /** Which issues Jira reports as blocked, staged by key. */
+  private blockedKeys = new Set<string>();
+
+  setBlockedInJira(key: string, blocked: boolean): void {
+    if (blocked) this.blockedKeys.add(key);
+    else this.blockedKeys.delete(key);
+  }
+
+  async searchIssues(
+    jql: string,
+    blocked?: { field: string; option: string },
+  ): Promise<JiraIssue[]> {
     this.callCount += 1;
     this.queries.push(jql);
     if (this.failure) {
       throw new JiraError(this.failure, `fake Jira configured to fail: ${this.failure}`);
     }
-    return [...this.issues];
+    // Null when the caller did not ask, exactly as the real adapter behaves:
+    // "not requested" and "requested and not set" are different facts.
+    return this.issues.map((issue) => ({
+      ...issue,
+      blockedInJira: blocked ? this.blockedKeys.has(issue.key) : null,
+    }));
   }
 }
 
@@ -158,4 +175,5 @@ export const anIssue = (over: Partial<JiraIssue> & { key: string }): JiraIssue =
   updatedAt: over.updatedAt ?? '2026-08-26T10:00:00.000Z',
   url: over.url ?? `https://tsgjira.atlassian.net/browse/${over.key}`,
   key: over.key,
+  blockedInJira: over.blockedInJira ?? null,
 });

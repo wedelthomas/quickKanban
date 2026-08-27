@@ -17,6 +17,15 @@ export interface JiraIssue {
   updatedAt: string;
   /** Browse URL for the card face. */
   url: string;
+  /**
+   * Whether Jira's blocked field is set. Null when the field was not requested
+   * or is not present on this instance — distinct from false, which means
+   * observed and not set.
+   *
+   * Read-only, and there is deliberately no way to write it: the port can
+   * express exactly one write, and it is issue status (BR-22, FR-417).
+   */
+  blockedInJira: boolean | null;
 }
 
 /**
@@ -36,8 +45,17 @@ export interface JiraTransition {
 }
 
 export interface JiraPort {
-  /** Every issue matching the query, across all pages. */
-  searchIssues(jql: string): Promise<JiraIssue[]>;
+  /**
+   * Every issue matching the query, across all pages.
+   *
+   * `blockedField` and `blockedOption` name where blocked lives on this Jira,
+   * because neither is guaranteed stable across an administration change
+   * (FR-438). Omitted means do not ask for it.
+   */
+  searchIssues(
+    jql: string,
+    blocked?: { field: string; option: string },
+  ): Promise<JiraIssue[]>;
 
   /** Legal from the issue's status right now. Never cached — that status is
    *  exactly what is in question. */

@@ -221,21 +221,30 @@ locally, and confirm later syncs do not re-set it and the divergence shows.
 
 ### Tests for User Story 4
 
-- [ ] T052 [US4] Author or sync TestRail cases for BH-411 through BH-415 and BH-431 via `spec-testrail-sync`, before the implementation tasks below.
-- [ ] T053 [P] [US4] Unit test `tests/unit/blocked-divergence.test.ts` — TEST-412 (a locally cleared flag survives a sync still reporting blocked), TEST-414 (the divergence indication clears once the states agree).
-- [ ] T054 [P] [US4] Extend `tests/unit/no-jira-writes.test.ts` — TEST-415: every Jira write in the suite leaves the blocked field untouched.
-- [ ] T055 [P] [US4] Acceptance feature `tests/features/blocked-from-jira.feature` and steps — TEST-411 (import), TEST-413 (a diverging card still moves), TEST-431 (the divergence marker is distinguishable from the blocked indicator).
+- [x] T052 [US4] Author or sync TestRail cases for BH-411 through BH-415 and BH-431 via `spec-testrail-sync`, before the implementation tasks below.
+- [x] T053 [P] [US4] Unit test `tests/unit/blocked-divergence.test.ts` — TEST-412 (a locally cleared flag survives a sync still reporting blocked), TEST-414 (the divergence indication clears once the states agree).
+- [x] T054 [P] [US4] Extend `tests/unit/no-jira-writes.test.ts` — TEST-415: every Jira write in the suite leaves the blocked field untouched.
+- [x] T055 [P] [US4] Acceptance feature `tests/features/blocked-from-jira.feature` and steps — TEST-411 (import), TEST-413 (a diverging card still moves), TEST-431 (the divergence marker is distinguishable from the blocked indicator).
 
 ### Implementation for User Story 4
 
-- [ ] T056 [US4] Read the blocked state in `src/server/jira/jira-adapter.ts`: the field is a **multi-checkbox**, so blocked means the configured option appears in the array (research R-6). Absent field, empty array and an array without the option all mean not blocked. Field id and option label both come from settings (FR-438).
-- [ ] T057 [US4] Persist `jira_links.blocked_in_jira` on each sync in `src/server/sync/sync-service.ts` and `src/server/repositories/jira-link-repository.ts`, and set `cards.blocked` only when no local opinion has been expressed (FR-418).
-- [ ] T058 [US4] Compute `blockedDivergesFromJira` server-side in `src/server/repositories/board-repository.ts`, alongside `overdue`, so one definition governs.
-- [ ] T059 [US4] Render the divergence marker in `src/web/board/CardView.tsx` — **outlined, not solid**, so it never reads as blocked (FR-443). Distinct from the badge added in T025.
-- [ ] T060 [US4] Show the two states side by side in `src/web/cards/CardDialog.tsx` when they diverge, with local marked as the one in force.
-- [ ] T061 [US4] Confirm divergence creates no `conflicts` row and triggers no freeze (FR-419). The conflict model must be untouched by this story.
+- [x] T056 [US4] Read the blocked state in `src/server/jira/jira-adapter.ts`: the field is a **multi-checkbox**, so blocked means the configured option appears in the array (research R-6). Absent field, empty array and an array without the option all mean not blocked. Field id and option label both come from settings (FR-438).
+- [x] T057 [US4] Persist `jira_links.blocked_in_jira` on each sync in `src/server/sync/sync-service.ts` and `src/server/repositories/jira-link-repository.ts`, and set `cards.blocked` only when no local opinion has been expressed (FR-418).
+- [x] T058 [US4] Compute `blockedDivergesFromJira` server-side in `src/server/repositories/board-repository.ts`, alongside `overdue`, so one definition governs.
+- [x] T059 [US4] Render the divergence marker in `src/web/board/CardView.tsx` — **outlined, not solid**, so it never reads as blocked (FR-443). Distinct from the badge added in T025.
+- [x] T060 [US4] Show the two states side by side in `src/web/cards/CardDialog.tsx` when they diverge, with local marked as the one in force.
+- [x] T061 [US4] Confirm divergence creates no `conflicts` row and triggers no freeze (FR-419). The conflict model must be untouched by this story.
 
-**Checkpoint**: US1–US4 work independently. **Run the Story-Complete Review Gate.**
+**Checkpoint**: US1–US4 work independently. **Story-Complete Review Gate PASSED.**
+
+Verified against live Jira rather than only against the fake: every
+`jira_links.blocked_in_jira` reads `false` rather than `null`, which is the
+proof the field was requested and parsed — null would mean skipped. And a real
+blocked issue (WT-8383) carries `['Blocked']`, the multi-checkbox array shape
+the parser expects, not a boolean.
+
+T061 needed no change: divergence creates no `conflicts` row and reuses none of
+slice 3's machinery, by construction rather than by suppression.
 
 ---
 

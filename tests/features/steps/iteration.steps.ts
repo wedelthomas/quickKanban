@@ -110,3 +110,69 @@ Given(
     );
   },
 );
+
+Given('Jira reports issue {string} as blocked', function (this: BoardWorld, key: string) {
+  this.jira.setBlockedInJira(key, true);
+});
+
+Given(
+  'Jira reports issue {string} as not blocked',
+  function (this: BoardWorld, key: string) {
+    this.jira.setBlockedInJira(key, false);
+  },
+);
+
+// The two above are registered ONCE each, deliberately. Cucumber matches on the
+// pattern rather than the keyword, so the same text registered as both Given and
+// When is ambiguous rather than distinct — third time that caught me in this
+// slice. A feature may still say "When Jira reports ..."; the Given definition
+// serves it.
+
+const cardForIssue = async (world: BoardWorld, key: string) => {
+  const res = await world.app.inject({ method: 'GET', url: '/api/board' });
+  const board = res.json() as { columns: { cards: Record<string, unknown>[] }[] };
+  const card = board.columns.flatMap((c) => c.cards).find((c) => c.issueKey === key);
+  assert.ok(card, `no card on the board for issue ${key}`);
+  return card;
+};
+
+Then(
+  'the card for issue {string} is blocked',
+  async function (this: BoardWorld, key: string) {
+    assert.equal((await cardForIssue(this, key)).blocked, true);
+  },
+);
+
+Then(
+  'the card for issue {string} is not blocked',
+  async function (this: BoardWorld, key: string) {
+    assert.equal((await cardForIssue(this, key)).blocked, false);
+  },
+);
+
+Then(
+  'the card for issue {string} diverges from Jira',
+  async function (this: BoardWorld, key: string) {
+    assert.equal((await cardForIssue(this, key)).blockedDivergesFromJira, true);
+  },
+);
+
+Then(
+  'the card for issue {string} does not diverge from Jira',
+  async function (this: BoardWorld, key: string) {
+    assert.equal((await cardForIssue(this, key)).blockedDivergesFromJira, false);
+  },
+);
+
+When(
+  'the card for issue {string} is marked not blocked locally',
+  async function (this: BoardWorld, key: string) {
+    const card = await cardForIssue(this, key);
+    const res = await this.app.inject({
+      method: 'PATCH',
+      url: `/api/cards/${card.id as string}`,
+      payload: { blocked: false },
+    });
+    assert.equal(res.statusCode, 200, res.body);
+  },
+);

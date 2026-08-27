@@ -13,6 +13,8 @@ export interface CardDraft {
    * opinion of whether work is stuck and never writes it back (FR-412, FR-417).
    */
   blocked: boolean;
+  /** Read-only: shown so the disagreement is legible, never edited here. */
+  blockedDivergesFromJira?: boolean;
 }
 
 export const CardDialog = ({

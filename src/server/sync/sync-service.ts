@@ -9,6 +9,7 @@ import type { MappingRepository } from '../repositories/mapping-repository.js';
 import type { ConflictRepository } from '../repositories/conflict-repository.js';
 import type { TransitionService } from './transition-service.js';
 import { reconcile } from '../../domain/reconcile.js';
+import { reconcileBlocked } from '../../domain/blocked-divergence.js';
 
 /**
  * One sync: fetch everything, then apply it atomically.
@@ -39,8 +40,11 @@ export class SyncService {
 
     let issues: JiraIssue[];
     try {
-      const { jiraJql } = await this.settings.read();
-      issues = await this.jira.searchIssues(jiraJql);
+      const settings = await this.settings.read();
+      issues = await this.jira.searchIssues(settings.jiraJql, {
+        field: settings.jiraFieldBlocked,
+        option: settings.jiraFieldBlockedOption,
+      });
     } catch (error) {
       // The port's failure vocabulary is wider than a sync run's: transition
       // failures cannot occur on a read, so they collapse to connectivity here.
@@ -192,6 +196,7 @@ export class SyncService {
 
       if (outcome === 'created') {
         await this.links.upsert(client, cardId, issue);
+        await this.reconcileBlockedState(client, cardId, issue);
       } else {
         // Reconcile BEFORE refreshing the link. The link holds the *last
         // known* Jira status, which is the whole basis for deciding what
@@ -206,6 +211,7 @@ export class SyncService {
         );
         if (reconciled === 'conflict') counts.conflictsRaised += 1;
         await this.links.upsertMetadata(client, cardId, issue);
+        await this.reconcileBlockedState(client, cardId, issue);
       }
     }
 
@@ -225,5 +231,51 @@ export class SyncService {
     }
 
     return counts;
+  }
+
+  /**
+   * Reconciles the board's blocked flag against Jira's, local winning.
+   *
+   * Runs inside the same transaction as the rest of the card's update, so a
+   * card cannot end a sync with its flag reconciled and its status not.
+   *
+   * Nothing here can write to Jira: `blockedInJira` is read from the search
+   * response, and the port has no method that could send it back (FR-417).
+   */
+  private async reconcileBlockedState(
+    client: pg.PoolClient,
+    cardId: string,
+    issue: JiraIssue,
+  ): Promise<void> {
+    // Null means the field was not requested, or this Jira does not have it.
+    // Either way there is nothing to reconcile against.
+    if (issue.blockedInJira === null) return;
+
+    const { rows } = await client.query<{
+      blocked: boolean;
+      blocked_in_jira: boolean | null;
+    }>(
+      `SELECT c.blocked, jl.blocked_in_jira
+         FROM cards c JOIN jira_links jl ON jl.card_id = c.id
+        WHERE c.id = $1`,
+      [cardId],
+    );
+    const current = rows[0];
+    if (!current) return;
+
+    const outcome = reconcileBlocked({
+      local: current.blocked,
+      lastSeenInJira: current.blocked_in_jira,
+      nowInJira: issue.blockedInJira,
+    });
+
+    await client.query('UPDATE cards SET blocked = $2 WHERE id = $1', [
+      cardId,
+      outcome.blocked,
+    ]);
+    await client.query('UPDATE jira_links SET blocked_in_jira = $2 WHERE card_id = $1', [
+      cardId,
+      outcome.lastSeenInJira,
+    ]);
   }
 }
