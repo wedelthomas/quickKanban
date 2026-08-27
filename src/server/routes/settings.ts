@@ -12,6 +12,10 @@ const updateSchema = z
   .object({
     jiraJql: z.string().optional(),
     syncIntervalSeconds: z.number().int().min(60).max(3600).optional(),
+    // Zero is valid and means "at the next pass" — the spec calls that
+    // permitted and the user's choice, so the lower bound is zero, not one.
+    archiveWindowDays: z.number().int().min(0).max(365).optional(),
+    archiveIntervalSeconds: z.number().int().min(300).max(86_400).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, 'Nothing to change.');
 
@@ -20,6 +24,8 @@ export const registerSettingsRoutes = (
   settings: SettingsRepository,
   /** Re-armed when the cadence changes, so it takes effect now, not next tick. */
   onIntervalChanged: () => void = () => {},
+  /** Same reasoning, for the archival pass's own cadence. */
+  onArchiveIntervalChanged: () => void = () => {},
 ): void => {
   // Returns the query and the interval. There is no credential here and no
   // field for one — anything the interface can display, it can leak (FR-102).
@@ -35,6 +41,7 @@ export const registerSettingsRoutes = (
     }
     const updated = await settings.write(parsed.data);
     if (parsed.data.syncIntervalSeconds !== undefined) onIntervalChanged();
+    if (parsed.data.archiveIntervalSeconds !== undefined) onArchiveIntervalChanged();
     return updated;
   });
 };

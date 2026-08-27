@@ -1,0 +1,91 @@
+{
+  "spec_path": "specs/004-review-and-reporting/spec.md",
+  "jira_ref": "",
+  "project_id": 115,
+  "suite_id": 32733,
+  "last_synced_at": "2026-08-27T01:37:10Z",
+  "last_synced_by": "spec-testrail-sync",
+  "user_stories": {
+    "us1": {
+      "title": "Find the card I am thinking of",
+      "priority": "P1",
+      "section_id": 2162686,
+      "section_name": "Slice 4 \u2014 Review and Reporting | US1 Filtering"
+    }
+  },
+  "scenarios": {},
+  "verification": {
+    "TEST-301": {
+      "case_id": 20000069,
+      "pins": "BH-301",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "b4db29cb14a11ba2da1cb603d99ed791f467c22c5468928d0992ef77c4f634ba",
+      "title_at_last_sync": "TEST-301 \u2014 Text filter matches titles and descriptions only",
+      "automation_id": "test-301.bh-301"
+    },
+    "TEST-302": {
+      "case_id": 20000070,
+      "pins": "BH-302",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "b38a1df0d3207e7717546e25ee639a14b183ea774ee6f913f909217d9449deb2",
+      "title_at_last_sync": "TEST-302 \u2014 Tag and priority filters each narrow correctly",
+      "automation_id": "test-302.bh-302"
+    },
+    "TEST-303": {
+      "case_id": 20000071,
+      "pins": "BH-303",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "793705f3ea732eb61e04df1c2547368356e751070a36d99ff9848590add7a555",
+      "title_at_last_sync": "TEST-303 \u2014 Source and overdue filters each narrow correctly",
+      "automation_id": "test-303.bh-303"
+    },
+    "TEST-304": {
+      "case_id": 20000072,
+      "pins": "BH-304",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "b01fd3b5c707cdba100d9fe52547cf8479c4b5cd00e94f5703ac08dbd64bdff5",
+      "title_at_last_sync": "TEST-304 \u2014 Two filters together return only their intersection",
+      "automation_id": "test-304.bh-304"
+    },
+    "TEST-305": {
+      "case_id": 20000073,
+      "pins": "BH-305",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "5ce0f91da167c00e78739b56362e48d71edcfdf7bc9f40249d11c40f53c6ae25",
+      "title_at_last_sync": "TEST-305 \u2014 Filtering keeps all columns and moves no card",
+      "automation_id": "test-305.bh-305"
+    },
+    "TEST-306": {
+      "case_id": 20000074,
+      "pins": "BH-306",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "8e9099ac1359da90fe4278e1fd41df7a389cb0dcd7be48d1827b0bda64301352",
+      "title_at_last_sync": "TEST-306 \u2014 Empty filtered board states that a filter is active",
+      "automation_id": "test-306.bh-306"
+    },
+    "TEST-307": {
+      "case_id": 20000075,
+      "pins": "BH-307",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "611ac686b92a554998202ac13487682eec69471700b3f1d90e5166291b56b4b7",
+      "title_at_last_sync": "TEST-307 \u2014 Filter can be opened, applied and cleared by keyboard",
+      "automation_id": "test-307.bh-307"
+    },
+    "TEST-308": {
+      "case_id": 20000076,
+      "pins": "BH-308",
+      "user_story": "us1",
+      "section_id": 2162686,
+      "hash": "36810a0884f79f7efa01d5c8c88bc5429271f1fdb1a1d215370e5c8fe2a8f290",
+      "title_at_last_sync": "TEST-308 \u2014 Reload returns the board to unfiltered",
+      "automation_id": "test-308.bh-308"
+    }
+  }
+}

@@ -196,13 +196,26 @@ def parse_spec(spec_path: Path) -> dict:
 
 BEHAVIOR_PATHWAYS_HEADING_RE = re.compile(r"^##\s+Behavior Pathways\b.*$", re.MULTILINE)
 
+# Ids accept an optional lowercase suffix: BH-309a, TEST-309a, FR-318a.
+#
+# Amending a spec routinely means inserting a requirement between two existing
+# ones, and a suffix does that without renumbering every id after it — which
+# would otherwise change the identity of every TestRail case downstream of the
+# insertion. Without the suffix here the parser matched BH-309 inside "BH-309a"
+# and then failed the surrounding pattern, so the row was SILENTLY DROPPED: 22
+# pathways parsed from a spec containing 23, with no warning. A sync run on that
+# output would quietly omit the case, and nothing downstream would notice.
+_ID = r"\d+[a-z]?"
+
 BH_HEADER_RE = re.compile(
-    r"^-\s+\*\*(BH-\d+)\*\*\s*(?:\(satisfies\s+(?P<fr>FR-\d+(?:,\s*FR-\d+)*)\))?\s*:\s*(?P<rest>.+)$",
+    r"^-\s+\*\*(BH-" + _ID + r")\*\*\s*"
+    r"(?:\(satisfies\s+(?P<fr>FR-" + _ID + r"(?:,\s*FR-" + _ID + r")*)\))?"
+    r"\s*:\s*(?P<rest>.+)$",
     re.MULTILINE,
 )
 
 VERIFICATION_ROW_RE = re.compile(
-    r"^\|\s*(TEST-\d+)\s*\|\s*(.+?)\s*\|\s*(BH-\d+)\s*\|\s*$",
+    r"^\|\s*(TEST-" + _ID + r")\s*\|\s*(.+?)\s*\|\s*(BH-" + _ID + r")\s*\|\s*$",
     re.MULTILINE,
 )
 

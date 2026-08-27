@@ -107,6 +107,9 @@ export interface Conflict {
 export interface Settings {
   jiraJql: string;
   syncIntervalSeconds: number;
+  /** How long finished work stays on the board before archival takes it. */
+  archiveWindowDays: number;
+  archiveIntervalSeconds: number;
 }
 
 export interface BoardColumn extends Column {
@@ -117,12 +120,80 @@ export interface Board {
   columns: BoardColumn[];
 }
 
+/**
+ * What a history row records. `moved` is every row slice 1 through 3 wrote;
+ * `archived` arrives with slice 4, where the card does not change column but
+ * something still happened to it (FR-317).
+ */
+export type CardEventKind = 'moved' | 'archived';
+
 export interface CardEvent {
   id: number;
   fromColumnId: number;
   toColumnId: number;
   actor: Actor;
+  kind: CardEventKind;
   occurredAt: string;
+}
+
+/** One day's worth of the archive. Days with no cards are omitted, not empty. */
+export interface ArchiveDay {
+  /** Local calendar date, YYYY-MM-DD. */
+  date: string;
+  cards: ArchivedCard[];
+}
+
+export interface ArchivedCard {
+  id: string;
+  source: CardSource;
+  title: string;
+  priority: Priority;
+  tags: string[];
+  issueKey: string | null;
+  issueUrl: string | null;
+  archivedAt: string;
+  /** Slice 2's reason where one was recorded; null for the window rule. */
+  archivedReason: string | null;
+}
+
+export type SummaryPeriod = 'daily' | 'weekly';
+
+export interface SummaryMovement {
+  cardId: string;
+  title: string;
+  source: CardSource;
+  issueKey: string | null;
+  issueUrl: string | null;
+  fromColumn: string;
+  toColumn: string;
+  /** Anything other than `user` is marked, so the user does not report a
+   *  transition a teammate made as their own progress (FR-328). */
+  actor: Actor;
+  occurredAt: string;
+  /** Moved within the period but has since left the board (FR-326). */
+  archived: boolean;
+}
+
+export interface SummaryCard {
+  cardId: string;
+  title: string;
+  source: CardSource;
+  issueKey: string | null;
+  issueUrl: string | null;
+}
+
+export interface Summary {
+  period: SummaryPeriod;
+  from: string;
+  to: string;
+  moved: SummaryMovement[];
+  inProgress: SummaryCard[];
+  blocked: SummaryCard[];
+  /** True when all three groups are empty. A field rather than something the
+   *  client infers, so the emptiness rule lives in one place (FR-330). */
+  empty: boolean;
+  /** The exact bytes the user pastes into a chat (FR-329). */
+  text: string;
 }
 
 /**
@@ -145,7 +216,9 @@ export type ProblemCode =
   | 'TRANSITION_NEEDS_FIELDS'
   | 'CARD_CONFLICTED'
   | 'JIRA_UNREACHABLE'
-  | 'JIRA_CREDENTIALS_REJECTED';
+  | 'JIRA_CREDENTIALS_REJECTED'
+  | 'INVALID_DATE_RANGE'
+  | 'ARCHIVE_IN_PROGRESS';
 
 export interface Problem {
   type: string;

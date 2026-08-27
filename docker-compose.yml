@@ -13,6 +13,13 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-kanban}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-kanban}
       PORT: '3000'
+      # Every period boundary in the board — whether a card is overdue, what
+      # "yesterday" means in a standup summary — is a LOCAL calendar day. The
+      # container would otherwise run UTC, and a summary generated at 7pm local
+      # would already have rolled into tomorrow, silently omitting the evening's
+      # work in exactly the hours before the standup it exists to serve.
+      # Override in .env if this is not your zone.
+      TZ: ${TZ:-America/Costa_Rica}
       # Optional. Absent or blank means Jira is simply not configured, and the
       # board runs with ad-hoc cards only — a supported state, not a failure.
       # The token is passed through from .env and never baked into the image.

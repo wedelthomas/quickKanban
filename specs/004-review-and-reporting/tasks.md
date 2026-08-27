@@ -29,11 +29,11 @@ Every test task precedes the implementation it covers.
 
 ## Phase 1: Setup
 
-- [ ] T401 Create the four new domain module files as empty stubs with their
+- [x] T401 Create the four new domain module files as empty stubs with their
   intended signatures — `src/domain/{card-filter,archival,summary,summary-text}.ts`
   — so the test tasks that follow have something to import and fail against
   rather than failing to resolve.
-- [ ] T402 **Set `TZ` in `docker-compose.yml`** (research.md R-7). The container
+- [x] T402 **Set `TZ` in `docker-compose.yml`** (research.md R-7). The container
   runs UTC by default, and every period boundary in this slice is a local
   calendar day. Without this the daily summary silently omits the user's
   evening work for the five hours between 7pm Eastern and midnight UTC — wrong
@@ -47,22 +47,22 @@ Every test task precedes the implementation it covers.
 
 **⚠️ No story work begins until this phase is complete.**
 
-- [ ] T403 [P] Migration `013_card_events_kind.sql` — add `kind` defaulting to
+- [x] T403 [P] Migration `013_card_events_kind.sql` — add `kind` defaulting to
   `'moved'`, re-scope `card_events_actual_move` to movements only, add
   `card_events_arrival_idx`. See data-model.md. The default is what makes this
   a no-backfill change: every existing row already means what it says.
-- [ ] T404 [P] Migration `014_archive_runs.sql` — the run log, with its
+- [x] T404 [P] Migration `014_archive_runs.sql` — the run log, with its
   single-flight partial unique index.
-- [ ] T405 [P] Seed `archive.window_days` (7) and `archive.interval_seconds`
+- [x] T405 [P] Seed `archive.window_days` (7) and `archive.interval_seconds`
   (3600) into `settings`, in the same migration style as slice 2's keys.
-- [ ] T406 `EventRepository` gains an `appendArchival` write — `kind:
+- [x] T406 `EventRepository` gains an `appendArchival` write — `kind:
   'archived'`, `actor: 'system'`, both column ids the Done column. It stays the
   only writer of `card_events`; slice 1's unit test enforces that and must keep
   passing.
-- [ ] T407 [P] Extend `Card`-adjacent shared types in `src/shared/types.ts`:
+- [x] T407 [P] Extend `Card`-adjacent shared types in `src/shared/types.ts`:
   `CardEvent` gains `kind`, and the new `ArchiveDay`, `Summary` and
   `SummaryEntry` shapes from contracts/api.md.
-- [ ] T408 Settings route and dialog accept `archiveWindowDays` (0–365) and
+- [x] T408 Settings route and dialog accept `archiveWindowDays` (0–365) and
   `archiveIntervalSeconds` (300–86400), validated against those bounds at the
   route. Zero is a *valid* window — the spec calls it the user's choice — so the
   lower bound is zero, not one.
@@ -79,13 +79,13 @@ Every test task precedes the implementation it covers.
 apply each filter and confirm only matching cards remain — in place, on the same
 board, with every column still visible.
 
-- [ ] T409 [US1] Sync TestRail cases TEST-301, TEST-302, TEST-303, TEST-304, TEST-305, TEST-306, TEST-307, TEST-308 via `spec-testrail-sync`
+- [x] T409 [US1] Sync TestRail cases TEST-301, TEST-302, TEST-303, TEST-304, TEST-305, TEST-306, TEST-307, TEST-308 via `spec-testrail-sync`
   (project 115, suite 32733, new section "Slice 4 — Review and Reporting").
   **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
-- [ ] T410 [P] [US1] `tests/unit/card-filter.test.ts` — every filter kind and
+- [x] T410 [P] [US1] `tests/unit/card-filter.test.ts` — every filter kind and
   every pairwise combination, the empty filter, and the filter matching nothing.
   SC-302 asks for no false positives and no omissions across combinations, so
   this is a table, not a handful of examples — BH-301, BH-302, BH-303, BH-304.
@@ -100,7 +100,7 @@ board, with every column still visible.
 
 ### Implementation
 
-- [ ] T413 [US1] `src/domain/card-filter.ts` — a pure `matches(card, filter)`
+- [x] T413 [US1] `src/domain/card-filter.ts` — a pure `matches(card, filter)`
   plus the `Filter` shape. Text matches title and description only; tags are a
   separate control, so the two never overlap surprisingly (spec Edge Cases).
 - [ ] T414 [US1] `src/web/board/use-filter.ts` — the filter state hook. Held in

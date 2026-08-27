@@ -1,5 +1,5 @@
 import type pg from 'pg';
-import type { Actor, CardEvent } from '../../shared/types.js';
+import type { Actor, CardEvent, CardEventKind } from '../../shared/types.js';
 
 /**
  * The movement history. Append and read only.
@@ -29,6 +29,26 @@ export class EventRepository {
     );
   }
 
+  /**
+   * Records that a card was archived (FR-317).
+   *
+   * Both column ids are the column the card is sitting in, because archival
+   * does not move it — `kind` is what carries the meaning. Written here rather
+   * than inline by the archival service for the same reason every other event
+   * is: this is the only writer of `card_events`, and a unit test since slice 1
+   * enforces that.
+   */
+  async appendArchival(
+    client: pg.PoolClient,
+    event: { cardId: string; columnId: number },
+  ): Promise<void> {
+    await client.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, kind)
+       VALUES ($1, $2, $2, 'system', 'archived')`,
+      [event.cardId, event.columnId],
+    );
+  }
+
   /** Oldest first, which is the order a history is read in. */
   async listForCard(cardId: string): Promise<CardEvent[]> {
     const { rows } = await this.pool.query<{
@@ -36,9 +56,10 @@ export class EventRepository {
       from_column_id: number;
       to_column_id: number;
       actor: Actor;
+      kind: CardEventKind;
       occurred_at: Date;
     }>(
-      `SELECT id, from_column_id, to_column_id, actor, occurred_at
+      `SELECT id, from_column_id, to_column_id, actor, kind, occurred_at
          FROM card_events
         WHERE card_id = $1
         ORDER BY id`,
@@ -49,6 +70,7 @@ export class EventRepository {
       fromColumnId: row.from_column_id,
       toColumnId: row.to_column_id,
       actor: row.actor,
+      kind: row.kind,
       occurredAt: row.occurred_at.toISOString(),
     }));
   }
