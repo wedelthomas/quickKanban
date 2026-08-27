@@ -884,14 +884,18 @@ kbd {
   color: var(--text-muted);
 }
 
-.iteration-label {
-  text-transform: uppercase;
+/* Label and ordinal read as one phrase — "CURRENT ITERATION S18" — so they
+    share a size and weight. Only the colour separates them: the label is
+    context, the ordinal is the fact. */
+.iteration-label,
+.iteration-name {
+  font-weight: 600;
+  font-size: var(--text-sm);
   letter-spacing: 0.04em;
-  font-size: 11px;
+  text-transform: uppercase;
 }
 
 .iteration-name {
-  font-weight: 600;
   color: var(--text);
 }
 
