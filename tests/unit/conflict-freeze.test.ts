@@ -34,7 +34,12 @@ describe('a conflicted card, with no Jira configured', () => {
   it('moves normally once the conflict is resolved', async () => {
     const moved = { id: 'card-1', columnId: 5 };
     const service = new CardService(
-      { move: async () => ({ card: moved, moved: true }) } as unknown as CardRepository,
+      {
+        move: async () => ({ card: moved, moved: true }),
+        // Slice 5: the service checks the target column can still receive
+        // cards. This test is about the freeze, so the column is simply open.
+        columnState: async () => 'open' as const,
+      } as unknown as CardRepository,
       { hasOpen: async () => false } as unknown as ConflictRepository,
     );
 

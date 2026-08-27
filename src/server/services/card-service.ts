@@ -65,18 +65,21 @@ export class CardService {
     moved: boolean;
     jira?: { transitioned: boolean; toStatus: string };
   }> {
-    // The target column is checked first, because a retired or absent column is
-    // a fact about the request rather than about the card. Verified against the
-    // running board before this guard existed: a move into the retired column
-    // answered 200 and the card disappeared, since the board query excludes
-    // retired columns while the move path did not know they existed (FR-402).
-    await this.assertColumnAcceptsCards(input.toColumnId);
-
     // Checked before anything else, and regardless of Jira: a conflicted card
     // is frozen against the user too, not only against sync. Dragging it would
     // otherwise let someone paper over a disagreement without ever learning
     // Jira had one (FR-228).
+    //
+    // This stays FIRST. Slice 5 briefly put the column check ahead of it, which
+    // made a conflicted card report the column error instead of the freeze —
+    // redefining slice 3's contract as a side effect of an unrelated change.
     if (await this.conflicts.hasOpen(id)) throw cardConflicted();
+
+    // Then the target column. Verified against the running board before this
+    // guard existed: a move into the retired Blocked column answered 200 and
+    // the card disappeared, because the board query excludes retired columns
+    // while the move path did not know they existed (FR-402).
+    await this.assertColumnAcceptsCards(input.toColumnId);
 
     const jiraOutcome = await this.pushToJiraFirst(id, input.toColumnId);
 
