@@ -223,6 +223,7 @@ export const Board = () => {
           onOpenSummary={() => dialogs.show('summary')}
           onOpenConflicts={() => dialogs.show('conflicts')}
           onOpenArchive={() => dialogs.show('archive')}
+          onOpenShortcuts={() => dialogs.show('help')}
           onChange={updateFilter}
           onClear={clearFilter}
           inputRef={filterInputRef}

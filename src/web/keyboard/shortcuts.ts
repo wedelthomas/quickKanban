@@ -29,7 +29,9 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { label: 'Enter', description: 'Open the focused card', action: 'open-card' },
   {
     label: '1–6',
-    description: 'Send the focused card to that column',
+    // Position, not column id, and worth saying since slice 5 moved every
+    // column along: Iteration Items took position 2 and its id is 7.
+    description: 'Send the focused card to that column, left to right',
     action: 'move-to-column',
   },
   { label: '/', description: 'Filter the board', action: 'focus-filter' },

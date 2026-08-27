@@ -54,6 +54,7 @@ export const Sidebar = ({
   onOpenSummary,
   onOpenConflicts,
   onOpenArchive,
+  onOpenShortcuts,
   onChange,
   onClear,
   inputRef,
@@ -68,6 +69,7 @@ export const Sidebar = ({
   onOpenSummary: () => void;
   onOpenConflicts: () => void;
   onOpenArchive: () => void;
+  onOpenShortcuts: () => void;
   onChange: <K extends keyof Filter>(key: K, value: Filter[K]) => void;
   onClear: () => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -133,6 +135,16 @@ export const Sidebar = ({
               data-testid="nav-archive"
             >
               <span className="sidebar-row-name">Archive</span>
+            </button>
+            <button
+              className="sidebar-row"
+              onClick={onOpenShortcuts}
+              data-testid="nav-shortcuts"
+            >
+              <span className="sidebar-row-name">Shortcuts</span>
+              {/* The key that opens it, shown next to its own name: the fastest
+                  way to stop needing this menu item is to teach the shortcut. */}
+              <span className="sidebar-count">?</span>
             </button>
             {conflictCount > 0 && (
               <button
