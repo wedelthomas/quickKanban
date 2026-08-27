@@ -7,5 +7,5 @@ Feature: The board has six fixed columns
     Given the application is running
     When the board is requested
     Then the board has exactly 6 columns
-    And the columns are in the order "backlog, in_progress, blocked, test, po_review, done"
+    And the columns are in the order "backlog, iteration_items, in_progress, test, po_review, done"
     And every column is present even when it holds no cards

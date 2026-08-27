@@ -39,8 +39,8 @@ describe('first start against empty storage', () => {
     expect(board.columns).toHaveLength(6);
     expect(board.columns.map((c) => c.key)).toEqual([
       'backlog',
+      'iteration_items',
       'in_progress',
-      'blocked',
       'test',
       'po_review',
       'done',

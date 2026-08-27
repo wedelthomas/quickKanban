@@ -36,7 +36,11 @@ export const CardView = ({
   return (
     <article
       ref={setNodeRef}
-      className={`card${isDragging ? ' card--dragging' : ''}${card.blocked ? ' card--blocked' : ''}`}
+      className={
+        `card${isDragging ? ' card--dragging' : ''}` +
+        `${card.source === 'local' ? ' card--local' : ''}` +
+        `${card.blocked ? ' card--blocked' : ''}`
+      }
       style={{ transform: CSS.Transform.toString(transform), transition }}
       data-testid="card"
       data-card-id={card.id}

@@ -3,14 +3,7 @@ import { strict as assert } from 'node:assert';
 import type { BoardWorld } from './world.js';
 import type { Board, Card } from '../../../src/shared/types.js';
 
-const COLUMN_IDS: Record<string, number> = {
-  backlog: 1,
-  in_progress: 2,
-  blocked: 3,
-  test: 4,
-  po_review: 5,
-  done: 6,
-};
+import { columnIdFor } from './columns.js';
 
 const list = (csv: string): string[] =>
   csv
@@ -47,7 +40,7 @@ When(
   async function (this: BoardWorld, columnKey: string, position: number) {
     const card = this.lastCard ?? (await findByTitle(this, this.lastCard!.title));
     await this.request('POST', `/api/cards/${card.id}/move`, {
-      toColumnId: COLUMN_IDS[columnKey],
+      toColumnId: columnIdFor(columnKey),
       toIndex: position,
     });
     const body = this.response.body as { card?: Card };
@@ -60,7 +53,7 @@ When(
   async function (this: BoardWorld, title: string, columnKey: string, position: number) {
     const card = await findByTitle(this, title);
     await this.request('POST', `/api/cards/${card.id}/move`, {
-      toColumnId: COLUMN_IDS[columnKey],
+      toColumnId: columnIdFor(columnKey),
       toIndex: position,
     });
   },
@@ -80,7 +73,7 @@ When(
   'an unknown card is moved to the {string} column at position {int}',
   async function (this: BoardWorld, columnKey: string, position: number) {
     await this.request('POST', '/api/cards/00000000-0000-4000-8000-000000000000/move', {
-      toColumnId: COLUMN_IDS[columnKey],
+      toColumnId: columnIdFor(columnKey),
       toIndex: position,
     });
   },

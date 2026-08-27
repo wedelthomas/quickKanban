@@ -404,6 +404,19 @@ kbd {
 
 /* --- conflicts ---------------------------------------------------------- */
 
+/* Ad-hoc work, in white: the card carries no issue key, so without an edge the
+   only thing marking it as yours is the ABSENCE of a key — and absence is not
+   something the eye picks up while scanning. This is the invisible work the
+   whole product exists to make visible.
+
+   Declared BEFORE .card--blocked so that a local card which is also blocked
+   reads red: same specificity, so source order decides, and blocked is the more
+   urgent of the two. */
+.card--local {
+  border-left: 3px solid var(--text);
+  padding-left: calc(var(--space-3) - 2px);
+}
+
 /* Blocked reads twice on purpose (FR-410, FR-411): a left edge that survives a
    glance across fifty cards, and a badge that names the state so it survives
    greyscale and colour-vision deficiency. Colour alone would satisfy neither.

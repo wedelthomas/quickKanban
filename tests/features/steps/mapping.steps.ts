@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
 import type { BoardWorld } from './world.js';
+import { columnIdFor } from './columns.js';
 import { COLUMN_KEYS, type ColumnKey } from '../../../src/shared/types.js';
 
 interface Mapping {
@@ -9,7 +10,9 @@ interface Mapping {
   statusName: string | null;
 }
 
-const columnId = (key: string): number => COLUMN_KEYS.indexOf(key as ColumnKey) + 1;
+// Was `COLUMN_KEYS.indexOf(key) + 1`, which assumed id equals board position.
+// It never did after slice 5: Iteration Items sits second and is id 7.
+const columnId = (key: string): number => columnIdFor(key);
 
 const currentMappings = async (world: BoardWorld): Promise<Mapping[]> => {
   await world.request('GET', '/api/settings/mappings');

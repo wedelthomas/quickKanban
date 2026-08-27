@@ -8,8 +8,8 @@ Feature: The column mapping is mine to set
   Scenario: A column mapped from Jira's own statuses starts pushing
     Given Jira has an issue "AIHUB-1" with status "Open"
     And a sync runs
-    When the "blocked" column is mapped to "Development"
-    And the card for issue "AIHUB-1" is moved to the "blocked" column
+    When the "iteration_items" column is mapped to "Development"
+    And the card for issue "AIHUB-1" is moved to the "iteration_items" column
     Then issue "AIHUB-1" has status "Development" in Jira
 
   Scenario: A column whose mapping is removed stops pushing
@@ -21,10 +21,10 @@ Feature: The column mapping is mine to set
     And no transition was performed in Jira
 
   Scenario: Both changes survive being read back from storage
-    When the "blocked" column is mapped to "Development"
+    When the "iteration_items" column is mapped to "Development"
     And the "test" column's mapping is removed
     And the mapping is read back
-    Then the "blocked" column maps to "Development"
+    Then the "iteration_items" column maps to "Development"
     And the "test" column maps to nothing
 
   Scenario: Only statuses Jira reports are offered
@@ -36,8 +36,8 @@ Feature: The column mapping is mine to set
   Scenario: Two columns sharing a status resolve to the first in board order
     Given Jira has an issue "AIHUB-1" with status "Open"
     And a sync runs
-    And the "blocked" column is mapped to "Test"
+    And the "iteration_items" column is mapped to "Test"
     When issue "AIHUB-1" changes status to "Test"
     And a sync runs
     # Blocked is position 3, Test is position 4 — the earlier column wins.
-    Then the card for issue "AIHUB-1" is in the "blocked" column
+    Then the card for issue "AIHUB-1" is in the "iteration_items" column

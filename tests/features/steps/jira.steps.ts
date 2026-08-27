@@ -1,6 +1,7 @@
 import { Given, Then, When } from '@cucumber/cucumber';
 import { strict as assert } from 'node:assert';
 import type { BoardWorld } from './world.js';
+import { columnIdFor } from './columns.js';
 import type { Board, Card } from '../../../src/shared/types.js';
 import { anIssue } from '../../../src/server/jira/fake-jira-adapter.js';
 import { DEFAULT_JQL } from '../../../src/domain/jql.js';
@@ -131,17 +132,9 @@ Then(
 When(
   'the card for issue {string} is moved to the {string} column',
   async function (this: BoardWorld, key: string, columnKey: string) {
-    const ids: Record<string, number> = {
-      backlog: 1,
-      in_progress: 2,
-      blocked: 3,
-      test: 4,
-      po_review: 5,
-      done: 6,
-    };
     const card = await cardFor(this, key);
     await this.request('POST', `/api/cards/${card.id}/move`, {
-      toColumnId: ids[columnKey],
+      toColumnId: columnIdFor(columnKey),
       toIndex: 1,
     });
   },

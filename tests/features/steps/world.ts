@@ -21,6 +21,20 @@ const SEEDED_SETTINGS: Record<string, unknown> = {
   'sync.interval_seconds': 300,
   'archive.window_days': 7,
   'archive.interval_seconds': 3600,
+  // Slice 5. Added here for the reason the comment above gives: a setting not
+  // named in this set leaks between scenarios until someone notices.
+  'iteration.board_id': 1391,
+  'iteration.team_name': 'CRM TradeBlazers',
+  'iteration.anchor_date': '2026-08-24',
+  'iteration.cadence_days': 14,
+  'working.days': ['mon', 'tue', 'wed', 'thu', 'fri'],
+  'working.start_hour': 9,
+  'working.end_hour': 17,
+  'jira.field.blocked': 'customfield_10003',
+  'jira.field.blocked_option': 'Blocked',
+  'jira.field.sprint': 'customfield_10000',
+  'jira.field.story_points': 'customfield_10005',
+  'board.author': '',
 };
 
 export class BoardWorld extends World {

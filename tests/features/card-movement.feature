@@ -14,7 +14,7 @@ Feature: Moving work across the board
     Given the application is running
     And a card titled "Travelling card" is created
     When the card is moved to the "in_progress" column at position 1
-    And the card is moved to the "blocked" column at position 1
+    And the card is moved to the "test" column at position 1
     And the card is moved to the "test" column at position 1
     And the card is moved to the "po_review" column at position 1
     And the card is moved to the "done" column at position 1
@@ -37,7 +37,11 @@ Feature: Moving work across the board
     Given the application is running
     And a card titled "Nowhere bound" is created
     When the card is moved to column 99 at position 1
-    Then the request is refused with code "VALIDATION_FAILED"
+    # COLUMN_NOT_FOUND rather than VALIDATION_FAILED since slice 5. Which
+    # columns exist stopped being a literal range in the schema and became a
+    # question for the database, so the refusal now says what is actually wrong.
+    # columnNotFound had been defined but never thrown until then.
+    Then the request is refused with code "COLUMN_NOT_FOUND"
 
   Scenario: Moving an unknown card is refused
     Given the application is running

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When } from '@cucumber/cucumber';
 import type { BoardWorld } from './world.js';
+import { columnIdFor } from './columns.js';
 import type { Summary } from '../../../src/shared/types.js';
 import { COLUMN_IDS, cardIdByTitle } from './slice4-helpers.js';
 
@@ -14,7 +15,7 @@ Given(
   async function (this: BoardWorld, title: string, key: string) {
     const cardId = await cardIdByTitle(this, title);
     await this.request('POST', `/api/cards/${cardId}/move`, {
-      toColumnId: COLUMN_IDS[key],
+      toColumnId: columnIdFor(key),
       toIndex: 1,
     });
     assert.equal(this.response.status, 200, JSON.stringify(this.response.body));
@@ -30,12 +31,12 @@ Given(
     const cardId = await cardIdByTitle(this, title);
     await this.pool.query('UPDATE cards SET column_id = $2 WHERE id = $1', [
       cardId,
-      COLUMN_IDS[key],
+      columnIdFor(key),
     ]);
     await this.pool.query(
       `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, kind, occurred_at)
        VALUES ($1, 1, $2, 'user', 'moved', now() - make_interval(days => $3))`,
-      [cardId, COLUMN_IDS[key], days],
+      [cardId, columnIdFor(key), days],
     );
   },
 );

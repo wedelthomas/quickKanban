@@ -13,18 +13,17 @@ import { jiraNotConfigured, validationFailed } from '../errors.js';
  * makes that impossible to do by accident rather than by convention.
  */
 const putSchema = z.object({
-  mappings: z
-    .array(
-      z.object({
-        columnId: z.number().int().min(1).max(6),
-        statusName: z.string().nullable(),
-      }),
-    )
-    .length(6)
-    .refine(
-      (m) => new Set(m.map((entry) => entry.columnId)).size === 6,
-      'Every column must appear exactly once.',
-    ),
+  mappings: z.array(
+    z.object({
+      // Not a literal range, and not a fixed length. Both were pinned to 1..6
+      // until slice 5, which was true only while the columns happened to occupy
+      // those ids — retiring Blocked and adding Iteration Items as id 7 made
+      // every mapping payload fail with a message about the number 6. Which
+      // columns are mappable is a fact about the database, checked below.
+      columnId: z.number().int().positive(),
+      statusName: z.string().nullable(),
+    }),
+  ),
 });
 
 export const registerMappingRoutes = (
@@ -37,6 +36,21 @@ export const registerMappingRoutes = (
   app.put('/api/settings/mappings', async (request) => {
     const parsed = putSchema.safeParse(request.body);
     if (!parsed.success) throw validationFailed(parsed.error.issues[0]!.message);
+
+    // The payload must name every mappable column exactly once. The repository
+    // replaces the whole table, so a partial payload is silently destructive —
+    // this makes that impossible by accident rather than by convention.
+    const mappable = await mappings.mappableColumnIds();
+    const sent = parsed.data.mappings.map((m) => m.columnId);
+    const unique = new Set(sent);
+    if (unique.size !== sent.length) {
+      throw validationFailed('Every column must appear exactly once.');
+    }
+    if (sent.length !== mappable.length || mappable.some((id) => !unique.has(id))) {
+      throw validationFailed(
+        `The payload must name every column exactly once: ${mappable.join(', ')}.`,
+      );
+    }
 
     // Checked here rather than only in the editor's dropdown: the API is the
     // boundary, and a guarantee that lives only in the client is not one. Left

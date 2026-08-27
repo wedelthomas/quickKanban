@@ -31,8 +31,11 @@ export class MappingRepository {
       name: string;
       status_name: string | null;
     }>(
+      // Retired columns are excluded: they hold no cards and can receive none,
+      // so offering one a Jira status would be offering to map nothing.
       `SELECT c.id, c.key, c.name, m.status_name
          FROM columns c LEFT JOIN column_status_mappings m ON m.column_id = c.id
+        WHERE c.retired_at IS NULL
         ORDER BY c.position`,
     );
     return rows.map((r) => ({
@@ -41,6 +44,14 @@ export class MappingRepository {
       columnName: r.name,
       statusName: r.status_name,
     }));
+  }
+
+  /** The ids a mapping payload must name, in board order. */
+  async mappableColumnIds(): Promise<number[]> {
+    const { rows } = await this.pool.query<{ id: number }>(
+      'SELECT id FROM columns WHERE retired_at IS NULL ORDER BY position',
+    );
+    return rows.map((r) => r.id);
   }
 
   /**

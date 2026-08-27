@@ -9,7 +9,7 @@ Feature: Summaries over a day and over a week
     Given a card titled "Rotate certificates" is created
     And the card titled "Rotate certificates" is moved to the "in_progress" column
     And a card titled "Waiting on legal" is created
-    And the card titled "Waiting on legal" is moved to the "blocked" column
+    And the card titled "Waiting on legal" is marked blocked
     When a "daily" summary is generated
     Then the summary lists "Rotate certificates" as moved
     And the summary lists "Rotate certificates" as in progress

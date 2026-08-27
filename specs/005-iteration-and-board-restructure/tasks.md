@@ -79,23 +79,23 @@ move recorded against the system.
 
 ### Tests for User Story 1
 
-- [ ] T016 [US1] Author or sync TestRail cases for BH-406, BH-407, BH-408 and BH-427 via `spec-testrail-sync`, before the implementation tasks below.
-- [ ] T017 [P] [US1] Contract test `tests/contract/retired-column.test.ts` — TEST-401's write-path half: a move into the retired column is refused with `COLUMN_RETIRED` and 422.
-- [ ] T018 [P] [US1] Contract test `tests/contract/board-payload.test.ts` — TEST-406: `blocked`, `blockedDivergesFromJira` and `carriedIterations` present; no retired column returned.
-- [ ] T019 [P] [US1] Acceptance feature `tests/features/blocked-flag.feature` and steps — TEST-406, TEST-407, TEST-408: set and clear, move while blocked, filter by blocked, summary grouping driven by the flag.
+- [x] T016 [US1] Author or sync TestRail cases for BH-406, BH-407, BH-408 and BH-427 via `spec-testrail-sync`, before the implementation tasks below.
+- [x] T017 [P] [US1] Contract test `tests/contract/retired-column.test.ts` — TEST-401's write-path half: a move into the retired column is refused with `COLUMN_RETIRED` and 422.
+- [x] T018 [P] [US1] Contract test `tests/contract/board-payload.test.ts` — TEST-406: `blocked`, `blockedDivergesFromJira` and `carriedIterations` present; no retired column returned.
+- [x] T019 [P] [US1] Acceptance feature `tests/features/blocked-flag.feature` and steps — TEST-406, TEST-407, TEST-408: set and clear, move while blocked, filter by blocked, summary grouping driven by the flag.
 - [ ] T020 [P] [US1] E2E test `tests/e2e/blocked-card.spec.ts` — TEST-427: edge and badge visible, blocked distinguishable with colour disabled, flag settable and clearable by keyboard alone.
 
 ### Implementation for User Story 1
 
-- [ ] T021 [US1] Extend `PATCH /api/cards/:id` in `src/server/routes/cards.ts` to accept `blocked`, for local and Jira-sourced cards alike (FR-412). Setting it issues no Jira request.
-- [ ] T022 [US1] Reject a retired column as a move target in `src/server/routes/cards.ts` and `src/server/services/card-service.ts`, using the typed error shape in `src/server/errors.ts` (FR-402).
-- [ ] T023 [US1] Confirm a blocked card is **not** frozen (FR-414): the conflict freeze in `src/server/services/card-service.ts` must not grow a second condition. Add the assertion to T019's feature rather than new production code if none is needed.
-- [ ] T024 [P] [US1] Retire `--column-blocked` into a `--blocked` token in `src/web/styles/tokens.css`, and add the card's left-edge rule.
-- [ ] T025 [US1] Render the blocked edge and badge in `src/web/board/CardView.tsx`, following the existing `badge--conflict` pattern. The badge carries the text, so the state survives greyscale (FR-411); the priority dot keeps its meaning.
-- [ ] T026 [P] [US1] Add the blocked control to `src/web/cards/CardDialog.tsx`, reachable by keyboard (FR-440).
-- [ ] T027 [P] [US1] Add blocked to the filter in `src/web/board/use-filter.ts` and the left rail in `src/web/board/Sidebar.tsx` (FR-413).
-- [ ] T028 [US1] Drive the summary's blocked grouping from the flag rather than from column membership, in `src/server/services/summary-service.ts` and `src/server/repositories/summary-repository.ts` (FR-415).
-- [ ] T029 [US1] Update `src/web/board/Board.tsx` and `ColumnView.tsx` for the six new columns and their colours.
+- [x] T021 [US1] Extend `PATCH /api/cards/:id` in `src/server/routes/cards.ts` to accept `blocked`, for local and Jira-sourced cards alike (FR-412). Setting it issues no Jira request.
+- [x] T022 [US1] Reject a retired column as a move target in `src/server/routes/cards.ts` and `src/server/services/card-service.ts`, using the typed error shape in `src/server/errors.ts` (FR-402).
+- [x] T023 [US1] Confirm a blocked card is **not** frozen (FR-414): the conflict freeze in `src/server/services/card-service.ts` must not grow a second condition. Add the assertion to T019's feature rather than new production code if none is needed.
+- [x] T024 [P] [US1] Retire `--column-blocked` into a `--blocked` token in `src/web/styles/tokens.css`, and add the card's left-edge rule.
+- [x] T025 [US1] Render the blocked edge and badge in `src/web/board/CardView.tsx`, following the existing `badge--conflict` pattern. The badge carries the text, so the state survives greyscale (FR-411); the priority dot keeps its meaning.
+- [x] T026 [P] [US1] Add the blocked control to `src/web/cards/CardDialog.tsx`, reachable by keyboard (FR-440).
+- [x] T027 [P] [US1] Add blocked to the filter in `src/web/board/use-filter.ts` and the left rail in `src/web/board/Sidebar.tsx` (FR-413).
+- [x] T028 [US1] Drive the summary's blocked grouping from the flag rather than from column membership, in `src/server/services/summary-service.ts` and `src/server/repositories/summary-repository.ts` (FR-415).
+- [x] T029 [US1] Update `src/web/board/Board.tsx` and `ColumnView.tsx` for the six new columns and their colours.
 
 **Checkpoint**: US1 fully functional. **Run the Story-Complete Review Gate.**
 

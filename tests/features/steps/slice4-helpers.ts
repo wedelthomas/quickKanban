@@ -12,14 +12,7 @@ import type { Board, Card } from '../../../src/shared/types.js';
 
 export const DONE_COLUMN = 6;
 
-export const COLUMN_IDS: Record<string, number> = {
-  backlog: 1,
-  in_progress: 2,
-  blocked: 3,
-  test: 4,
-  po_review: 5,
-  done: 6,
-};
+export { COLUMN_IDS, COLUMN_ID_BY_NAME, columnIdFor } from './columns.js';
 
 export const allCards = (board: Board): Card[] => board.columns.flatMap((c) => c.cards);
 

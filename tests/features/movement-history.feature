@@ -36,7 +36,7 @@ Feature: Recording what moved and when
   Scenario: Earlier records are never rewritten
     Given the application is running
     And a card titled "Unchanged history" is created
-    When the card is moved to the "blocked" column at position 1
+    When the card is moved to the "in_progress" column at position 1
     And the first record is remembered
     And the card is moved to the "test" column at position 1
     Then the card has 2 history records
