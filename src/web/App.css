@@ -884,6 +884,12 @@ kbd {
   color: var(--text-muted);
 }
 
+.iteration-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+
 .iteration-name {
   font-weight: 600;
   color: var(--text);

@@ -53,6 +53,11 @@ export const IterationBanner = () => {
       data-testid="iteration-banner"
       data-provenance={provenance}
     >
+      {/* The label is constant, not a fallback. It read "Current iteration"
+          only when there was no ordinal to show, so connecting to Jira replaced
+          the label with a bare "S18" — losing the word that says what the
+          number IS. */}
+      <span className="iteration-label">Current iteration</span>
       <span
         className="iteration-name"
         data-testid="iteration-name"
@@ -61,9 +66,9 @@ export const IterationBanner = () => {
         // the prefix is noise on a board that is entirely one person's.
         title={ordinalName ?? undefined}
       >
-        {/* An estimated iteration carries no ordinal: the number resets at the
-            fiscal year, so a computed one would be wrong every January. */}
-        {shortIterationName(ordinalName) ?? 'Current iteration'}
+        {/* Absent when estimated: the ordinal resets at the fiscal year, so a
+            computed one would be wrong every January. The label still stands. */}
+        {shortIterationName(ordinalName)}
       </span>
       <span className="iteration-dates">{formatRange(startsOn, endsOn)}</span>
       <span className="iteration-days" data-testid="iteration-days">
