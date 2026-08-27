@@ -841,6 +841,14 @@ kbd {
   letter-spacing: 0.04em;
 }
 
+/* A person's name is mixed case, and the tracking above was measured for the
+   uppercase product name. Applying it to "Thomas Wedel" spaces out a word that
+   wanted tightening — the comment above says so, so honour it rather than
+   leaving the heading looking slightly loose. */
+.page-title[data-author='true'] {
+  letter-spacing: -0.01em;
+}
+
 .page-sub {
   margin: 2px 0 0;
   font-size: var(--text-sm);
