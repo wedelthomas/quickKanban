@@ -37,6 +37,11 @@ test.describe('a conflicted card', () => {
     await seedJiraCard({ key: 'AIHUB-11', summary: 'Frozen until decided', columnId: 4 });
     await seedConflict({ key: 'AIHUB-11', boardColumnId: 4, jiraStatus: 'Development' });
     await page.goto('/');
+    // Wait for the card before touching the keyboard. Without this the presses
+    // can land before the board has rendered, so nothing is focused, no move is
+    // attempted, and the test fails on a missing error rather than on the
+    // behaviour it is about — seen twice as an intermittent failure.
+    await page.getByTestId('card').filter({ hasText: 'Frozen until decided' }).waitFor();
 
     // Moved by keyboard rather than by drag: the refusal is the same either
     // way, and a synthetic drag would test dnd-kit rather than the refusal.
