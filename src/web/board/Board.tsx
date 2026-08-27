@@ -19,6 +19,7 @@ import { SyncStatusPill } from '../sync/SyncStatus.js';
 import { useConflicts } from '../conflicts/use-conflicts.js';
 import { ConflictDialog } from '../conflicts/ConflictDialog.js';
 import { SummaryDialog } from '../summary/SummaryDialog.js';
+import { ArchiveView } from '../archive/ArchiveView.js';
 import { Sidebar } from './Sidebar.js';
 import { useFilter } from './use-filter.js';
 import { collisionDetection, resolveTarget } from './drag.js';
@@ -55,6 +56,7 @@ export const Board = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conflictsOpen, setConflictsOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const { conflicts, resolve } = useConflicts(board);
   const {
     filter,
@@ -168,7 +170,12 @@ export const Board = () => {
   // reach past it and claim keys the dialog's own controls need.
   useShortcuts(handleShortcut, {
     suspended:
-      creating || editing !== null || settingsOpen || conflictsOpen || summaryOpen,
+      creating ||
+      editing !== null ||
+      settingsOpen ||
+      conflictsOpen ||
+      summaryOpen ||
+      archiveOpen,
   });
 
   if (error) return <p className="board-message board-message--error">{error}</p>;
@@ -214,6 +221,7 @@ export const Board = () => {
           onToggleCollapsed={toggleRail}
           onOpenSummary={() => setSummaryOpen(true)}
           onOpenConflicts={() => setConflictsOpen(true)}
+          onOpenArchive={() => setArchiveOpen(true)}
           onChange={updateFilter}
           onClear={clearFilter}
           inputRef={filterInputRef}
@@ -297,6 +305,7 @@ export const Board = () => {
         <SettingsDialog columns={board.columns} onClose={() => setSettingsOpen(false)} />
       )}
       {summaryOpen && <SummaryDialog onClose={() => setSummaryOpen(false)} />}
+      {archiveOpen && <ArchiveView onClose={() => setArchiveOpen(false)} />}
       {conflictsOpen && (
         <ConflictDialog
           conflicts={conflicts}

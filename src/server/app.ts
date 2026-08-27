@@ -25,6 +25,7 @@ import { SummaryService } from './services/summary-service.js';
 import { ArchiveRepository } from './repositories/archive-repository.js';
 import { ArchiveRunRepository } from './repositories/archive-run-repository.js';
 import { ArchivalService } from './services/archival-service.js';
+import { ArchiveViewService } from './services/archive-view-service.js';
 import { ConflictResolutionService } from './sync/conflict-resolution-service.js';
 import { SettingsRepository } from './repositories/settings-repository.js';
 import { JiraLinkRepository } from './repositories/jira-link-repository.js';
@@ -216,6 +217,7 @@ export const buildApp = ({
       settings,
       app.log,
     ),
+    new ArchiveViewService(pool),
   );
   registerTagRoutes(app, new TagRepository(pool));
 

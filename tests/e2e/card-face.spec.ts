@@ -91,11 +91,24 @@ test.describe('card face', () => {
       .poll(() => page.locator('[data-column-key="done"] .card-title').allTextContents())
       .toEqual(['Finished work']);
 
-    // Still on the board, not hidden away. Archival arrives in slice 4 and
-    // nothing here may offer it.
-    await expect(
-      page.getByTestId('card').filter({ hasText: 'Finished work' }),
-    ).toBeVisible();
-    await expect(page.getByRole('button', { name: /archive/i })).toHaveCount(0);
+    // Still on the board, not hidden away.
+    const card = page.getByTestId('card').filter({ hasText: 'Finished work' });
+    await expect(card).toBeVisible();
+
+    // BH-028: no interface presents an archive ACTION. Scoped to the card and
+    // to the card's own dialog, which is where such an action would live.
+    //
+    // Was a page-wide `getByRole('button', { name: /archive/i })` until slice 4
+    // added an Archive VIEW to the sidebar. That nav opens a read-only list of
+    // work that has already left the board; it archives nothing. The behaviour
+    // this guards — that a user cannot archive a card by hand, and that a card
+    // freshly in Done is not archived — is unchanged, and asserting it against
+    // the card rather than the whole page is what the pathway actually says.
+    await expect(card.getByRole('button', { name: /archive/i })).toHaveCount(0);
+
+    await card.dblclick();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: /archive/i })).toHaveCount(0);
   });
 });

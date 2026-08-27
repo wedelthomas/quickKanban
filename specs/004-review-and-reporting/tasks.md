@@ -289,35 +289,35 @@ including archived cards.
 **Independent Test**: archive cards across several dates, retrieve a range, and
 confirm only cards from that range appear.
 
-- [ ] T448 [US5] Sync TestRail cases TEST-313, TEST-314, TEST-315 via
+- [x] T448 [US5] Sync TestRail cases TEST-313, TEST-314, TEST-315 via
   `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
-- [ ] T449 [P] [US5] `tests/features/archive-view.feature` — a range returning
+- [x] T449 [P] [US5] `tests/features/archive-view.feature` — a range returning
   only its own cards, grouped by completion date; retained title, tags, source
   and completion date; the issue link and the recorded reason for a card that
   left the query in slice 2; and an empty range stated plainly — BH-313, BH-314, BH-315.
-- [ ] T450 [P] [US5] `tests/e2e/archive.spec.ts` — browse by range and open an
+- [x] T450 [P] [US5] `tests/e2e/archive.spec.ts` — browse by range and open an
   entry — BH-313, BH-314.
 
 ### Implementation
 
-- [ ] T451 [US5] `ArchiveRepository.byDateRange()` — the query in
+- [x] T451 [US5] `ArchiveRepository.byDateRange()` — the query in
   data-model.md, with tags and the Jira link joined as the board does.
-- [ ] T452 [US5] `GET /api/archive?from=&to=` per contracts/api.md. `to` is
+- [x] T452 [US5] `GET /api/archive?from=&to=` per contracts/api.md. `to` is
   **inclusive** — a range of one day means that day, which is what a person
   asking for one day means. Defaults to the last 30 days.
-- [ ] T453 [US5] Group by the local calendar date of `archived_at`, in the
+- [x] T453 [US5] Group by the local calendar date of `archived_at`, in the
   service rather than in SQL, where the timezone would be the container's
   regardless (R-7). Omit days with no cards: a run of empty dates is noise.
-- [ ] T454 [US5] `INVALID_DATE_RANGE` for a `from` later than its `to`, or an
+- [x] T454 [US5] `INVALID_DATE_RANGE` for a `from` later than its `to`, or an
   unparseable date — distinct from an empty result, which is a **200**. One is a
   mistake to correct; the other is an answer.
-- [ ] T455 [US5] Show the recorded archival reason where one exists (FR-322).
+- [x] T455 [US5] Show the recorded archival reason where one exists (FR-322).
   **"I finished it" and "it was reassigned away from me" look identical in an
   archive that does not say.**
-- [ ] T456 [US5] `src/web/archive/ArchiveView.tsx` + a nav entry, with a date
+- [x] T456 [US5] `src/web/archive/ArchiveView.tsx` + a nav entry, with a date
   range control and a plain empty statement (FR-323).
 
 **Checkpoint**: all five stories independently functional. **Run the

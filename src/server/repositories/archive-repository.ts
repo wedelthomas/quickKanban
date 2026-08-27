@@ -1,5 +1,6 @@
 import type pg from 'pg';
 import type { EventRepository } from './event-repository.js';
+import type { ArchivedCard, CardSource, Priority } from '../../shared/types.js';
 
 export const DONE_COLUMN_ID = 6;
 
@@ -98,3 +99,58 @@ export class ArchiveRepository {
     }
   }
 }
+
+/**
+ * Everything archived within a range, newest first.
+ *
+ * Grouping into days happens above this, on the LOCAL calendar date of
+ * `archived_at` — doing it in SQL would group by the container's timezone
+ * regardless of the user's, which is the same trap due dates avoided in slice
+ * 1 (research.md R-7).
+ */
+export const archiveByRange = async (
+  pool: pg.Pool,
+  from: Date,
+  to: Date,
+): Promise<ArchivedCard[]> => {
+  const { rows } = await pool.query<{
+    id: string;
+    source: CardSource;
+    title: string;
+    priority: Priority;
+    archived_at: Date;
+    archived_reason: string | null;
+    issue_key: string | null;
+    url: string | null;
+    tags: string[] | null;
+  }>(
+    `SELECT c.id, c.source, c.title, c.priority, c.archived_at, c.archived_reason,
+            jl.issue_key, jl.url,
+            -- ::text is required, not cosmetic. Tag names are citext, and pg
+            -- has no parser registered for citext[], so without the cast the
+            -- driver hands back the raw literal string rather than an array.
+            ARRAY_REMOVE(ARRAY_AGG(t.name::text ORDER BY t.name), NULL) AS tags
+       FROM cards c
+       LEFT JOIN jira_links jl ON jl.card_id = c.id
+       LEFT JOIN card_tags ct ON ct.card_id = c.id
+       LEFT JOIN tags t       ON t.id = ct.tag_id
+      WHERE c.archived_at IS NOT NULL
+        AND c.deleted_at IS NULL
+        AND c.archived_at >= $1 AND c.archived_at < $2
+      GROUP BY c.id, jl.issue_key, jl.url
+      ORDER BY c.archived_at DESC`,
+    [from, to],
+  );
+
+  return rows.map((r) => ({
+    id: r.id,
+    source: r.source,
+    title: r.title,
+    priority: r.priority,
+    tags: r.tags ?? [],
+    issueKey: r.issue_key,
+    issueUrl: r.url,
+    archivedAt: r.archived_at.toISOString(),
+    archivedReason: r.archived_reason,
+  }));
+};

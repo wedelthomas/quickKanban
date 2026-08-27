@@ -3,7 +3,7 @@
   "jira_ref": "",
   "project_id": 115,
   "suite_id": 32733,
-  "last_synced_at": "2026-08-27T03:05:45Z",
+  "last_synced_at": "2026-08-27T03:09:33Z",
   "last_synced_by": "spec-testrail-sync",
   "user_stories": {
     "us1": {
@@ -29,6 +29,12 @@
       "priority": "P2",
       "section_id": 2162689,
       "section_name": "Slice 4 \u2014 Review and Reporting | US4 Weekly summary"
+    },
+    "us5": {
+      "title": "Look something up in the archive",
+      "priority": "P3",
+      "section_id": 2162690,
+      "section_name": "Slice 4 \u2014 Review and Reporting | US5 The archive"
     }
   },
   "scenarios": {},
@@ -212,6 +218,33 @@
       "hash": "3d72793880bdbc6f49a088efb7e07a12984f170d2247c2a34b3bb9e9445e74ff",
       "title_at_last_sync": "TEST-322 \u2014 Twenty summary generations mutate nothing",
       "automation_id": "test-322.bh-322"
+    },
+    "TEST-313": {
+      "case_id": 20000091,
+      "pins": "BH-313",
+      "user_story": "us5",
+      "section_id": 2162690,
+      "hash": "49c6c25ab04a2392da9f99feb0a9f6f70f6c81de4f2ddaf4510303c6ae21d52c",
+      "title_at_last_sync": "TEST-313 \u2014 Archive lists only the chosen range, grouped by date",
+      "automation_id": "test-313.bh-313"
+    },
+    "TEST-314": {
+      "case_id": 20000092,
+      "pins": "BH-314",
+      "user_story": "us5",
+      "section_id": 2162690,
+      "hash": "a6dab1c84954458a532419527e8467a66216d1b764a37ddc5854289d67102f79",
+      "title_at_last_sync": "TEST-314 \u2014 Archived cards retain detail, issue link and recorded reason",
+      "automation_id": "test-314.bh-314"
+    },
+    "TEST-315": {
+      "case_id": 20000093,
+      "pins": "BH-315",
+      "user_story": "us5",
+      "section_id": 2162690,
+      "hash": "883ff91677f7a60e99c15eddadb09349d4f08b91ff9ec3477ec4047f21f9ed68",
+      "title_at_last_sync": "TEST-315 \u2014 Empty archive range is stated plainly",
+      "automation_id": "test-315.bh-315"
     }
   }
 }

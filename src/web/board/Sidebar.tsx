@@ -53,6 +53,7 @@ export const Sidebar = ({
   onToggleCollapsed,
   onOpenSummary,
   onOpenConflicts,
+  onOpenArchive,
   onChange,
   onClear,
   inputRef,
@@ -66,6 +67,7 @@ export const Sidebar = ({
   onToggleCollapsed: () => void;
   onOpenSummary: () => void;
   onOpenConflicts: () => void;
+  onOpenArchive: () => void;
   onChange: <K extends keyof Filter>(key: K, value: Filter[K]) => void;
   onClear: () => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -124,6 +126,13 @@ export const Sidebar = ({
               data-testid="nav-summary"
             >
               <span className="sidebar-row-name">Summary</span>
+            </button>
+            <button
+              className="sidebar-row"
+              onClick={onOpenArchive}
+              data-testid="nav-archive"
+            >
+              <span className="sidebar-row-name">Archive</span>
             </button>
             {conflictCount > 0 && (
               <button
