@@ -29,8 +29,8 @@ Decisions taken while drafting BRD v2, recorded here because they constrain
 this slice directly.
 
 - Q: Where does the current TS iteration come from? → A: A single configured
-  Jira reference board, read through the Agile API, defaulting to board 1391
-  (CRM TradeBlazers). Not computed from a calendar rule: the sprint ordinal
+  Jira reference board, taken from that board's active sprint, defaulting to
+  the CRM TradeBlazers board. Not computed from a calendar rule: the sprint ordinal
   resets at the fiscal-year boundary, so a counting rule would drift silently
   every January.
 - Q: Should the iteration come from the cards themselves? → A: No. Only 1 of
@@ -40,8 +40,9 @@ this slice directly.
   it is a local user decision, for the same sparseness reason.
 - Q: How is blocked shown, given the card already spends its most scannable
   pixel on the priority dot? → A: A red left edge on the card *and* a "Blocked"
-  badge, both inheriting `#e04b4b` — the hue that `--column-blocked` frees up
-  when the column retires. The priority dot keeps its existing meaning.
+  badge, both in the red the board already reserves for the Blocked column —
+  a colour that becomes free the moment that column retires. The priority dot
+  keeps its existing meaning.
 - Q: Should the board write the blocked flag back to Jira? → A: No. BR-22
   stands; status remains the only field the board writes.
 - Q: Where do blocked cards go during the migration? → A: In Progress, not
