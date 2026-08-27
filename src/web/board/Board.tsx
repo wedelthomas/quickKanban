@@ -59,6 +59,9 @@ export const Board = () => {
     update: updateFilter,
     clear: clearFilter,
     active: filtering,
+    collapsed: railCollapsed,
+    toggleCollapsed: toggleRail,
+    expand: expandRail,
   } = useFilter();
   const filterInputRef = useRef<HTMLInputElement | null>(null);
   // Held by id rather than by element, because the board re-renders after every
@@ -100,7 +103,12 @@ export const Board = () => {
         return;
       }
       if (match.action === 'focus-filter') {
-        filterInputRef.current?.focus();
+        // Opens the rail first when it is shut, so `/` always reaches the
+        // filter rather than silently doing nothing.
+        expandRail();
+        // After the rail renders — focusing an input that is not mounted yet
+        // does nothing at all, silently.
+        requestAnimationFrame(() => filterInputRef.current?.focus());
         return;
       }
       if (match.action === 'help') {
@@ -151,7 +159,7 @@ export const Board = () => {
         void moveCard(cardId, column.id, column.cards.length + 1);
       }
     },
-    [board, moveCard, focusCardById, clearFilter],
+    [board, moveCard, focusCardById, clearFilter, expandRail],
   );
 
   // Suspended while a dialog owns the screen, so the board's shortcuts cannot
@@ -224,41 +232,47 @@ export const Board = () => {
           New card
         </button>
       </div>
-      <FilterBar
-        board={board}
-        filter={filter}
-        active={filtering}
-        onChange={updateFilter}
-        onClear={clearFilter}
-        inputRef={filterInputRef}
-      />
-      {filtering &&
-        hiddenCount > 0 &&
-        visible.columns.every((c) => c.cards.length === 0) && (
-          // The whole of SC-309: an empty board must never be ambiguous between
-          // "a filter is hiding things" and "you have no work".
-          <p
-            className="filter-empty-notice"
-            role="status"
-            data-testid="filter-empty-notice"
+      <div className="board-layout">
+        <FilterBar
+          board={board}
+          filter={filter}
+          active={filtering}
+          collapsed={railCollapsed}
+          onToggleCollapsed={toggleRail}
+          onChange={updateFilter}
+          onClear={clearFilter}
+          inputRef={filterInputRef}
+        />
+        <div className="board-area">
+          {filtering &&
+            hiddenCount > 0 &&
+            visible.columns.every((c) => c.cards.length === 0) && (
+              // The whole of SC-309: an empty board must never be ambiguous between
+              // "a filter is hiding things" and "you have no work".
+              <p
+                className="filter-empty-notice"
+                role="status"
+                data-testid="filter-empty-notice"
+              >
+                A filter is hiding {hiddenCount} card{hiddenCount === 1 ? '' : 's'}.
+                <button className="button" onClick={clearFilter}>
+                  Clear filter
+                </button>
+              </p>
+            )}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={collisionDetection}
+            onDragEnd={onDragEnd}
           >
-            A filter is hiding {hiddenCount} card{hiddenCount === 1 ? '' : 's'}.
-            <button className="button" onClick={clearFilter}>
-              Clear filter
-            </button>
-          </p>
-        )}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={collisionDetection}
-        onDragEnd={onDragEnd}
-      >
-        <div className="board" data-testid="board">
-          {visible.columns.map((column) => (
-            <ColumnView column={column} key={column.id} onOpenCard={setEditing} />
-          ))}
+            <div className="board" data-testid="board">
+              {visible.columns.map((column) => (
+                <ColumnView column={column} key={column.id} onOpenCard={setEditing} />
+              ))}
+            </div>
+          </DndContext>
         </div>
-      </DndContext>
+      </div>
       {creating && (
         <CardDialog
           onCancel={() => setCreating(false)}

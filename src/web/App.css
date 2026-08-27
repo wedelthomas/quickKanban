@@ -537,3 +537,133 @@ kbd {
   color: var(--text-muted);
   font-size: var(--text-sm);
 }
+
+/* --- column accents ----------------------------------------------------- */
+
+/*
+ * One hue per column: a rule across the top, the title, and a tinted count.
+ *
+ * Keyed off the column's own data attribute rather than a class per column, so
+ * adding a colour needs no markup change. The cards themselves stay neutral —
+ * six columns of coloured cards would read as a swatch, and the card face
+ * already spends its colour on priority and on the conflict badge, which are
+ * the two things that must stand out against everything else.
+ */
+.column {
+  border-top: 2px solid var(--column-accent, var(--border));
+}
+
+.column[data-column-key='backlog'] {
+  --column-accent: var(--column-backlog);
+}
+.column[data-column-key='in_progress'] {
+  --column-accent: var(--column-in-progress);
+}
+.column[data-column-key='blocked'] {
+  --column-accent: var(--column-blocked);
+}
+.column[data-column-key='test'] {
+  --column-accent: var(--column-test);
+}
+.column[data-column-key='po_review'] {
+  --column-accent: var(--column-po-review);
+}
+.column[data-column-key='done'] {
+  --column-accent: var(--column-done);
+}
+
+.column-name {
+  color: var(--column-accent, var(--text));
+}
+
+.column-count {
+  color: var(--column-accent, var(--text-muted));
+  /* Mixed from the accent rather than six more hand-picked tokens: the tint
+     keeps the same relationship to its hue, so the six cannot drift apart. */
+  background: color-mix(in srgb, var(--column-accent, var(--border)) 14%, transparent);
+  border-color: color-mix(in srgb, var(--column-accent, var(--border)) 35%, transparent);
+}
+
+/* --- filter rail -------------------------------------------------------- */
+
+.board-layout {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.board-area {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * 210px expanded, not the reference dashboard's 250px, and collapsible.
+ * docs/design/visual-language.md rejected a permanent board-view rail because
+ * six readable columns already exceed a 1440px display; collapsing is what
+ * answers that, and the board reclaims the width the moment the rail is shut.
+ */
+.filter-rail {
+  flex: 0 0 210px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.filter-rail--collapsed {
+  flex-basis: 40px;
+  padding: var(--space-2) 0;
+  align-items: center;
+}
+
+.filter-rail-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.filter-rail-toggle:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.filter-rail-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+/* Visible whether the rail is open or shut. A filter still hiding cards behind
+   a closed panel would be exactly the ambiguity SC-309 exists to prevent. */
+.filter-rail-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.filter-rail-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filter-rail .field {
+  gap: 2px;
+}

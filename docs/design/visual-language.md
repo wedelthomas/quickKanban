@@ -123,11 +123,47 @@ readable ~280px need roughly 1680px, which already exceeds a 1440px display.
 Surrendering 250px of that to navigation makes the board scroll horizontally
 before a single card is added.
 
-Recommended resolution: **top navigation on the board view**, taking the
-portal's header treatment, and the dashboard's sidebar pattern for the
-Archive and Summary views in Slice 4, where vertical lists benefit from it and
-horizontal space is not contested. The statistic strip sits directly beneath
-the board header, where it costs vertical space only.
+Original resolution: **top navigation on the board view**, taking the portal's
+header treatment, and the dashboard's sidebar pattern for the Archive and
+Summary views in Slice 4, where vertical lists benefit from it and horizontal
+space is not contested. The statistic strip sits directly beneath the board
+header, where it costs vertical space only.
+
+### Revised 2026-08-27 — a collapsible left rail on the board
+
+The board view now does carry a left rail, holding the filter controls, at the
+user's request. The objection above still stands and is answered rather than
+overruled:
+
+- **It collapses.** Shut, it is 40px; open, 210px rather than the reference
+  dashboard's 250px. The board reclaims the width the moment it is closed, so
+  the horizontal-scroll failure only applies while the user is actively
+  filtering — which is when they have chosen to trade board width for controls.
+- **The collapsed state is remembered**, so a user who works with it shut never
+  pays the cost. Only the state, not the filter: which cards are hidden must
+  not survive a reload (FR-310), while how wide a panel is may.
+- **`/` opens it and focuses the text field**, so the shortcut works whether the
+  rail is open or shut rather than silently doing nothing to an unmounted input.
+- **A dot on the toggle shows a filter is active while collapsed.** Without it,
+  a shut rail could hide cards with no visible cause — precisely the ambiguity
+  SC-309 exists to prevent.
+
+Top navigation is unchanged: the header still carries the wordmark and the view
+links. The rail is a filter panel, not a second navigation.
+
+### Column accents, 2026-08-27
+
+One hue per column — a rule across the top, the column title, and a tinted
+count: Backlog grey, In Progress amber, Blocked red, Test blue, PO Review teal,
+Done green.
+
+Applied from each column's own `data-column-key`, so adding a colour needs no
+markup change, and the count's tint is mixed from the accent rather than
+hand-picked, so the six cannot drift apart.
+
+**Cards stay neutral.** Six columns of coloured cards read as a swatch, and the
+card face already spends its colour budget on priority and on the conflict
+badge — the two things that have to stand out against everything around them.
 
 ## Theme decision
 

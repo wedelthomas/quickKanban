@@ -25,6 +25,17 @@
   --warning: #e0894b;
   --warning-soft: #e0894b22;
 
+  /* One hue per column: a top rule, the title, and a tinted count. The cards
+     stay neutral — six columns of coloured cards would read as a swatch, and
+     the card face already spends its colour on priority and the conflict
+     badge, which are the two things that must stand out. */
+  --column-backlog: #8b93a7;
+  --column-in-progress: #e0b44b;
+  --column-blocked: #e04b4b;
+  --column-test: #4b9fe0;
+  --column-po-review: #3fbfb0;
+  --column-done: #4bc27a;
+
   --priority-high: #e0894b;
   --priority-medium: #8b93a7;
   --priority-low: #4b7fe0;

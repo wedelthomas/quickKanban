@@ -100,6 +100,45 @@ test.describe('filtering the board', () => {
     await expect(page.getByTestId('card').first()).toContainText('Mine alone');
   });
 
+  test('the rail collapses, remembers it, and reopens on /', async ({ page }) => {
+    await page.goto('/');
+    await createCard(page, 'Alpha');
+
+    // Open by default: the controls have to be discoverable without knowing a
+    // shortcut exists.
+    await expect(page.getByTestId('filter-text')).toBeVisible();
+
+    await page.getByTestId('filter-toggle').click();
+    await expect(page.getByTestId('filter-text')).toHaveCount(0);
+    await expect(page.getByTestId('filter-rail')).toHaveClass(/filter-rail--collapsed/);
+
+    // Remembered across a reload, unlike the filter itself. The rail's width is
+    // a preference; which cards are hidden is not (FR-310).
+    await page.reload();
+    await expect(page.getByTestId('filter-rail')).toHaveClass(/filter-rail--collapsed/);
+
+    // `/` opens it rather than silently doing nothing to a control that is not
+    // mounted.
+    await page.keyboard.press('/');
+    await expect(page.getByTestId('filter-text')).toBeFocused();
+  });
+
+  test('a collapsed rail still shows that a filter is active', async ({ page }) => {
+    await page.goto('/');
+    await createCard(page, 'Alpha');
+    await createCard(page, 'Beta');
+
+    await page.getByTestId('filter-text').fill('alpha');
+    await expect(page.getByTestId('card')).toHaveCount(1);
+
+    await page.getByTestId('filter-toggle').click();
+
+    // A filter still hiding cards behind a shut panel would be exactly the
+    // ambiguity SC-309 exists to prevent.
+    await expect(page.getByTestId('filter-active-dot')).toBeVisible();
+    await expect(page.getByTestId('card')).toHaveCount(1);
+  });
+
   test('a reload opens the board unfiltered (BH-308)', async ({ page }) => {
     await page.goto('/');
     await createCard(page, 'Alpha');
