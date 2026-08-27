@@ -33,9 +33,16 @@ export class ArchiveViewService {
     defaultFrom.setDate(defaultFrom.getDate() - DEFAULT_DAYS_BACK);
 
     const from = fromRaw ? parseLocalDate(fromRaw) : defaultFrom;
-    const to = toRaw ? parseLocalDate(toRaw) : today;
+    const requestedTo = toRaw ? parseLocalDate(toRaw) : today;
     if (!from) throw invalidDateRange(`"${fromRaw}" is not a date in YYYY-MM-DD form.`);
-    if (!to) throw invalidDateRange(`"${toRaw}" is not a date in YYYY-MM-DD form.`);
+    if (!requestedTo)
+      throw invalidDateRange(`"${toRaw}" is not a date in YYYY-MM-DD form.`);
+
+    // Clamped rather than refused: nothing has been archived tomorrow, so a
+    // future date is a harmless way of saying "up to now" and refusing it would
+    // be pedantry. But the endpoint promises a bounded range, and `to=9999-12-31`
+    // is not one.
+    const to = requestedTo > today ? today : requestedTo;
     if (from > to) {
       throw invalidDateRange(
         'The range starts after it ends. Check which date is which.',

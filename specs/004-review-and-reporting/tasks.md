@@ -343,7 +343,7 @@ Story-Complete Review Gate before Polish.**
 - [x] T463 Code cleanup; no file over 300 lines without a recorded reason.
 - [x] T464 `npm audit` clean at Critical and High.
 - [x] T465 Run `quickstart.md` end to end from a clean `docker compose up`.
-- [ ] T466 Run `/speckit.review`; address blocking findings.
+- [x] T466 Run `/speckit.review`; address blocking findings.
 - [ ] T467 Request peer review.
 
 ---

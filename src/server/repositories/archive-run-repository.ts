@@ -71,6 +71,25 @@ export class ArchiveRunRepository {
     return toRun(rows[0]!);
   }
 
+  /**
+   * Closes any pass left unfinished by a crash or a shutdown.
+   *
+   * The single-flight index is the right guarantee while a pass is running and
+   * a trap once one dies: `finished_at` stays null, and every later `start()`
+   * then violates the index. Archival would stop for good, and the only symptom
+   * would be a 500 on an endpoint nobody is watching.
+   *
+   * Marked failed rather than deleted — a pass that died is something an
+   * operator may want to see, and recording what happened is what this table
+   * is for. Called once at startup, beside the sync's equivalent.
+   */
+  async abandonUnfinished(): Promise<void> {
+    await this.pool.query(
+      `UPDATE archive_runs SET finished_at = now(), outcome = 'failed'
+        WHERE finished_at IS NULL`,
+    );
+  }
+
   async latest(): Promise<ArchiveRun | null> {
     const { rows } = await this.pool.query<Row>(
       'SELECT * FROM archive_runs ORDER BY started_at DESC LIMIT 1',

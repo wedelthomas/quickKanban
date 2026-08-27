@@ -44,6 +44,18 @@ Feature: Finished work leaves the board without being lost
     And the run archived 0 cards
     And the run skipped 1 conflicted card
 
+  Scenario: A conflicted card still inside the window is not counted as refused
+    # The count answers "was something due that I refused". A card conflicted
+    # but only two days into a seven-day window was never due, and counting it
+    # would inflate a number whose whole job is to be actionable.
+    Given Jira has an issue "AIHUB-1" with status "Open"
+    And a sync runs
+    And the card for issue "AIHUB-1" arrived in Done 2 days ago
+    And the card for issue "AIHUB-1" has an unresolved conflict
+    When archival runs
+    Then the run archived 0 cards
+    And the run skipped 0 conflicted cards
+
   Scenario: An archived card is retained, not deleted
     Given a card titled "Long finished" arrived in Done 10 days ago
     When archival runs

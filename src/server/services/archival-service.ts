@@ -47,23 +47,27 @@ export class ArchivalService {
       let skippedConflicted = 0;
 
       for (const candidate of candidates) {
-        if (candidate.conflicted) {
-          // Counted rather than merely skipped: "archived: 0" alone cannot
-          // distinguish "nothing was due" from "something was due and I
-          // refused", and only one of those is worth investigating.
-          skippedConflicted += 1;
-          continue;
-        }
+        const input = {
+          arrivedInDoneAt: candidate.arrivedInDoneAt,
+          createdAt: candidate.createdAt,
+          windowDays: archiveWindowDays,
+          now,
+        };
 
-        if (
-          !shouldArchive({
-            arrivedInDoneAt: candidate.arrivedInDoneAt,
-            createdAt: candidate.createdAt,
-            windowDays: archiveWindowDays,
-            now,
-            conflicted: false,
-          })
-        ) {
+        if (!shouldArchive({ ...input, conflicted: candidate.conflicted })) {
+          // Counted only when the conflict is the REASON — a card conflicted
+          // but still inside the window was never due, and counting it would
+          // inflate a number whose whole job is to answer "was something due
+          // that I refused". A count that is chronically non-zero for benign
+          // reasons is one nobody reads.
+          //
+          // Asking the pure function twice rather than reading the flag here:
+          // it is the thing that decides, and passing it a hardcoded `false`
+          // (as this did) meant its own guard never ran in production while
+          // four unit tests said it did.
+          if (candidate.conflicted && shouldArchive({ ...input, conflicted: false })) {
+            skippedConflicted += 1;
+          }
           continue;
         }
 

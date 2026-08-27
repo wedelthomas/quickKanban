@@ -4,6 +4,7 @@ import { buildApp, defaultWebRoot } from './app.js';
 import { readJiraCredentials } from './jira/credentials.js';
 import { JiraAdapter } from './jira/jira-adapter.js';
 import { SyncRunRepository } from './repositories/sync-run-repository.js';
+import { ArchiveRunRepository } from './repositories/archive-run-repository.js';
 import { SettingsRepository } from './repositories/settings-repository.js';
 import { SyncLock } from './sync/sync-lock.js';
 import { Scheduler } from './sync/scheduler.js';
@@ -32,6 +33,10 @@ const main = async (): Promise<void> => {
   // A run left unfinished by a crash would otherwise hold the in-flight slot
   // forever and make every later sync look like a duplicate.
   await new SyncRunRepository(pool).abandonUnfinished();
+  // Same sweep for the archival pass. Both tables enforce single-flight with a
+  // partial unique index, which needs someone to clear the row when a process
+  // dies holding it.
+  await new ArchiveRunRepository(pool).abandonUnfinished();
 
   // Null when Jira is not configured — a supported state, not a failure
   // (FR-105). The board serves ad-hoc cards exactly as it did in slice 1.
