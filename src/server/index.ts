@@ -61,7 +61,8 @@ const main = async (): Promise<void> => {
     scheduler = new Scheduler(
       async () => {
         const res = await app.inject({ method: 'POST', url: '/api/sync/run' });
-        if (res.statusCode >= 400) throw new Error(`scheduled sync failed: ${res.statusCode}`);
+        if (res.statusCode >= 400)
+          throw new Error(`scheduled sync failed: ${res.statusCode}`);
       },
       async () => (await settings.read()).syncIntervalSeconds,
     );

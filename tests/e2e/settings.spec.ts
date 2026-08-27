@@ -35,7 +35,9 @@ test.describe('settings', () => {
     await page.getByRole('button', { name: 'Settings' }).click();
     const dialog = page.getByRole('dialog', { name: 'Settings' });
 
-    await dialog.getByLabel('Jira query').fill('assignee = currentUser() AND project = AIHUB');
+    await dialog
+      .getByLabel('Jira query')
+      .fill('assignee = currentUser() AND project = AIHUB');
     await dialog.getByLabel('Sync every').fill('600');
     await dialog.getByRole('button', { name: 'Save' }).click();
     await expect(dialog).toBeHidden();

@@ -29,7 +29,12 @@ export const validationFailed = (detail: string): DomainError =>
   new DomainError('VALIDATION_FAILED', 422, 'Request is not valid', detail);
 
 export const cardNotFound = (id: string): DomainError =>
-  new DomainError('CARD_NOT_FOUND', 404, 'Card not found', `No card exists with id ${id}.`);
+  new DomainError(
+    'CARD_NOT_FOUND',
+    404,
+    'Card not found',
+    `No card exists with id ${id}.`,
+  );
 
 export const columnNotFound = (id: number): DomainError =>
   new DomainError(

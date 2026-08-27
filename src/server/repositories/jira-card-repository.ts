@@ -81,7 +81,11 @@ export class JiraCardRepository {
   }
 
   /** Moves a card because Jira moved, attributing the movement to sync. */
-  async moveBySync(client: pg.PoolClient, cardId: string, toColumnId: number): Promise<void> {
+  async moveBySync(
+    client: pg.PoolClient,
+    cardId: string,
+    toColumnId: number,
+  ): Promise<void> {
     const { rows } = await client.query<{ column_id: number }>(
       'SELECT column_id FROM cards WHERE id = $1 FOR UPDATE',
       [cardId],
@@ -105,7 +109,11 @@ export class JiraCardRepository {
   }
 
   /** Moves a card to Done and archives it, attributing the movement to sync. */
-  async archiveBySync(client: pg.PoolClient, cardId: string, reason: string): Promise<void> {
+  async archiveBySync(
+    client: pg.PoolClient,
+    cardId: string,
+    reason: string,
+  ): Promise<void> {
     const { rows } = await client.query<{ column_id: number }>(
       'SELECT column_id FROM cards WHERE id = $1 FOR UPDATE',
       [cardId],

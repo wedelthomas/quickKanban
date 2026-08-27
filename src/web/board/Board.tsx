@@ -45,8 +45,13 @@ const resolveTarget = (
 
   const column = board.columns.find((c) => c.cards.some((card) => card.id === overId));
   if (!column) return null;
-  const index = column.cards.filter((c) => c.id !== activeId).findIndex((c) => c.id === overId);
-  return { toColumnId: column.id, toIndex: (index === -1 ? column.cards.length : index) + 1 };
+  const index = column.cards
+    .filter((c) => c.id !== activeId)
+    .findIndex((c) => c.id === overId);
+  return {
+    toColumnId: column.id,
+    toIndex: (index === -1 ? column.cards.length : index) + 1,
+  };
 };
 
 /**
@@ -74,8 +79,17 @@ const collisionDetection: CollisionDetection = (args) => {
 };
 
 export const Board = () => {
-  const { board, error, moveError, dismissMoveError, refresh, createCard, moveCard, updateCard, deleteCard } =
-    useBoard();
+  const {
+    board,
+    error,
+    moveError,
+    dismissMoveError,
+    refresh,
+    createCard,
+    moveCard,
+    updateCard,
+    deleteCard,
+  } = useBoard();
   const { status: syncStatus, syncNow } = useSync(refresh);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Card | null>(null);
@@ -193,7 +207,11 @@ export const Board = () => {
         {moveError && (
           <p className="move-error" role="alert" data-testid="move-error">
             {moveError}
-            <button className="move-error-dismiss" onClick={dismissMoveError} aria-label="Dismiss">
+            <button
+              className="move-error-dismiss"
+              onClick={dismissMoveError}
+              aria-label="Dismiss"
+            >
               ×
             </button>
           </p>
@@ -217,7 +235,11 @@ export const Board = () => {
           New card
         </button>
       </div>
-      <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragEnd={onDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetection}
+        onDragEnd={onDragEnd}
+      >
         <div className="board" data-testid="board">
           {board.columns.map((column) => (
             <ColumnView column={column} key={column.id} onOpenCard={setEditing} />

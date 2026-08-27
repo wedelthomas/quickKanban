@@ -34,11 +34,16 @@ test.describe('card face', () => {
 
     await dialog.getByRole('button', { name: 'Save' }).click();
 
-    const card = page.getByTestId('card').filter({ hasText: 'Rotate staging certificates' });
+    const card = page
+      .getByTestId('card')
+      .filter({ hasText: 'Rotate staging certificates' });
     await expect(card).toBeVisible();
 
     // Everything below must be readable on the face itself, with no click.
-    await expect(card.getByTestId('card-priority')).toHaveAttribute('aria-label', 'High priority');
+    await expect(card.getByTestId('card-priority')).toHaveAttribute(
+      'aria-label',
+      'High priority',
+    );
     await expect(card.getByTestId('card-due')).toBeVisible();
     await expect(card.getByTestId('card-tag')).toHaveCount(2);
     // Local cards carry no source badge; the badge's absence is the signal.
@@ -67,7 +72,9 @@ test.describe('card face', () => {
     await expect(page.getByTestId('card')).toHaveCount(0);
   });
 
-  test('a card in Done stays visible and offers no archive action (BH-028)', async ({ page }) => {
+  test('a card in Done stays visible and offers no archive action (BH-028)', async ({
+    page,
+  }) => {
     await page.goto('/');
     await page.locator('body').click();
 
@@ -86,7 +93,9 @@ test.describe('card face', () => {
 
     // Still on the board, not hidden away. Archival arrives in slice 4 and
     // nothing here may offer it.
-    await expect(page.getByTestId('card').filter({ hasText: 'Finished work' })).toBeVisible();
+    await expect(
+      page.getByTestId('card').filter({ hasText: 'Finished work' }),
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: /archive/i })).toHaveCount(0);
   });
 });

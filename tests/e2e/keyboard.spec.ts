@@ -17,7 +17,9 @@ test.describe('keyboard operation', () => {
     await page.locator('body').click();
   });
 
-  test('a card is created and moved using only the keyboard (BH-014)', async ({ page }) => {
+  test('a card is created and moved using only the keyboard (BH-014)', async ({
+    page,
+  }) => {
     await page.keyboard.press('n');
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -27,7 +29,9 @@ test.describe('keyboard operation', () => {
     await page.keyboard.type('Typed with no mouse');
     await page.keyboard.press('Enter');
     await expect(dialog).toBeHidden();
-    await expect.poll(() => cardTitlesIn(page, 'backlog')).toEqual(['Typed with no mouse']);
+    await expect
+      .poll(() => cardTitlesIn(page, 'backlog'))
+      .toEqual(['Typed with no mouse']);
 
     await page.keyboard.press('j');
     await expect(page.getByTestId('card').first()).toBeFocused();
@@ -48,7 +52,9 @@ test.describe('keyboard operation', () => {
       await page.keyboard.press('Enter');
       await expect(page.getByRole('dialog')).toBeHidden();
     }
-    await expect.poll(() => cardTitlesIn(page, 'backlog')).toEqual(['First', 'Second', 'Third']);
+    await expect
+      .poll(() => cardTitlesIn(page, 'backlog'))
+      .toEqual(['First', 'Second', 'Third']);
 
     await page.keyboard.press('j');
     await expect(page.getByTestId('card').nth(0)).toBeFocused();
@@ -58,7 +64,9 @@ test.describe('keyboard operation', () => {
     await expect(page.getByTestId('card').nth(0)).toBeFocused();
   });
 
-  test('the help overlay lists every shortcut the board supports (BH-015)', async ({ page }) => {
+  test('the help overlay lists every shortcut the board supports (BH-015)', async ({
+    page,
+  }) => {
     await page.keyboard.press('?');
     const help = page.getByTestId('shortcut-help');
     await expect(help).toBeVisible();
@@ -88,12 +96,14 @@ test.describe('keyboard operation', () => {
     await page.keyboard.press('Enter');
 
     await expect(dialog).toBeHidden();
-    await expect.poll(() => cardTitlesIn(page, 'backlog')).toEqual([
-      'Submitted from the button',
-    ]);
+    await expect
+      .poll(() => cardTitlesIn(page, 'backlog'))
+      .toEqual(['Submitted from the button']);
   });
 
-  test('closing a dialog restores focus to the card it opened from (BH-027)', async ({ page }) => {
+  test('closing a dialog restores focus to the card it opened from (BH-027)', async ({
+    page,
+  }) => {
     await page.keyboard.press('n');
     await page.keyboard.type('Focus me');
     await page.keyboard.press('Enter');
@@ -108,6 +118,9 @@ test.describe('keyboard operation', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
 
-    await expect(card, 'focus should return to the card, not the top of the board').toBeFocused();
+    await expect(
+      card,
+      'focus should return to the card, not the top of the board',
+    ).toBeFocused();
   });
 });

@@ -24,7 +24,9 @@ export const runMigrations = async (pool: pg.Pool): Promise<string[]> => {
   const dir = fileURLToPath(new URL('./migrations', import.meta.url));
   const files = (await readdir(dir)).filter((f) => f.endsWith('.sql')).sort();
 
-  const { rows } = await pool.query<{ version: string }>('SELECT version FROM schema_migrations');
+  const { rows } = await pool.query<{ version: string }>(
+    'SELECT version FROM schema_migrations',
+  );
   const applied = new Set(rows.map((r) => r.version));
 
   const ran: string[] = [];
@@ -41,7 +43,9 @@ export const runMigrations = async (pool: pg.Pool): Promise<string[]> => {
       ran.push(file);
     } catch (error) {
       await client.query('ROLLBACK');
-      throw new Error(`Migration ${file} failed: ${(error as Error).message}`, { cause: error });
+      throw new Error(`Migration ${file} failed: ${(error as Error).message}`, {
+        cause: error,
+      });
     } finally {
       client.release();
     }

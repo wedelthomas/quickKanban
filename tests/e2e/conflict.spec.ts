@@ -46,7 +46,9 @@ test.describe('a conflicted card', () => {
     await expect(page.getByTestId('move-error')).toContainText(/conflict/i);
     // And it did not move: the optimistic move reverted.
     const test = page.getByTestId('column').filter({ hasText: 'Test' });
-    await expect(test.getByTestId('card').filter({ hasText: 'Frozen until decided' })).toBeVisible();
+    await expect(
+      test.getByTestId('card').filter({ hasText: 'Frozen until decided' }),
+    ).toBeVisible();
   });
 
   test('accepting Jira moves the card, clears the badge and lets it be dragged again', async ({
@@ -66,6 +68,8 @@ test.describe('a conflicted card', () => {
 
     // In Progress, because that is what Development maps to.
     const inProgress = page.getByTestId('column').filter({ hasText: 'In Progress' });
-    await expect(inProgress.getByTestId('card').filter({ hasText: 'Jira wins' })).toBeVisible();
+    await expect(
+      inProgress.getByTestId('card').filter({ hasText: 'Jira wins' }),
+    ).toBeVisible();
   });
 });

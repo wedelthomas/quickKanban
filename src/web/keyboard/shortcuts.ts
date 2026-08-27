@@ -26,7 +26,11 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { label: 'j', description: 'Focus the next card', action: 'focus-next' },
   { label: 'k', description: 'Focus the previous card', action: 'focus-previous' },
   { label: 'Enter', description: 'Open the focused card', action: 'open-card' },
-  { label: '1–6', description: 'Send the focused card to that column', action: 'move-to-column' },
+  {
+    label: '1–6',
+    description: 'Send the focused card to that column',
+    action: 'move-to-column',
+  },
   { label: '?', description: 'Show this list', action: 'help' },
   { label: 'Esc', description: 'Close a dialog', action: 'close' },
 ];
@@ -63,6 +67,9 @@ export const isTyping = (target: EventTarget | null): boolean => {
   if (!element) return false;
   const tag = element.tagName;
   return (
-    tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || element.isContentEditable === true
+    tag === 'INPUT' ||
+    tag === 'TEXTAREA' ||
+    tag === 'SELECT' ||
+    element.isContentEditable === true
   );
 };

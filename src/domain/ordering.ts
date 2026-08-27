@@ -77,7 +77,11 @@ export const planMove = ({
 
   if (columnChanged) {
     assignments.push(
-      ...remaining.map((id, i) => ({ cardId: id, columnId: from.columnId, position: i + 1 })),
+      ...remaining.map((id, i) => ({
+        cardId: id,
+        columnId: from.columnId,
+        position: i + 1,
+      })),
     );
   }
 

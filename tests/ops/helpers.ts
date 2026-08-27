@@ -34,7 +34,12 @@ export const waitForHealthy = async (timeoutMs = 120_000): Promise<void> => {
 };
 
 export const getBoard = async (): Promise<{
-  columns: { id: number; key: string; name: string; cards: { id: string; title: string }[] }[];
+  columns: {
+    id: number;
+    key: string;
+    name: string;
+    cards: { id: string; title: string }[];
+  }[];
 }> => {
   const res = await fetch('http://127.0.0.1:3000/api/board');
   if (!res.ok) throw new Error(`GET /api/board returned ${res.status}`);
@@ -51,7 +56,11 @@ export const createCard = async (title: string): Promise<{ id: string }> => {
   return res.json();
 };
 
-export const moveCard = async (id: string, toColumnId: number, toIndex = 1): Promise<void> => {
+export const moveCard = async (
+  id: string,
+  toColumnId: number,
+  toIndex = 1,
+): Promise<void> => {
   const res = await fetch(`http://127.0.0.1:3000/api/cards/${id}/move`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

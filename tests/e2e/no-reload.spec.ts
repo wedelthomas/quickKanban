@@ -8,7 +8,9 @@ test.describe('a full working cycle', () => {
     await resetBoard();
   });
 
-  test('create, move, edit and delete without a full page reload (BH-025)', async ({ page }) => {
+  test('create, move, edit and delete without a full page reload (BH-025)', async ({
+    page,
+  }) => {
     await page.goto('/');
 
     // A marker on window survives re-renders but not a document reload, so it
@@ -25,7 +27,9 @@ test.describe('a full working cycle', () => {
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('Title').fill('Round trip, renamed');
     await dialog.getByRole('button', { name: 'Save' }).click();
-    await expect.poll(() => cardTitlesIn(page, 'in_progress')).toEqual(['Round trip, renamed']);
+    await expect
+      .poll(() => cardTitlesIn(page, 'in_progress'))
+      .toEqual(['Round trip, renamed']);
 
     await page.getByTestId('card').filter({ hasText: 'Round trip, renamed' }).dblclick();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
@@ -87,11 +91,16 @@ test.describe('a full working cycle', () => {
     await page.reload();
 
     const card = page.getByTestId('card').filter({ hasText: 'After' });
-    await expect(card.getByTestId('card-priority')).toHaveAttribute('aria-label', 'High priority');
+    await expect(card.getByTestId('card-priority')).toHaveAttribute(
+      'aria-label',
+      'High priority',
+    );
     await expect(card.getByTestId('card-tag')).toHaveCount(1);
   });
 
-  test('cancelling the delete confirmation leaves the card alone (BH-013)', async ({ page }) => {
+  test('cancelling the delete confirmation leaves the card alone (BH-013)', async ({
+    page,
+  }) => {
     await page.goto('/');
     await createCard(page, 'Spared');
 

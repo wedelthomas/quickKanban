@@ -35,7 +35,9 @@ describe('the Jira adapter writes only transitions', () => {
   });
 
   it('sends only a transition id, so no other field can change', () => {
-    expect(adapter).toMatch(/body: JSON\.stringify\(\{ transition: \{ id: transitionId \} \}\)/);
+    expect(adapter).toMatch(
+      /body: JSON\.stringify\(\{ transition: \{ id: transitionId \} \}\)/,
+    );
     // If a fields payload ever appears here, a status change could quietly
     // carry an edit to something else.
     expect(adapter).not.toMatch(/body: JSON\.stringify\(\{[^}]*fields/);
@@ -45,11 +47,20 @@ describe('the Jira adapter writes only transitions', () => {
     const port = readFileSync('src/server/jira/jira-port.ts', 'utf8');
     const body = /export interface JiraPort \{([\s\S]*?)\n\}/.exec(port)?.[1] ?? '';
     const methods = [...body.matchAll(/^\s{2}(\w+)\(/gm)].map((m) => m[1]);
-    expect(methods.sort()).toEqual(['getTransitions', 'listStatuses', 'searchIssues', 'transitionIssue']);
+    expect(methods.sort()).toEqual([
+      'getTransitions',
+      'listStatuses',
+      'searchIssues',
+      'transitionIssue',
+    ]);
   });
 
   it('is the only module that talks to Jira over HTTP', () => {
-    for (const file of ['sync/sync-service.ts', 'sync/transition-service.ts', 'routes/sync.ts']) {
+    for (const file of [
+      'sync/sync-service.ts',
+      'sync/transition-service.ts',
+      'routes/sync.ts',
+    ]) {
       expect(readFileSync(`src/server/${file}`, 'utf8')).not.toMatch(/fetch\s*\(/);
     }
   });

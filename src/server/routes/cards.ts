@@ -1,5 +1,9 @@
 import type { FastifyInstance } from 'fastify';
-import { createCardSchema, moveCardSchema, updateCardSchema } from '../../domain/validation.js';
+import {
+  createCardSchema,
+  moveCardSchema,
+  updateCardSchema,
+} from '../../domain/validation.js';
 import { titleRequired, validationFailed } from '../errors.js';
 import type { CardService } from '../services/card-service.js';
 import type { EventRepository } from '../repositories/event-repository.js';
@@ -15,7 +19,9 @@ export const registerCardRoutes = (
       // A blank title gets its own code because the interface reacts to it
       // differently from any other validation failure (FR-004, contracts/api.md).
       const titleIssue = parsed.error.issues.find((i) => i.path[0] === 'title');
-      throw titleIssue ? titleRequired() : validationFailed(parsed.error.issues[0]!.message);
+      throw titleIssue
+        ? titleRequired()
+        : validationFailed(parsed.error.issues[0]!.message);
     }
     return reply.status(201).send(await cards.create(parsed.data));
   });
@@ -24,7 +30,9 @@ export const registerCardRoutes = (
     const parsed = updateCardSchema.safeParse(request.body);
     if (!parsed.success) {
       const titleIssue = parsed.error.issues.find((i) => i.path[0] === 'title');
-      throw titleIssue ? titleRequired() : validationFailed(parsed.error.issues[0]!.message);
+      throw titleIssue
+        ? titleRequired()
+        : validationFailed(parsed.error.issues[0]!.message);
     }
     return cards.update(request.params.id, parsed.data);
   });

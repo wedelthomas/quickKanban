@@ -8,14 +8,14 @@ test.describe('drag and drop', () => {
     await resetBoard();
   });
 
-  test('a card dragged to another column stays there after reload (BH-007)', async ({ page }) => {
+  test('a card dragged to another column stays there after reload (BH-007)', async ({
+    page,
+  }) => {
     await page.goto('/');
     await createCard(page, 'Move me');
 
     await dragCardTo(page, 'Move me', 'in_progress');
-    await expect
-      .poll(() => cardTitlesIn(page, 'in_progress'))
-      .toEqual(['Move me']);
+    await expect.poll(() => cardTitlesIn(page, 'in_progress')).toEqual(['Move me']);
 
     await page.reload();
     await expect.poll(() => cardTitlesIn(page, 'in_progress')).toEqual(['Move me']);
@@ -60,9 +60,13 @@ test.describe('drag and drop', () => {
     await page.mouse.move(last!.x + last!.width / 2, last!.y + last!.height / 2);
     await page.mouse.down();
     for (let i = 1; i <= 8; i++) {
-      await page.mouse.move(last!.x + last!.width / 2, last!.y + ((onto - last!.y) * i) / 8, {
-        steps: 2,
-      });
+      await page.mouse.move(
+        last!.x + last!.width / 2,
+        last!.y + ((onto - last!.y) * i) / 8,
+        {
+          steps: 2,
+        },
+      );
     }
     await page.mouse.up();
 

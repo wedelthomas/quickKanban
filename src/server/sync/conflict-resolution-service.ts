@@ -44,7 +44,11 @@ export class ConflictResolutionService {
     // resolution that recorded a decision Jira never accepted would leave the
     // board confident and wrong, which is the failure the conflict existed to
     // prevent (FR-233).
-    await this.transitions!.moveTo(link.issueKey, targetStatus, conflict.jiraStatusCurrent);
+    await this.transitions!.moveTo(
+      link.issueKey,
+      targetStatus,
+      conflict.jiraStatusCurrent,
+    );
 
     const client = await this.pool.connect();
     try {

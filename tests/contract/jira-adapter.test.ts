@@ -50,7 +50,10 @@ describe('JiraAdapter against recorded Jira responses', () => {
   // assumes otherwise talks to the real internet without saying so.
   const adapter = () =>
     new JiraAdapter(credentials, async () => {}, ((input, init) =>
-      undiciFetch(input as string, { ...init, dispatcher: agent } as never)) as typeof fetch);
+      undiciFetch(
+        input as string,
+        { ...init, dispatcher: agent } as never,
+      )) as typeof fetch);
 
   it('parses a single page into issues', async () => {
     agent
@@ -73,8 +76,14 @@ describe('JiraAdapter against recorded Jira responses', () => {
   it('follows nextPageToken to exhaustion', async () => {
     const pool = agent.get(BASE);
     pool
-      .intercept({ path: (p) => p.includes('/search/jql') && !p.includes('nextPageToken') })
-      .reply(200, { issues: [issue('AIHUB-1')], nextPageToken: 'token-2', isLast: false });
+      .intercept({
+        path: (p) => p.includes('/search/jql') && !p.includes('nextPageToken'),
+      })
+      .reply(200, {
+        issues: [issue('AIHUB-1')],
+        nextPageToken: 'token-2',
+        isLast: false,
+      });
     pool
       .intercept({ path: (p) => p.includes('nextPageToken=token-2') })
       .reply(200, { issues: [issue('AIHUB-2')], isLast: true });
@@ -86,23 +95,37 @@ describe('JiraAdapter against recorded Jira responses', () => {
   it('reports a rejected credential as credentials, and does not retry it', async () => {
     // A rejected credential will be rejected again; retrying only delays the
     // report and burns rate limit.
-    agent.get(BASE).intercept({ path: (p) => p.includes('/search/jql') }).reply(401, {
-      errorMessages: ['Client must be authenticated to access this resource.'],
-    });
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.includes('/search/jql') })
+      .reply(401, {
+        errorMessages: ['Client must be authenticated to access this resource.'],
+      });
 
-    await expect(adapter().searchIssues('x')).rejects.toMatchObject({ kind: 'credentials' });
+    await expect(adapter().searchIssues('x')).rejects.toMatchObject({
+      kind: 'credentials',
+    });
   });
 
   it('reports 403 as credentials too', async () => {
-    agent.get(BASE).intercept({ path: (p) => p.includes('/search/jql') }).reply(403, {});
-    await expect(adapter().searchIssues('x')).rejects.toMatchObject({ kind: 'credentials' });
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.includes('/search/jql') })
+      .reply(403, {});
+    await expect(adapter().searchIssues('x')).rejects.toMatchObject({
+      kind: 'credentials',
+    });
   });
 
   it('retries a rate limit and succeeds if it clears', async () => {
     const pool = agent.get(BASE);
-    pool.intercept({ path: (p) => p.includes('/search/jql') }).reply(429, {}, {
-      headers: { 'retry-after': '1' },
-    });
+    pool.intercept({ path: (p) => p.includes('/search/jql') }).reply(
+      429,
+      {},
+      {
+        headers: { 'retry-after': '1' },
+      },
+    );
     pool
       .intercept({ path: (p) => p.includes('/search/jql') })
       .reply(200, { issues: [issue('AIHUB-1')], isLast: true });
@@ -116,7 +139,9 @@ describe('JiraAdapter against recorded Jira responses', () => {
     for (let i = 0; i < 6; i++) {
       pool.intercept({ path: (p) => p.includes('/search/jql') }).reply(429, {});
     }
-    await expect(adapter().searchIssues('x')).rejects.toMatchObject({ kind: 'rate_limit' });
+    await expect(adapter().searchIssues('x')).rejects.toMatchObject({
+      kind: 'rate_limit',
+    });
   });
 
   it('retries a 500 and succeeds if it clears', async () => {
@@ -132,15 +157,27 @@ describe('JiraAdapter against recorded Jira responses', () => {
   it('reports the removed endpoint as malformed rather than pretending success', async () => {
     // The exact response /rest/api/3/search now returns. Recorded because a
     // future migration could reintroduce this failure silently.
-    agent.get(BASE).intercept({ path: (p) => p.includes('/search/jql') }).reply(410, {
-      errorMessages: ['The requested API has been removed. Please migrate to the /rest/api/3/search/jql API.'],
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.includes('/search/jql') })
+      .reply(410, {
+        errorMessages: [
+          'The requested API has been removed. Please migrate to the /rest/api/3/search/jql API.',
+        ],
+      });
+    await expect(adapter().searchIssues('x')).rejects.toMatchObject({
+      kind: 'malformed',
     });
-    await expect(adapter().searchIssues('x')).rejects.toMatchObject({ kind: 'malformed' });
   });
 
   it('refuses a body without an issues array', async () => {
-    agent.get(BASE).intercept({ path: (p) => p.includes('/search/jql') }).reply(200, { total: 3 });
-    await expect(adapter().searchIssues('x')).rejects.toMatchObject({ kind: 'malformed' });
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.includes('/search/jql') })
+      .reply(200, { total: 3 });
+    await expect(adapter().searchIssues('x')).rejects.toMatchObject({
+      kind: 'malformed',
+    });
   });
 
   it('refuses an issue missing its key or update time', async () => {
@@ -201,16 +238,27 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
 
   const adapter = () =>
     new JiraAdapter(credentials, async () => {}, ((input, init) =>
-      undiciFetch(input as string, { ...init, dispatcher: agent } as never)) as typeof fetch);
+      undiciFetch(
+        input as string,
+        { ...init, dispatcher: agent } as never,
+      )) as typeof fetch);
 
   it('reads a transition by its destination status, not by its own name', async () => {
     agent
       .get(BASE)
-      .intercept({ path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/, method: 'GET' })
+      .intercept({
+        path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/,
+        method: 'GET',
+      })
       .reply(200, {
         expand: 'transitions',
         transitions: [
-          { id: '11', name: 'To Development', to: { id: '3', name: 'Development' }, fields: {} },
+          {
+            id: '11',
+            name: 'To Development',
+            to: { id: '3', name: 'Development' },
+            fields: {},
+          },
           { id: '41', name: 'Pass', to: { id: '10001', name: 'PO Approve' }, fields: {} },
         ],
       });
@@ -218,7 +266,12 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
     const transitions = await adapter().getTransitions('ABSARCH-44');
 
     expect(transitions).toEqual([
-      { id: '11', name: 'To Development', toStatusName: 'Development', requiresFields: false },
+      {
+        id: '11',
+        name: 'To Development',
+        toStatusName: 'Development',
+        requiresFields: false,
+      },
       { id: '41', name: 'Pass', toStatusName: 'PO Approve', requiresFields: false },
     ]);
   });
@@ -226,7 +279,10 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
   it('marks a transition that demands a field, so it can be refused rather than half-attempted', async () => {
     agent
       .get(BASE)
-      .intercept({ path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/, method: 'GET' })
+      .intercept({
+        path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/,
+        method: 'GET',
+      })
       .reply(200, {
         transitions: [
           {
@@ -263,9 +319,14 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
     agent
       .get(BASE)
       .intercept({ path: '/rest/api/3/issue/ABSARCH-44/transitions', method: 'POST' })
-      .reply(400, { errorMessages: ['Transition id 999 is not valid for this issue.'], errors: {} });
+      .reply(400, {
+        errorMessages: ['Transition id 999 is not valid for this issue.'],
+        errors: {},
+      });
 
-    await expect(adapter().transitionIssue('ABSARCH-44', '999')).rejects.toBeInstanceOf(JiraError);
+    await expect(adapter().transitionIssue('ABSARCH-44', '999')).rejects.toBeInstanceOf(
+      JiraError,
+    );
   });
 
   it('reads the status list, de-duplicated, for the column mapping to choose from', async () => {

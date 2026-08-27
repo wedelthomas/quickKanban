@@ -96,14 +96,19 @@ export const buildApp = ({
       const status = framework.statusCode ?? 500;
       const clientFault = status >= 400 && status < 500;
 
-      request.log.error({ err: error }, clientFault ? 'rejected request' : 'unhandled error');
+      request.log.error(
+        { err: error },
+        clientFault ? 'rejected request' : 'unhandled error',
+      );
 
       return reply
         .status(status)
         .type('application/problem+json')
         .send({
           type: 'about:blank',
-          title: clientFault ? 'The request could not be accepted' : 'Something went wrong',
+          title: clientFault
+            ? 'The request could not be accepted'
+            : 'Something went wrong',
           status,
           code: clientFault ? 'BAD_REQUEST' : 'INTERNAL_ERROR',
           detail:
@@ -133,7 +138,11 @@ export const buildApp = ({
     conflicts,
     () => new Date(),
     jira
-      ? { transitions: new TransitionService(jira), mappings, links: new JiraLinkRepository(pool) }
+      ? {
+          transitions: new TransitionService(jira),
+          mappings,
+          links: new JiraLinkRepository(pool),
+        }
       : undefined,
   );
   registerCardRoutes(app, cardService, events);
@@ -153,7 +162,10 @@ export const buildApp = ({
     ),
     cardRepository,
     async (id) => {
-      const { rows } = await pool.query<{ name: string }>('SELECT name FROM columns WHERE id = $1', [id]);
+      const { rows } = await pool.query<{ name: string }>(
+        'SELECT name FROM columns WHERE id = $1',
+        [id],
+      );
       return rows[0]?.name ?? String(id);
     },
   );
@@ -182,13 +194,16 @@ export const buildApp = ({
     // The SPA owns its routing; anything not under /api falls through to it.
     app.setNotFoundHandler((request, reply) => {
       if (request.url.startsWith('/api')) {
-        return reply.status(404).type('application/problem+json').send({
-          type: 'about:blank',
-          title: 'Not found',
-          status: 404,
-          code: 'CARD_NOT_FOUND',
-          detail: `No route matches ${request.url}.`,
-        });
+        return reply
+          .status(404)
+          .type('application/problem+json')
+          .send({
+            type: 'about:blank',
+            title: 'Not found',
+            status: 404,
+            code: 'CARD_NOT_FOUND',
+            detail: `No route matches ${request.url}.`,
+          });
       }
       return reply.sendFile('index.html');
     });

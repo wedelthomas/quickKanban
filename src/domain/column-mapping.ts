@@ -12,8 +12,10 @@ export interface Mapping {
  * lets Blocked exist on a board whose Jira workflow has no Blocked status:
  * cards move there and Jira is simply not told (FR-207).
  */
-export const statusForColumn = (mappings: readonly Mapping[], columnId: number): string | null =>
-  mappings.find((m) => m.columnId === columnId)?.statusName ?? null;
+export const statusForColumn = (
+  mappings: readonly Mapping[],
+  columnId: number,
+): string | null => mappings.find((m) => m.columnId === columnId)?.statusName ?? null;
 
 /**
  * Which column a Jira status belongs in, or null when nothing maps to it.

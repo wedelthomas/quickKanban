@@ -52,7 +52,9 @@ export const reconcile = ({
   const localChanged = localStatus !== null && !same(localStatus, lastKnownStatus);
 
   if (!remoteChanged) {
-    return localChanged ? { kind: 'push-local', toStatus: localStatus! } : { kind: 'no-op' };
+    return localChanged
+      ? { kind: 'push-local', toStatus: localStatus! }
+      : { kind: 'no-op' };
   }
 
   const remoteColumn = columnForJiraStatus(mappings, remoteStatus);

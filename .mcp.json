@@ -3,10 +3,7 @@
     "testrail": {
       "type": "stdio",
       "command": "/Users/twedel/Development/ABS/mcp/TestRailMCP/.venv/bin/python",
-      "args": [
-        "-m",
-        "testrail_mcp"
-      ],
+      "args": ["-m", "testrail_mcp"],
       "env": {}
     }
   }

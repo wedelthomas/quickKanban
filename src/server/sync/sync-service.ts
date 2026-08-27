@@ -148,7 +148,13 @@ export class SyncService {
     client: pg.PoolClient,
     issues: JiraIssue[],
   ): Promise<SyncRun['counts']> {
-    const counts = { issuesSeen: issues.length, created: 0, updated: 0, archived: 0, restored: 0 };
+    const counts = {
+      issuesSeen: issues.length,
+      created: 0,
+      updated: 0,
+      archived: 0,
+      restored: 0,
+    };
     const existing = await this.links.allKeys(client);
     const mappings = await this.mappings.forDomain(client);
     // A conflicted card is skipped entirely: it holds its position until the

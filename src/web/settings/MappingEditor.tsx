@@ -50,7 +50,10 @@ export const MappingEditor = ({
   // Anything already mapped stays selectable even if Jira no longer reports it,
   // so opening this screen never silently drops a mapping the user chose.
   const options = Array.from(
-    new Set([...(statuses ?? []), ...mappings.flatMap((m) => (m.statusName ? [m.statusName] : []))]),
+    new Set([
+      ...(statuses ?? []),
+      ...mappings.flatMap((m) => (m.statusName ? [m.statusName] : [])),
+    ]),
   ).sort();
 
   return (
@@ -68,7 +71,9 @@ export const MappingEditor = ({
             className="input"
             data-testid={`mapping-${column.key}`}
             value={mappings.find((m) => m.columnId === column.id)?.statusName ?? ''}
-            onChange={(e) => onChange(column.id, e.target.value === '' ? null : e.target.value)}
+            onChange={(e) =>
+              onChange(column.id, e.target.value === '' ? null : e.target.value)
+            }
           >
             <option value="">No status — never pushed to Jira</option>
             {options.map((status) => (

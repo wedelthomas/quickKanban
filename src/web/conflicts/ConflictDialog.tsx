@@ -28,7 +28,10 @@ export const ConflictDialog = ({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
 
-  const choose = async (id: number, resolution: 'kept_board' | 'accepted_jira'): Promise<void> => {
+  const choose = async (
+    id: number,
+    resolution: 'kept_board' | 'accepted_jira',
+  ): Promise<void> => {
     setBusy(id);
     setError(null);
     try {
@@ -45,8 +48,8 @@ export const ConflictDialog = ({
       <div className="dialog dialog--wide" role="dialog" aria-label="Conflicts">
         <h2 className="help-title">Conflicts</h2>
         <p className="field-note">
-          The board and Jira were both changed. Nothing has been decided for you —
-          pick the side that is right.
+          The board and Jira were both changed. Nothing has been decided for you — pick
+          the side that is right.
         </p>
 
         {error && (

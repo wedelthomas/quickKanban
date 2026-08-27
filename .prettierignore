@@ -3,3 +3,10 @@ node_modules
 playwright-report
 test-results
 package-lock.json
+
+# Prose and specification documents.
+#
+# These are authored artifacts, not code: their line breaks carry meaning
+# (Gherkin blocks, requirement tables), and spec.md files are content-hashed by
+# the TestRail sync, so reflowing them would show up there as spurious drift.
+*.md

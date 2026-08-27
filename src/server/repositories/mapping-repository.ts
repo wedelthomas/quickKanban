@@ -8,7 +8,11 @@ export class MappingRepository {
   /** The shape the domain functions take: only what deciding requires. */
   async forDomain(client?: pg.PoolClient): Promise<Mapping[]> {
     const runner = client ?? this.pool;
-    const { rows } = await runner.query<{ column_id: number; position: number; status_name: string }>(
+    const { rows } = await runner.query<{
+      column_id: number;
+      position: number;
+      status_name: string;
+    }>(
       `SELECT m.column_id, c.position, m.status_name
          FROM column_status_mappings m JOIN columns c ON c.id = m.column_id`,
     );
@@ -44,7 +48,9 @@ export class MappingRepository {
    * null rather than by a separate delete, so the interface has one way to say
    * "this column is local-only".
    */
-  async replace(mappings: { columnId: number; statusName: string | null }[]): Promise<ColumnMapping[]> {
+  async replace(
+    mappings: { columnId: number; statusName: string | null }[],
+  ): Promise<ColumnMapping[]> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');

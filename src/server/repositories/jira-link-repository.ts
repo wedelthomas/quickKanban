@@ -22,7 +22,15 @@ export class JiraLinkRepository {
          status_id = EXCLUDED.status_id,
          jira_updated_at = EXCLUDED.jira_updated_at,
          last_synced_at = now()`,
-      [cardId, issue.key, issue.id, issue.url, issue.statusName, issue.statusId, issue.updatedAt],
+      [
+        cardId,
+        issue.key,
+        issue.id,
+        issue.url,
+        issue.statusName,
+        issue.statusId,
+        issue.updatedAt,
+      ],
     );
   }
 
@@ -33,7 +41,11 @@ export class JiraLinkRepository {
    * what that decision concluded rather than what Jira happened to say when
    * the row was touched.
    */
-  async upsertMetadata(client: pg.PoolClient, cardId: string, issue: JiraIssue): Promise<void> {
+  async upsertMetadata(
+    client: pg.PoolClient,
+    cardId: string,
+    issue: JiraIssue,
+  ): Promise<void> {
     await client.query(
       `UPDATE jira_links
           SET issue_key = $2, issue_id = $3, url = $4, status_id = $5,
@@ -43,7 +55,9 @@ export class JiraLinkRepository {
     );
   }
 
-  async findByCardId(cardId: string): Promise<{ issueKey: string; statusName: string } | null> {
+  async findByCardId(
+    cardId: string,
+  ): Promise<{ issueKey: string; statusName: string } | null> {
     const { rows } = await this.pool.query<{ issue_key: string; status_name: string }>(
       'SELECT issue_key, status_name FROM jira_links WHERE card_id = $1',
       [cardId],
@@ -53,7 +67,11 @@ export class JiraLinkRepository {
   }
 
   /** After our own transition, so the next sync sees no difference. */
-  async recordStatus(cardId: string, statusName: string, client?: pg.PoolClient): Promise<void> {
+  async recordStatus(
+    cardId: string,
+    statusName: string,
+    client?: pg.PoolClient,
+  ): Promise<void> {
     const runner = client ?? this.pool;
     await runner.query(
       'UPDATE jira_links SET status_name = $2, last_synced_at = now() WHERE card_id = $1',
@@ -62,12 +80,20 @@ export class JiraLinkRepository {
   }
 
   /** Every issue key currently linked to a card, archived or not. */
-  async allKeys(client: pg.PoolClient): Promise<Map<string, { cardId: string; archived: boolean }>> {
-    const { rows } = await client.query<{ issue_key: string; card_id: string; archived: boolean }>(
+  async allKeys(
+    client: pg.PoolClient,
+  ): Promise<Map<string, { cardId: string; archived: boolean }>> {
+    const { rows } = await client.query<{
+      issue_key: string;
+      card_id: string;
+      archived: boolean;
+    }>(
       `SELECT jl.issue_key, jl.card_id, (c.archived_at IS NOT NULL) AS archived
          FROM jira_links jl JOIN cards c ON c.id = jl.card_id
         WHERE c.deleted_at IS NULL`,
     );
-    return new Map(rows.map((r) => [r.issue_key, { cardId: r.card_id, archived: r.archived }]));
+    return new Map(
+      rows.map((r) => [r.issue_key, { cardId: r.card_id, archived: r.archived }]),
+    );
   }
 }

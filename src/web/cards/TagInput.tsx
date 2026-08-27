@@ -27,7 +27,9 @@ export const TagInput = ({
       return;
     }
     const controller = new AbortController();
-    fetch(`/api/tags?q=${encodeURIComponent(draft.trim())}`, { signal: controller.signal })
+    fetch(`/api/tags?q=${encodeURIComponent(draft.trim())}`, {
+      signal: controller.signal,
+    })
       .then((r) => (r.ok ? r.json() : { tags: [] }))
       .then((body: { tags: Suggestion[] }) => setSuggestions(body.tags))
       .catch(() => {

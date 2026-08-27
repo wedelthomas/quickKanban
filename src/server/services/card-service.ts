@@ -5,7 +5,12 @@ import type {
   UpdateCardInput,
 } from '../../domain/validation.js';
 import type { CardRepository } from '../repositories/card-repository.js';
-import { cardConflicted, cardNotFound, deleteForbiddenNonLocal, editForbiddenJiraOwned } from '../errors.js';
+import {
+  cardConflicted,
+  cardNotFound,
+  deleteForbiddenNonLocal,
+  editForbiddenJiraOwned,
+} from '../errors.js';
 import type { TransitionService } from '../sync/transition-service.js';
 import type { MappingRepository } from '../repositories/mapping-repository.js';
 import type { JiraLinkRepository } from '../repositories/jira-link-repository.js';
@@ -53,7 +58,11 @@ export class CardService {
   async move(
     id: string,
     input: MoveCardInput,
-  ): Promise<{ card: Card; moved: boolean; jira?: { transitioned: boolean; toStatus: string } }> {
+  ): Promise<{
+    card: Card;
+    moved: boolean;
+    jira?: { transitioned: boolean; toStatus: string };
+  }> {
     // Checked before anything else, and regardless of Jira: a conflicted card
     // is frozen against the user too, not only against sync. Dragging it would
     // otherwise let someone paper over a disagreement without ever learning
@@ -64,7 +73,11 @@ export class CardService {
 
     const result = await this.cards.move(id, input, this.now());
     if (!result) throw cardNotFound(id);
-    return { card: result.card, moved: result.moved, ...(jiraOutcome ? { jira: jiraOutcome } : {}) };
+    return {
+      card: result.card,
+      moved: result.moved,
+      ...(jiraOutcome ? { jira: jiraOutcome } : {}),
+    };
   }
 
   /**

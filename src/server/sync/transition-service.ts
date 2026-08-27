@@ -24,7 +24,11 @@ export interface TransitionOutcome {
 export class TransitionService {
   constructor(private readonly jira: JiraPort) {}
 
-  async moveTo(issueKey: string, targetStatus: string, currentStatus: string): Promise<TransitionOutcome> {
+  async moveTo(
+    issueKey: string,
+    targetStatus: string,
+    currentStatus: string,
+  ): Promise<TransitionOutcome> {
     if (this.sameStatus(targetStatus, currentStatus)) {
       // Already there. Asking Jira to move an issue to where it already is
       // would at best be a no-op and at worst an illegal transition.
@@ -72,10 +76,16 @@ export class TransitionService {
     return a.trim().toLowerCase() === b.trim().toLowerCase();
   }
 
-  private asDomainError(error: unknown, targetStatus: string, transitionName?: string): DomainError {
+  private asDomainError(
+    error: unknown,
+    targetStatus: string,
+    transitionName?: string,
+  ): DomainError {
     if (error instanceof JiraError) {
-      if (error.kind === 'needs_fields') return transitionNeedsFields(transitionName ?? targetStatus);
-      if (error.kind === 'no_legal_transition') return noLegalTransition('its current status', targetStatus);
+      if (error.kind === 'needs_fields')
+        return transitionNeedsFields(transitionName ?? targetStatus);
+      if (error.kind === 'no_legal_transition')
+        return noLegalTransition('its current status', targetStatus);
       // Connectivity, credentials and rate limits all mean the same thing to
       // the user mid-drag: it could not be attempted, try again.
       return databaseUnavailable();

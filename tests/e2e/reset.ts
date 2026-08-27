@@ -13,9 +13,15 @@ const run = promisify(execFile);
  */
 export const resetBoard = async (): Promise<void> => {
   await run('docker', [
-    'compose', 'exec', '-T', 'db',
-    'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',
-    '-d', process.env.POSTGRES_DB ?? 'kanban',
+    'compose',
+    'exec',
+    '-T',
+    'db',
+    'psql',
+    '-U',
+    process.env.POSTGRES_USER ?? 'kanban',
+    '-d',
+    process.env.POSTGRES_DB ?? 'kanban',
     '-c',
     // Settings are restored rather than truncated: the rows are seeded by
     // migration, so dropping them would leave the app with no query at all.
@@ -62,9 +68,17 @@ export const seedJiraCard = async (opts: {
            $$${status}$$, '10000', now()
       FROM new_card;`;
   await run('docker', [
-    'compose', 'exec', '-T', 'db',
-    'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',
-    '-d', process.env.POSTGRES_DB ?? 'kanban', '-c', sql,
+    'compose',
+    'exec',
+    '-T',
+    'db',
+    'psql',
+    '-U',
+    process.env.POSTGRES_USER ?? 'kanban',
+    '-d',
+    process.env.POSTGRES_DB ?? 'kanban',
+    '-c',
+    sql,
   ]);
 };
 
@@ -82,8 +96,16 @@ export const seedConflict = async (opts: {
     SELECT card_id, ${opts.boardColumnId}, $$${opts.jiraStatus}$$, $$${opts.jiraStatus}$$
       FROM jira_links WHERE issue_key = $$${opts.key}$$;`;
   await run('docker', [
-    'compose', 'exec', '-T', 'db',
-    'psql', '-U', process.env.POSTGRES_USER ?? 'kanban',
-    '-d', process.env.POSTGRES_DB ?? 'kanban', '-c', sql,
+    'compose',
+    'exec',
+    '-T',
+    'db',
+    'psql',
+    '-U',
+    process.env.POSTGRES_USER ?? 'kanban',
+    '-d',
+    process.env.POSTGRES_DB ?? 'kanban',
+    '-c',
+    sql,
   ]);
 };

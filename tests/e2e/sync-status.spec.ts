@@ -91,7 +91,10 @@ test.describe('sync status', () => {
     );
     await page.reload();
 
-    await expect(page.getByTestId('sync-status')).toHaveAttribute('data-state', 'running');
+    await expect(page.getByTestId('sync-status')).toHaveAttribute(
+      'data-state',
+      'running',
+    );
     // No overlay, no disabled board: the card below must be creatable.
     await createCard(page, 'Made during a sync');
     await expect(

@@ -13,7 +13,9 @@ test.describe('the column mapping editor', () => {
     await resetBoard();
   });
 
-  test('shows the seeded mapping and keeps a change across a reload', async ({ page }) => {
+  test('shows the seeded mapping and keeps a change across a reload', async ({
+    page,
+  }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Settings' }).click();
 
@@ -25,13 +27,16 @@ test.describe('the column mapping editor', () => {
     await editor.getByTestId('mapping-blocked').selectOption('Development');
     // One Save for the whole dialog — the mapping is part of the settings, not
     // a separate screen with its own commit.
-    await page.getByRole('dialog').getByRole('button', { name: 'Save', exact: true }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Save', exact: true })
+      .click();
     await expect(page.getByRole('dialog')).toBeHidden();
 
     await page.reload();
     await page.getByRole('button', { name: 'Settings' }).click();
-    await expect(page.getByTestId('mapping-editor').getByTestId('mapping-blocked')).toHaveValue(
-      'Development',
-    );
+    await expect(
+      page.getByTestId('mapping-editor').getByTestId('mapping-blocked'),
+    ).toHaveValue('Development');
   });
 });

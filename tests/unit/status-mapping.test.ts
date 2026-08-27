@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { columnForStatus, BACKLOG, IN_PROGRESS, TEST, PO_REVIEW, DONE, BLOCKED } from '../../src/domain/status-mapping.js';
+import {
+  columnForStatus,
+  BACKLOG,
+  IN_PROGRESS,
+  TEST,
+  PO_REVIEW,
+  DONE,
+  BLOCKED,
+} from '../../src/domain/status-mapping.js';
 
 /**
  * Covers BH-101 and BH-126.

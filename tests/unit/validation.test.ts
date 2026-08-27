@@ -26,22 +26,29 @@ describe('createCardSchema', () => {
   });
 
   it('keeps an explicit priority', () => {
-    expect(createCardSchema.parse({ title: 'A', priority: 'high' }).priority).toBe('high');
+    expect(createCardSchema.parse({ title: 'A', priority: 'high' }).priority).toBe(
+      'high',
+    );
   });
 
   it('rejects a priority outside the fixed set', () => {
-    expect(createCardSchema.safeParse({ title: 'A', priority: 'urgent' }).success).toBe(false);
+    expect(createCardSchema.safeParse({ title: 'A', priority: 'urgent' }).success).toBe(
+      false,
+    );
   });
 
   it('accepts a calendar due date', () => {
-    expect(createCardSchema.parse({ title: 'A', dueDate: '2026-09-02' }).dueDate).toBe('2026-09-02');
+    expect(createCardSchema.parse({ title: 'A', dueDate: '2026-09-02' }).dueDate).toBe(
+      '2026-09-02',
+    );
   });
 
   it('rejects a due date carrying a time component', () => {
     // FR-007 makes due dates calendar dates. Accepting a timestamp here would
     // reintroduce the timezone ambiguity the decision exists to avoid.
-    expect(createCardSchema.safeParse({ title: 'A', dueDate: '2026-09-02T10:00:00Z' }).success)
-      .toBe(false);
+    expect(
+      createCardSchema.safeParse({ title: 'A', dueDate: '2026-09-02T10:00:00Z' }).success,
+    ).toBe(false);
   });
 
   it('accepts an absent due date', () => {

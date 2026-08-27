@@ -6,7 +6,12 @@ import { jiraNotConfigured, validationFailed } from '../errors.js';
 
 const putSchema = z.object({
   mappings: z
-    .array(z.object({ columnId: z.number().int().min(1).max(6), statusName: z.string().nullable() }))
+    .array(
+      z.object({
+        columnId: z.number().int().min(1).max(6),
+        statusName: z.string().nullable(),
+      }),
+    )
     .min(1),
 });
 

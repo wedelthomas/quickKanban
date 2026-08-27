@@ -25,7 +25,14 @@ export class FakeJiraAdapter implements JiraPort {
 
   /** Transitions the fake will report, keyed by issue key. */
   private transitions = new Map<string, JiraTransition[]>();
-  private statuses: string[] = ['Open', 'Development', 'Test', 'PO Approve', 'Blocked', 'Cancelled'];
+  private statuses: string[] = [
+    'Open',
+    'Development',
+    'Test',
+    'PO Approve',
+    'Blocked',
+    'Cancelled',
+  ];
   /** Every transition actually performed, so tests can assert what was written. */
   readonly transitionsPerformed: { issueKey: string; transitionId: string }[] = [];
 
@@ -54,7 +61,8 @@ export class FakeJiraAdapter implements JiraPort {
    * refusal call setTransitions explicitly and narrow it.
    */
   async getTransitions(issueKey: string): Promise<JiraTransition[]> {
-    if (this.failure) throw new JiraError(this.failure, `fake Jira failing: ${this.failure}`);
+    if (this.failure)
+      throw new JiraError(this.failure, `fake Jira failing: ${this.failure}`);
     return this.legalTransitions(issueKey);
   }
 
@@ -85,10 +93,12 @@ export class FakeJiraAdapter implements JiraPort {
   }
 
   async transitionIssue(issueKey: string, transitionId: string): Promise<void> {
-    if (this.failure) throw new JiraError(this.failure, `fake Jira failing: ${this.failure}`);
+    if (this.failure)
+      throw new JiraError(this.failure, `fake Jira failing: ${this.failure}`);
     const legal = this.legalTransitions(issueKey).find((t) => t.id === transitionId);
     if (!legal) throw new JiraError('no_legal_transition', 'no such transition');
-    if (legal.requiresFields) throw new JiraError('needs_fields', 'transition wants fields');
+    if (legal.requiresFields)
+      throw new JiraError('needs_fields', 'transition wants fields');
 
     this.transitionsPerformed.push({ issueKey, transitionId });
     // The issue really moves, so a later sync observes the new status exactly

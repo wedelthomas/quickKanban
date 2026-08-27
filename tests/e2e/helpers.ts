@@ -9,12 +9,16 @@ export const createCard = async (page: Page, title: string): Promise<void> => {
 };
 
 export const column = (page: Page, key: string) =>
-  page.getByTestId('column').filter({ has: page.locator(`[data-column-key="${key}"]`) })
+  page
+    .getByTestId('column')
+    .filter({ has: page.locator(`[data-column-key="${key}"]`) })
     .or(page.locator(`[data-column-key="${key}"]`))
     .first();
 
 export const cardTitlesIn = async (page: Page, key: string): Promise<string[]> =>
-  page.locator(`[data-column-key="${key}"] [data-testid="card"] .card-title`).allTextContents();
+  page
+    .locator(`[data-column-key="${key}"] [data-testid="card"] .card-title`)
+    .allTextContents();
 
 /**
  * dnd-kit listens for pointer movement rather than a single drop event, so a

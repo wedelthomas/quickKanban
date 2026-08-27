@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { statusForColumn, columnForJiraStatus, type Mapping } from '../../src/domain/column-mapping.js';
+import {
+  statusForColumn,
+  columnForJiraStatus,
+  type Mapping,
+} from '../../src/domain/column-mapping.js';
 
 /** Covers BH-202 and BH-224. */
 const mappings: Mapping[] = [

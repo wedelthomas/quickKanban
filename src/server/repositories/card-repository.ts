@@ -1,7 +1,11 @@
 import type pg from 'pg';
 import type { Card } from '../../shared/types.js';
 import { type BoardRow, toCard } from './board-row.js';
-import type { CreateCardInput, MoveCardInput, UpdateCardInput } from '../../domain/validation.js';
+import type {
+  CreateCardInput,
+  MoveCardInput,
+  UpdateCardInput,
+} from '../../domain/validation.js';
 import { planMove, type ColumnOrder } from '../../domain/ordering.js';
 import { TagRepository } from './tag-repository.js';
 import { EventRepository } from './event-repository.js';
@@ -45,7 +49,13 @@ export class CardRepository {
         `INSERT INTO cards (source, title, description, priority, due_date, column_id, position)
          VALUES ('local', $1, $2, $3, $4, $5, 1)
          RETURNING id`,
-        [input.title, input.description, input.priority, input.dueDate, BACKLOG_COLUMN_ID],
+        [
+          input.title,
+          input.description,
+          input.priority,
+          input.dueDate,
+          BACKLOG_COLUMN_ID,
+        ],
       );
       const id = rows[0]!.id;
 
@@ -80,7 +90,12 @@ export class CardRepository {
     id: string,
     input: MoveCardInput,
     today: Date,
-  ): Promise<{ card: Card; moved: boolean; fromColumnId: number; toColumnId: number } | null> {
+  ): Promise<{
+    card: Card;
+    moved: boolean;
+    fromColumnId: number;
+    toColumnId: number;
+  } | null> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -108,7 +123,12 @@ export class CardRepository {
         // happen, and recording it would put noise in slice 4's summary.
         await client.query('ROLLBACK');
         const card = await this.findById(id, today);
-        return { card: card!, moved: false, fromColumnId: from.columnId, toColumnId: to.columnId };
+        return {
+          card: card!,
+          moved: false,
+          fromColumnId: from.columnId,
+          toColumnId: to.columnId,
+        };
       }
 
       await client.query(
@@ -277,9 +297,11 @@ export class CardRepository {
     }
   }
 
-
   /** Live card ids of a column, in order, locked for the rest of the transaction. */
-  private async lockedOrder(client: pg.PoolClient, columnId: number): Promise<ColumnOrder> {
+  private async lockedOrder(
+    client: pg.PoolClient,
+    columnId: number,
+  ): Promise<ColumnOrder> {
     const { rows } = await client.query<{ id: string }>(
       `SELECT id FROM cards
         WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL
@@ -316,5 +338,4 @@ export class CardRepository {
     const row = rows[0];
     return row ? toCard(row, today) : null;
   }
-
 }

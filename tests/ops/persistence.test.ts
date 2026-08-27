@@ -35,7 +35,9 @@ describe('data survives container recreation', () => {
 
   it('returns every card to the column it held before (BH-019)', async () => {
     const board = await getBoard();
-    const found = board.columns.flatMap((c) => c.cards.map((card) => ({ ...card, columnId: c.id })));
+    const found = board.columns.flatMap((c) =>
+      c.cards.map((card) => ({ ...card, columnId: c.id })),
+    );
 
     expect(found).toHaveLength(placed.length);
     for (const expected of placed) {

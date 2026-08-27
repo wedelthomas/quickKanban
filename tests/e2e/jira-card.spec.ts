@@ -64,6 +64,9 @@ test.describe('a Jira card on the board', () => {
     await dialog.getByRole('button', { name: 'Save' }).click();
 
     const card = page.getByTestId('card').filter({ hasText: 'Priority is mine' });
-    await expect(card.getByTestId('card-priority')).toHaveAttribute('aria-label', 'High priority');
+    await expect(card.getByTestId('card-priority')).toHaveAttribute(
+      'aria-label',
+      'High priority',
+    );
   });
 });

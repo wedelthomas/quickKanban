@@ -1,4 +1,9 @@
-import { JiraError, type JiraIssue, type JiraPort, type JiraTransition } from './jira-port.js';
+import {
+  JiraError,
+  type JiraIssue,
+  type JiraPort,
+  type JiraTransition,
+} from './jira-port.js';
 import type { JiraCredentials } from './credentials.js';
 import { backoffDelays } from '../../domain/backoff.js';
 
@@ -94,7 +99,9 @@ export class JiraAdapter implements JiraPort {
         // routinely: "To Development" leads to "Development", "Pass" to
         // "PO Approve".
         toStatusName: String(transition.to?.name ?? ''),
-        requiresFields: Object.values(transition.fields ?? {}).some((f) => f?.required === true),
+        requiresFields: Object.values(transition.fields ?? {}).some(
+          (f) => f?.required === true,
+        ),
       };
     });
   }
@@ -138,7 +145,10 @@ export class JiraAdapter implements JiraPort {
       // here means the screen.
       throw new JiraError('needs_fields', 'Jira asked for more than a status change.');
     }
-    throw new JiraError('malformed', `Jira returned an unexpected status ${response.status}.`);
+    throw new JiraError(
+      'malformed',
+      `Jira returned an unexpected status ${response.status}.`,
+    );
   }
 
   async listStatuses(): Promise<string[]> {
@@ -146,7 +156,9 @@ export class JiraAdapter implements JiraPort {
     if (!Array.isArray(body)) {
       throw new JiraError('malformed', 'Jira returned an unreadable status list.');
     }
-    const names = body.map((s) => String((s as { name?: unknown }).name ?? '')).filter(Boolean);
+    const names = body
+      .map((s) => String((s as { name?: unknown }).name ?? ''))
+      .filter(Boolean);
     return [...new Set(names)].sort();
   }
 
@@ -156,7 +168,10 @@ export class JiraAdapter implements JiraPort {
     try {
       response = await this.fetchImpl(url, {
         method: 'GET',
-        headers: { Authorization: this.credentials.authorization, Accept: 'application/json' },
+        headers: {
+          Authorization: this.credentials.authorization,
+          Accept: 'application/json',
+        },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
     } catch {
@@ -166,7 +181,10 @@ export class JiraAdapter implements JiraPort {
       throw new JiraError('credentials', 'Jira rejected the configured credentials.');
     }
     if (!response.ok) {
-      throw new JiraError('malformed', `Jira returned an unexpected status ${response.status}.`);
+      throw new JiraError(
+        'malformed',
+        `Jira returned an unexpected status ${response.status}.`,
+      );
     }
     return response.json().catch(() => null);
   }
@@ -211,7 +229,8 @@ export class JiraAdapter implements JiraPort {
       if (response.status === 429) {
         lastError = new JiraError('rate_limit', 'Jira is rate-limiting requests.');
         const retryAfter = Number(response.headers.get('retry-after'));
-        if (Number.isFinite(retryAfter) && retryAfter > 0) await this.sleep(retryAfter * 1000);
+        if (Number.isFinite(retryAfter) && retryAfter > 0)
+          await this.sleep(retryAfter * 1000);
         continue;
       }
       if (response.status >= 500) {
@@ -219,7 +238,10 @@ export class JiraAdapter implements JiraPort {
         continue;
       }
       if (!response.ok) {
-        throw new JiraError('malformed', `Jira returned an unexpected status ${response.status}.`);
+        throw new JiraError(
+          'malformed',
+          `Jira returned an unexpected status ${response.status}.`,
+        );
       }
 
       return this.parse(await response.json().catch(() => null));
@@ -229,18 +251,26 @@ export class JiraAdapter implements JiraPort {
   }
 
   private parse(body: unknown): Page {
-    const payload = body as
-      | { issues?: unknown; nextPageToken?: unknown; isLast?: unknown }
-      | null;
+    const payload = body as {
+      issues?: unknown;
+      nextPageToken?: unknown;
+      isLast?: unknown;
+    } | null;
     if (!payload || !Array.isArray(payload.issues)) {
-      throw new JiraError('malformed', 'Jira returned a response this board could not read.');
+      throw new JiraError(
+        'malformed',
+        'Jira returned a response this board could not read.',
+      );
     }
 
     const issues = (payload.issues as RawIssue[]).map((raw) => {
       const key = typeof raw.key === 'string' ? raw.key : null;
       const updated = typeof raw.fields?.updated === 'string' ? raw.fields.updated : null;
       if (!key || !updated) {
-        throw new JiraError('malformed', 'A Jira issue arrived without a key or update time.');
+        throw new JiraError(
+          'malformed',
+          'A Jira issue arrived without a key or update time.',
+        );
       }
       return {
         id: String(raw.id ?? key),
@@ -255,7 +285,8 @@ export class JiraAdapter implements JiraPort {
 
     return {
       issues,
-      nextPageToken: typeof payload.nextPageToken === 'string' ? payload.nextPageToken : null,
+      nextPageToken:
+        typeof payload.nextPageToken === 'string' ? payload.nextPageToken : null,
       // Absent `isLast` with no token means this was the only page.
       isLast: payload.isLast === true || typeof payload.nextPageToken !== 'string',
     };

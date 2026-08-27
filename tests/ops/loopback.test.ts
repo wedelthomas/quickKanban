@@ -54,7 +54,13 @@ describe('network exposure', () => {
       .trim()
       .split('\n')
       .filter(Boolean)
-      .map((line) => JSON.parse(line) as { Service: string; Publishers?: { PublishedPort: number }[] })
+      .map(
+        (line) =>
+          JSON.parse(line) as {
+            Service: string;
+            Publishers?: { PublishedPort: number }[];
+          },
+      )
       .find((s) => s.Service === 'db');
 
     const published = (db?.Publishers ?? []).filter((p) => p.PublishedPort > 0);

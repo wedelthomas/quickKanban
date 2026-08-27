@@ -45,7 +45,14 @@ export class SyncRunRepository {
           SET finished_at = now(), outcome = 'succeeded',
               issues_seen = $2, created = $3, updated = $4, archived = $5, restored = $6
         WHERE id = $1 RETURNING *`,
-      [id, counts.issuesSeen, counts.created, counts.updated, counts.archived, counts.restored],
+      [
+        id,
+        counts.issuesSeen,
+        counts.created,
+        counts.updated,
+        counts.archived,
+        counts.restored,
+      ],
     );
     return toRun(rows[0]!);
   }

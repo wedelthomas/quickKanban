@@ -37,7 +37,11 @@ export class ConflictRepository {
   }
 
   /** Keeps an open conflict's view of Jira current without moving the card. */
-  async refreshJiraStatus(cardId: string, statusName: string, client?: pg.PoolClient): Promise<void> {
+  async refreshJiraStatus(
+    cardId: string,
+    statusName: string,
+    client?: pg.PoolClient,
+  ): Promise<void> {
     const runner = client ?? this.pool;
     await runner.query(
       `UPDATE conflicts SET jira_status_current = $2
@@ -77,7 +81,11 @@ export class ConflictRepository {
       : null;
   }
 
-  async resolve(id: number, resolution: ConflictResolution, client?: pg.PoolClient): Promise<void> {
+  async resolve(
+    id: number,
+    resolution: ConflictResolution,
+    client?: pg.PoolClient,
+  ): Promise<void> {
     const runner = client ?? this.pool;
     await runner.query(
       'UPDATE conflicts SET resolved_at = now(), resolution = $2 WHERE id = $1 AND resolved_at IS NULL',
@@ -95,7 +103,14 @@ export class ConflictRepository {
   }
 
   async listOpen(): Promise<
-    { id: number; cardId: string; boardColumnId: number; statusAtDetection: string; statusCurrent: string; raisedAt: string }[]
+    {
+      id: number;
+      cardId: string;
+      boardColumnId: number;
+      statusAtDetection: string;
+      statusCurrent: string;
+      raisedAt: string;
+    }[]
   > {
     const { rows } = await this.pool.query<{
       id: string;
@@ -104,7 +119,7 @@ export class ConflictRepository {
       jira_status_at_detection: string;
       jira_status_current: string;
       raised_at: Date;
-    }>('SELECT * FROM conflicts WHERE resolved_at IS NULL ORDER BY raised_at'); 
+    }>('SELECT * FROM conflicts WHERE resolved_at IS NULL ORDER BY raised_at');
     return rows.map((r) => ({
       id: Number(r.id),
       cardId: r.card_id,

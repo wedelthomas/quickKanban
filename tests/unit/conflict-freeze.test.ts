@@ -24,7 +24,9 @@ describe('a conflicted card, with no Jira configured', () => {
     // No Jira bundle at all — the third constructor argument is absent.
     const service = new CardService(cards, conflicts);
 
-    await expect(service.move('card-1', { toColumnId: 5, toIndex: 1 })).rejects.toMatchObject({
+    await expect(
+      service.move('card-1', { toColumnId: 5, toIndex: 1 }),
+    ).rejects.toMatchObject({
       code: 'CARD_CONFLICTED',
     });
   });

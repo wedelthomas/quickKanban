@@ -26,21 +26,30 @@ export const registerConflictRoutes = (
         open.map(async (c) => ({
           id: c.id,
           card: await cards.findById(c.cardId, today),
-          board: { columnId: c.boardColumnId, columnName: await columnName(c.boardColumnId) },
-          jira: { statusAtDetection: c.statusAtDetection, statusCurrent: c.statusCurrent },
+          board: {
+            columnId: c.boardColumnId,
+            columnName: await columnName(c.boardColumnId),
+          },
+          jira: {
+            statusAtDetection: c.statusAtDetection,
+            statusCurrent: c.statusCurrent,
+          },
           raisedAt: c.raisedAt,
         })),
       ),
     };
   });
 
-  app.post<{ Params: { id: string } }>('/api/conflicts/:id/resolve', async (request, reply) => {
-    const parsed = resolveSchema.safeParse(request.body);
-    if (!parsed.success) throw validationFailed(parsed.error.issues[0]!.message);
-    const id = Number(request.params.id);
-    if (parsed.data.resolution === 'kept_board') await resolution.keepBoard(id);
-    else await resolution.acceptJira(id);
+  app.post<{ Params: { id: string } }>(
+    '/api/conflicts/:id/resolve',
+    async (request, reply) => {
+      const parsed = resolveSchema.safeParse(request.body);
+      if (!parsed.success) throw validationFailed(parsed.error.issues[0]!.message);
+      const id = Number(request.params.id);
+      if (parsed.data.resolution === 'kept_board') await resolution.keepBoard(id);
+      else await resolution.acceptJira(id);
 
-    return reply.status(204).send();
-  });
+      return reply.status(204).send();
+    },
+  );
 };

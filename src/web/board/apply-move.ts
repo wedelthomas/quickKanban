@@ -13,7 +13,9 @@ export const applyMove = (
   toColumnId: number,
   toIndex: number,
 ): Board | null => {
-  const fromColumn = board.columns.find((c) => c.cards.some((card) => card.id === cardId));
+  const fromColumn = board.columns.find((c) =>
+    c.cards.some((card) => card.id === cardId),
+  );
   const toColumn = board.columns.find((c) => c.id === toColumnId);
   if (!fromColumn || !toColumn) return null;
 
@@ -25,7 +27,9 @@ export const applyMove = (
   });
   if (!plan.changed) return null;
 
-  const byId = new Map<string, Card>(board.columns.flatMap((c) => c.cards).map((c) => [c.id, c]));
+  const byId = new Map<string, Card>(
+    board.columns.flatMap((c) => c.cards).map((c) => [c.id, c]),
+  );
 
   return {
     columns: board.columns.map((column) => {
@@ -35,7 +39,11 @@ export const applyMove = (
         ...column,
         cards: assigned
           .sort((a, b) => a.position - b.position)
-          .map((a) => ({ ...byId.get(a.cardId)!, columnId: column.id, position: a.position })),
+          .map((a) => ({
+            ...byId.get(a.cardId)!,
+            columnId: column.id,
+            position: a.position,
+          })),
       };
     }),
   };

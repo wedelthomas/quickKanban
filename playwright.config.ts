@@ -26,5 +26,7 @@ export default defineConfig({
   // If you would rather have the hermetic bundled build:
   //   npx playwright install chromium
   // and drop the `channel` line below.
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], channel: 'chrome' } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], channel: 'chrome' } },
+  ],
 });

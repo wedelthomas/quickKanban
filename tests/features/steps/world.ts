@@ -63,7 +63,11 @@ export class BoardWorld extends World {
     url: string,
     payload?: unknown,
   ): Promise<{ status: number; body: unknown }> {
-    const res = await this.app.inject({ method: method as 'GET', url, payload: payload as never });
+    const res = await this.app.inject({
+      method: method as 'GET',
+      url,
+      payload: payload as never,
+    });
     let body: unknown = null;
     if (res.body) {
       try {

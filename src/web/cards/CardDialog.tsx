@@ -86,8 +86,8 @@ export const CardDialog = ({
         </label>
         {jiraOwned && (
           <p className="field-note" data-testid="jira-owned-note">
-            The title comes from Jira and changes there. Priority, due date and
-            tags are yours.
+            The title comes from Jira and changes there. Priority, due date and tags are
+            yours.
           </p>
         )}
         {error && (

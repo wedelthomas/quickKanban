@@ -20,11 +20,17 @@ const ENV = {
  * thrown value, not just the message.
  */
 describe('the credential never escapes', () => {
-  const contains = (value: unknown): boolean => JSON.stringify(value, replacer)?.includes(TOKEN) ?? false;
+  const contains = (value: unknown): boolean =>
+    JSON.stringify(value, replacer)?.includes(TOKEN) ?? false;
 
   function replacer(this: unknown, _key: string, value: unknown): unknown {
     if (value instanceof Error) {
-      return { name: value.name, message: value.message, stack: value.stack, cause: value.cause };
+      return {
+        name: value.name,
+        message: value.message,
+        stack: value.stack,
+        cause: value.cause,
+      };
     }
     return value;
   }
@@ -39,12 +45,18 @@ describe('the credential never escapes', () => {
   });
 
   it.each([
-    ['connectivity', () => Promise.reject(new Error(`connect ECONNREFUSED with ${TOKEN}`))],
+    [
+      'connectivity',
+      () => Promise.reject(new Error(`connect ECONNREFUSED with ${TOKEN}`)),
+    ],
     ['401', () => Promise.resolve(new Response('nope', { status: 401 }))],
     ['429', () => Promise.resolve(new Response('slow down', { status: 429 }))],
     ['500', () => Promise.resolve(new Response('boom', { status: 500 }))],
     ['418', () => Promise.resolve(new Response('teapot', { status: 418 }))],
-    ['malformed body', () => Promise.resolve(new Response('{"nope":1}', { status: 200 }))],
+    [
+      'malformed body',
+      () => Promise.resolve(new Response('{"nope":1}', { status: 200 })),
+    ],
   ])('throws no error carrying the token: %s', async (_label, respond) => {
     const original = globalThis.fetch;
     globalThis.fetch = (() => respond()) as typeof fetch;

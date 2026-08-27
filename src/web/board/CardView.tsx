@@ -21,10 +21,17 @@ const formatDue = (iso: string): string => {
  * once (NFR-13, SC-006). Priority is a coloured dot rather than a word because
  * the card is scanned, not read.
  */
-export const CardView = ({ card, onOpen }: { card: Card; onOpen: (card: Card) => void }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: card.id,
-  });
+export const CardView = ({
+  card,
+  onOpen,
+}: {
+  card: Card;
+  onOpen: (card: Card) => void;
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({
+      id: card.id,
+    });
 
   return (
     <article
@@ -57,7 +64,11 @@ export const CardView = ({ card, onOpen }: { card: Card; onOpen: (card: Card) =>
         {card.hasConflict && (
           // Frozen, not decorated: this badge is the only warning the user gets
           // that dragging this card will be refused until they decide (FR-236).
-          <span className="badge badge--conflict" data-testid="card-conflict" title="Conflict with Jira — resolve to move this card">
+          <span
+            className="badge badge--conflict"
+            data-testid="card-conflict"
+            title="Conflict with Jira — resolve to move this card"
+          >
             Conflict
           </span>
         )}

@@ -10,7 +10,13 @@ import { MappingEditor, type Mapping } from './MappingEditor.js';
  * lives in the environment and the board only ever tells you whether it is
  * present.
  */
-export const SettingsDialog = ({ columns, onClose }: { columns: Column[]; onClose: () => void }) => {
+export const SettingsDialog = ({
+  columns,
+  onClose,
+}: {
+  columns: Column[];
+  onClose: () => void;
+}) => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -46,7 +52,9 @@ export const SettingsDialog = ({ columns, onClose }: { columns: Column[]; onClos
         body: JSON.stringify(settings),
       });
       if (!response.ok) {
-        const problem = (await response.json().catch(() => null)) as { detail?: string } | null;
+        const problem = (await response.json().catch(() => null)) as {
+          detail?: string;
+        } | null;
         setError(problem?.detail ?? 'Those settings could not be saved.');
         return;
       }
@@ -56,11 +64,16 @@ export const SettingsDialog = ({ columns, onClose }: { columns: Column[]; onClos
           method: 'PUT',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            mappings: mappings.map(({ columnId, statusName }) => ({ columnId, statusName })),
+            mappings: mappings.map(({ columnId, statusName }) => ({
+              columnId,
+              statusName,
+            })),
           }),
         });
         if (!mappingResponse.ok) {
-          const problem = (await mappingResponse.json().catch(() => null)) as { detail?: string } | null;
+          const problem = (await mappingResponse.json().catch(() => null)) as {
+            detail?: string;
+          } | null;
           setError(problem?.detail ?? 'The column mapping could not be saved.');
           return;
         }
@@ -83,7 +96,9 @@ export const SettingsDialog = ({ columns, onClose }: { columns: Column[]; onClos
             className="input"
             value={settings?.jiraJql ?? ''}
             disabled={!settings}
-            onChange={(e) => settings && setSettings({ ...settings, jiraJql: e.target.value })}
+            onChange={(e) =>
+              settings && setSettings({ ...settings, jiraJql: e.target.value })
+            }
           />
         </label>
 
@@ -113,15 +128,17 @@ export const SettingsDialog = ({ columns, onClose }: { columns: Column[]; onClos
               const rest = (current ?? []).filter((m) => m.columnId !== columnId);
               const existing = (current ?? []).find((m) => m.columnId === columnId);
               const name = columns.find((c) => c.id === columnId)?.name ?? '';
-              return [...rest, { columnId, columnName: existing?.columnName ?? name, statusName }]
-                .sort((a, b) => a.columnId - b.columnId);
+              return [
+                ...rest,
+                { columnId, columnName: existing?.columnName ?? name, statusName },
+              ].sort((a, b) => a.columnId - b.columnId);
             })
           }
         />
 
         <p className="field-note" data-testid="credentials-note">
-          Jira credentials are read from the environment and are never shown,
-          stored or editable here.
+          Jira credentials are read from the environment and are never shown, stored or
+          editable here.
         </p>
 
         {error && (
@@ -135,7 +152,11 @@ export const SettingsDialog = ({ columns, onClose }: { columns: Column[]; onClos
           <button type="button" className="button" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className="button button--primary" disabled={saving || !settings}>
+          <button
+            type="submit"
+            className="button button--primary"
+            disabled={saving || !settings}
+          >
             Save
           </button>
         </div>

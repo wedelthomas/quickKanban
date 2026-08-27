@@ -30,7 +30,11 @@ const request = async <T>(url: string, init?: RequestInit): Promise<T> => {
     // The client switches on `code`, never on `detail` — see contracts/api.md.
     const problem = (await response.json().catch(() => null)) as ProblemResponse | null;
     throw new ApiError(
-      problem ?? { code: 'VALIDATION_FAILED', title: 'Request failed', detail: 'Unknown error.' },
+      problem ?? {
+        code: 'VALIDATION_FAILED',
+        title: 'Request failed',
+        detail: 'Unknown error.',
+      },
     );
   }
   return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
@@ -46,7 +50,9 @@ export const useBoard = () => {
       setBoard(await request<Board>('/api/board'));
       setError(null);
     } catch (e) {
-      setError(e instanceof ApiError ? e.problem.detail : 'The board could not be loaded.');
+      setError(
+        e instanceof ApiError ? e.problem.detail : 'The board could not be loaded.',
+      );
     }
   }, []);
 
@@ -99,7 +105,8 @@ export const useBoard = () => {
           .find((c) => c.id === cardId);
         if (
           shown &&
-          (shown.columnId !== result.card.columnId || shown.position !== result.card.position)
+          (shown.columnId !== result.card.columnId ||
+            shown.position !== result.card.position)
         ) {
           await refresh();
         }

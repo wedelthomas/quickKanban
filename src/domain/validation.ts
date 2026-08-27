@@ -25,25 +25,35 @@ const title = z
 
 export const createCardSchema = z.object({
   title,
-  description: z.string().nullish().transform((value) => value ?? null),
+  description: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? null),
   priority: z.enum(PRIORITIES).default('medium'),
   dueDate: calendarDate.nullish().transform((value) => value ?? null),
-  tags: z
-    .array(z.string())
-    .default([])
-    .transform(normalizeTags),
+  tags: z.array(z.string()).default([]).transform(normalizeTags),
 });
 
 /** Every field optional, but each validated identically to creation. */
 export const updateCardSchema = z
   .object({
     title: title.optional(),
-    description: z.string().nullish().transform((value) => value ?? null).optional(),
+    description: z
+      .string()
+      .nullish()
+      .transform((value) => value ?? null)
+      .optional(),
     priority: z.enum(PRIORITIES).optional(),
-    dueDate: calendarDate.nullish().transform((value) => value ?? null).optional(),
+    dueDate: calendarDate
+      .nullish()
+      .transform((value) => value ?? null)
+      .optional(),
     tags: z.array(z.string()).transform(normalizeTags).optional(),
   })
-  .refine((value) => Object.keys(value).length > 0, 'An update must change at least one field.');
+  .refine(
+    (value) => Object.keys(value).length > 0,
+    'An update must change at least one field.',
+  );
 
 export const moveCardSchema = z.object({
   toColumnId: z.number().int().min(1).max(6),

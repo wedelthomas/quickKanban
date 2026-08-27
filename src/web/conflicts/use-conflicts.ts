@@ -24,7 +24,9 @@ export const useConflicts = (boardVersion: unknown) => {
         body: JSON.stringify({ resolution }),
       });
       if (!response.ok) {
-        const problem = (await response.json().catch(() => null)) as { detail?: string } | null;
+        const problem = (await response.json().catch(() => null)) as {
+          detail?: string;
+        } | null;
         throw new Error(problem?.detail ?? 'That could not be resolved.');
       }
       await reload();

@@ -14,7 +14,9 @@ export interface JiraCredentials {
  * Returns null when Jira is not configured. That is a supported state, not an
  * error: the board works without it (FR-105).
  */
-export const readJiraCredentials = (env: NodeJS.ProcessEnv = process.env): JiraCredentials | null => {
+export const readJiraCredentials = (
+  env: NodeJS.ProcessEnv = process.env,
+): JiraCredentials | null => {
   const baseUrl = env.JIRA_BASE_URL?.trim();
   const email = env.JIRA_EMAIL?.trim();
   const token = env.JIRA_API_TOKEN?.trim();
