@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { describe, expect, it } from 'vitest';
+import { compose, waitForHealthy } from './helpers.js';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 const run = promisify(execFile);
 
@@ -31,6 +32,14 @@ const inContainer = async (script: string): Promise<string> => {
  * tzdata, or a compose file that stopped passing TZ, would break it silently.
  */
 describe('the container honours its configured timezone', () => {
+  // Brought up here rather than assumed. `persistence.test.ts` ends with
+  // `compose down -v`, so whichever file vitest runs after it inherits nothing
+  // — and a test that passes or fails depending on file order is not a test.
+  beforeAll(async () => {
+    await compose('up', '-d');
+    await waitForHealthy();
+  }, 180_000);
+
   it('is given a timezone at all', async () => {
     const tz = await inContainer('console.log(process.env.TZ ?? "")');
     expect(tz).not.toBe('');

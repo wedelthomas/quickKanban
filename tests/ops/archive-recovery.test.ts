@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { compose, waitForHealthy } from './helpers.js';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const run = promisify(execFile);
 
@@ -49,6 +50,13 @@ const runArchival = async (): Promise<number> => {
  * the same sweep, and this test is the reproduction that found it missing.
  */
 describe('an interrupted archival pass', () => {
+  // Same reason as timezone.test.ts: nothing is guaranteed to be running by the
+  // time this file executes.
+  beforeAll(async () => {
+    await compose('up', '-d');
+    await waitForHealthy();
+  }, 180_000);
+
   beforeEach(async () => {
     await psql('DELETE FROM archive_runs;');
   });
