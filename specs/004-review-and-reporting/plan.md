@@ -221,6 +221,7 @@ flowchart LR
   subgraph app["app container"]
     BoardRoute["GET /api/board"]
     ArchiveRoute["GET /api/archive"]
+    RunRoute["POST /api/archive/run"]
     SummaryRoute["GET /api/summary"]
     SetRoute["/api/settings"]
 
@@ -229,6 +230,7 @@ flowchart LR
     Eligible{{"archival.ts<br/>pure: arrival + window + now"}}
     SummarySvc["SummaryService"]
     Build{{"summary.ts + summary-text.ts<br/>pure: rows -> report + text"}}
+    ViewSvc["ArchiveViewService<br/>groups by LOCAL calendar day"]
 
     Repos["Repositories<br/>archive · summary · archive_runs · events"]
   end
@@ -240,10 +242,12 @@ flowchart LR
   Browser --> Filter
   Filter -->|"narrowed view only — no request, no write"| Browser
   Browser -->|"from, to"| ArchiveRoute
+  Browser -->|"run now"| RunRoute
   Browser -->|"period=daily｜weekly"| SummaryRoute
   Browser -->|"window, interval"| SetRoute
 
   Sched -->|"every tick"| Archival
+  RunRoute --> Archival
   Archival -->|"candidates in Done"| Repos
   Archival --> Eligible
   Eligible -->|"archive ｜ leave"| Archival
@@ -254,7 +258,8 @@ flowchart LR
   SummarySvc -->|"card_events + board + archived"| Repos
   SummarySvc --> Build
 
-  ArchiveRoute --> Repos
+  ArchiveRoute --> ViewSvc
+  ViewSvc -->|"cards in range"| Repos
   Repos --> DB
 ```
 
@@ -321,3 +326,30 @@ suite 32733.
 - **The spec contradiction this plan raised is resolved** in the spec itself
   (see the section above), not worked around here. The spec re-passed
   verification afterwards.
+
+
+## As-built notes
+
+Recorded at the close of the feature, where the delivered system differs from
+what this plan described. Both differences are additions the plan did not
+foresee rather than departures from it.
+
+**`ArchiveViewService` is a service, not a repository method.** The plan showed
+the archive route reading straight from a repository. Grouping by the *local*
+calendar day has to happen outside SQL — Postgres would group by the container's
+timezone regardless of the user's — so the grouping, the inclusive upper bound
+and the range validation live in a service, and the repository stays a query.
+
+**`POST /api/archive/run` is reachable from the browser.** The plan described it
+as existing for the tests. It is also what the acceptance suite and any operator
+would reach for; it is on the diagram now.
+
+**Migration count: three, not two.** `015_archive_settings.sql` seeds the two
+settings keys. The plan folded that into the other migrations; splitting it
+keeps data seeding separate from schema change.
+
+**One test file became four.** `tests/features/steps/reporting.steps.ts` passed
+500 lines covering four unrelated subjects and was split into `filtering`,
+`archival`, `summary` and `archive` step files over a shared
+`slice4-helpers.ts`. The Test Strategy table above names the original; the four
+that exist cover the same ground.

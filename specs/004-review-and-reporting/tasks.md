@@ -327,22 +327,22 @@ Story-Complete Review Gate before Polish.**
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T457 [P] Update `README.md` — filtering, the archive, the summaries, the
+- [x] T457 [P] Update `README.md` — filtering, the archive, the summaries, the
   two new settings, and `TZ` with what goes wrong when it is unset.
-- [ ] T458 [P] Add a note to `docs/external-interactions.md` recording that this
+- [x] T458 [P] Add a note to `docs/external-interactions.md` recording that this
   slice adds **no** touchpoint. The register is only trustworthy if the absence
   of an entry is itself a checked claim.
-- [ ] T459 Verify plan.md's component and state diagrams against the as-built
+- [x] T459 Verify plan.md's component and state diagrams against the as-built
   system; label every edge.
-- [ ] T460 Verify all twelve test files named in plan.md exist and pass.
-- [ ] T461 Verify SC-301 through SC-309, including SC-302's full combination matrix and
+- [x] T460 Verify all twelve test files named in plan.md exist and pass.
+- [x] T461 Verify SC-301 through SC-309, including SC-302's full combination matrix and
   SC-303/SC-308's zero-mutation claims.
-- [ ] T462 Run the archival pass against a board with a conflicted card, a card
+- [x] T462 Run the archival pass against a board with a conflicted card, a card
   created directly in Done, and a card that left Done and returned — the three
   cases most likely to be right in unit tests and wrong in wiring.
-- [ ] T463 Code cleanup; no file over 300 lines without a recorded reason.
-- [ ] T464 `npm audit` clean at Critical and High.
-- [ ] T465 Run `quickstart.md` end to end from a clean `docker compose up`.
+- [x] T463 Code cleanup; no file over 300 lines without a recorded reason.
+- [x] T464 `npm audit` clean at Critical and High.
+- [x] T465 Run `quickstart.md` end to end from a clean `docker compose up`.
 - [ ] T466 Run `/speckit.review`; address blocking findings.
 - [ ] T467 Request peer review.
 

@@ -9,7 +9,7 @@ record for your day. Requests arrive by chat, email and hallway conversation;
 they take real hours and compete with everything else, but no Jira board shows
 them. This board does.
 
-> **Current state: slice 3 (two-way sync), complete.**
+> **Current state: slice 4 (review and reporting), complete. All four slices done.**
 
 ## What it does today
 
@@ -40,8 +40,17 @@ them. This board does.
 - When both sides changed, the board **stops and asks** rather than picking a
   winner — see below
 
-**Not yet:** search, the dated archive and standup summaries are slice 4. See
-[`docs/brd.md`](docs/brd.md).
+- **Filter the board in place** by text, tag, priority, source or overdue —
+  press `/` to reach it, `Escape` to clear it. All six columns stay visible, and
+  a filter that matches nothing says so rather than looking like an empty board
+- **Finished work archives itself** once it has sat in Done longer than a
+  window you set (7 days by default). It leaves the board; it is never deleted
+- **Browse the archive by date**, grouped by the day each card finished, with
+  the reason a card left where one was recorded
+- **Generate your standup update** — what moved, what is in progress, what is
+  blocked — and copy it as plain text. Daily or weekly
+
+See [`docs/brd.md`](docs/brd.md) for how the four slices were scoped.
 
 ## When the board and Jira disagree
 
@@ -140,6 +149,7 @@ good.** Reach for this only when you genuinely want an empty board.
 | `POSTGRES_DB` | `kanban` | Database name |
 | `DATABASE_URL` | — | Connection string the app uses; points at the `db` service |
 | `PORT` | `3000` | Port inside the container |
+| `TZ` | `America/Costa_Rica` | Your timezone, as an IANA name. **Set this.** "Today", "overdue" and a summary's "yesterday" are all local calendar days; the container is UTC without it, so an evening summary would already have rolled into tomorrow and would omit that evening's work |
 | `HOST` | `0.0.0.0` | Bind address **inside** the container. Do not change this to make the board private — the loopback restriction comes from the `127.0.0.1:3000:3000` publish spec in `docker-compose.yml`, and binding container loopback would only make the board unreachable |
 
 ## Keyboard
@@ -203,3 +213,54 @@ Spec-driven. Every requirement traces to a behavior pathway and a test:
   visual decisions and why
 - [`docs/external-interactions.md`](docs/external-interactions.md) — every
   outside touchpoint, its failure mode and its timeout policy
+
+## Filtering, the archive and summaries
+
+### Filtering
+
+Press `/`, or use the rail on the left. Text matches titles and descriptions
+only — tags have their own control, so typing a tag name into the text box will
+not surprise you with it.
+
+Filters never survive a reload. That is deliberate: a filtered board must never
+be mistaken for a lost one. The rail's collapsed state *is* remembered, since
+how wide a panel is and which cards are hidden are different questions.
+
+### Archival
+
+A card that has been in the Done column longer than **Archive after** (7 days
+by default) leaves the board on its own. It is archived, never deleted, and the
+movement history records it with the system as the actor.
+
+The window is measured from the card's **most recent** arrival in Done, so a
+card that finished, was reopened and finished again is measured from the second
+time.
+
+Two cards are never taken:
+
+- one that left Done before the window elapsed, and
+- one with an **unresolved conflict**, at any age. Slice 3 freezes a conflicted
+  card so the disagreement gets settled deliberately; archiving it would dispose
+  of the evidence and leave you unable to act. Each pass reports how many it
+  skipped for that reason, so a number that stays above zero means there is a
+  conflict waiting.
+
+Set the window to `0` to archive at the next pass. Passes run hourly by default
+(`Archive every`), on their own schedule rather than the Jira sync's.
+
+### Summaries
+
+**Summary** in the rail. Daily covers yesterday and today — a standup update is
+about what you did yesterday and what you are on now. Weekly covers the last
+seven days, **including work completed and since archived**.
+
+Movements that came from Jira rather than from you are marked, so you do not
+report a teammate's transition as your own progress. **Copy** puts it on the
+clipboard as plain text, ready to paste.
+
+### The archive
+
+**Archive** in the rail, defaulting to the last 30 days. Grouped by the day each
+card finished; days with nothing in them are omitted. A Jira card that left
+because the issue stopped matching your query shows that as its reason —
+"I finished it" and "it was reassigned away from me" look identical otherwise.

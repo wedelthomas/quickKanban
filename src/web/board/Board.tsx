@@ -22,6 +22,7 @@ import { SummaryDialog } from '../summary/SummaryDialog.js';
 import { ArchiveView } from '../archive/ArchiveView.js';
 import { Sidebar } from './Sidebar.js';
 import { useFilter } from './use-filter.js';
+import { useDialogs } from './use-dialogs.js';
 import { collisionDetection, resolveTarget } from './drag.js';
 import { matches } from '../../domain/card-filter.js';
 import type { ShortcutMatch } from '../keyboard/shortcuts.js';
@@ -30,12 +31,20 @@ import type { Board as BoardData, Card } from '../../shared/types.js';
 /**
  * The board screen: cards, drag and drop, keyboard, filter and the dialogs.
  *
- * A little over 300 lines, and the two obvious extractions were both tried and
- * rejected. The drag geometry did leave, to `drag.ts`, because it is arithmetic
- * about pointers and owes nothing to board state. The keyboard handler and the
- * dialog block cannot: each would need eight to ten props threaded back in —
- * the board, the mutations, two refs and five setters — which moves the tangle
- * somewhere else and adds an indirection to look through while doing it.
+ * ~345 lines. Three extractions were made and two were rejected, and the
+ * distinction is worth stating because "over 300" is not by itself the problem.
+ *
+ * Left, because each owns something this does not: `drag.ts` (pointer
+ * arithmetic that owes nothing to board state), `use-filter.ts` (the filter and
+ * the rail's remembered width), `use-dialogs.ts` (which screen owns the board,
+ * previously six booleans and an ever-growing `a || b || c` that fell out of
+ * date whenever a screen was added).
+ *
+ * Stayed, because extracting them moves a tangle rather than removing one: the
+ * keyboard handler reads and writes almost everything here, and the dialog
+ * block would need roughly twenty props threaded back in — the board, four
+ * mutations, two refs and the dialog controller — for a component that would
+ * then be read only by this file.
  */
 export const Board = () => {
   const {
@@ -50,13 +59,8 @@ export const Board = () => {
     deleteCard,
   } = useBoard();
   const { status: syncStatus, syncNow } = useSync(refresh);
-  const [creating, setCreating] = useState(false);
+  const dialogs = useDialogs();
   const [editing, setEditing] = useState<Card | null>(null);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [conflictsOpen, setConflictsOpen] = useState(false);
-  const [summaryOpen, setSummaryOpen] = useState(false);
-  const [archiveOpen, setArchiveOpen] = useState(false);
   const { conflicts, resolve } = useConflicts(board);
   const {
     filter,
@@ -99,7 +103,7 @@ export const Board = () => {
   const handleShortcut = useCallback(
     (match: ShortcutMatch): void => {
       if (match.action === 'close') {
-        setHelpOpen(false);
+        dialogs.hide();
         // Escape clears the filter as well as closing the help overlay: with
         // the filter focused it is the obvious way out, and a filter the user
         // cannot dismiss without reaching for the mouse fails FR-309.
@@ -116,11 +120,12 @@ export const Board = () => {
         return;
       }
       if (match.action === 'help') {
-        setHelpOpen((open) => !open);
+        if (dialogs.isOpen('help')) dialogs.hide();
+        else dialogs.show('help');
         return;
       }
       if (match.action === 'new-card') {
-        setCreating(true);
+        dialogs.show('create');
         return;
       }
 
@@ -163,20 +168,14 @@ export const Board = () => {
         void moveCard(cardId, column.id, column.cards.length + 1);
       }
     },
-    [board, moveCard, focusCardById, clearFilter, expandRail],
+    [board, moveCard, focusCardById, clearFilter, expandRail, dialogs],
   );
 
   // Suspended while a dialog owns the screen, so the board's shortcuts cannot
   // reach past it and claim keys the dialog's own controls need.
-  useShortcuts(handleShortcut, {
-    suspended:
-      creating ||
-      editing !== null ||
-      settingsOpen ||
-      conflictsOpen ||
-      summaryOpen ||
-      archiveOpen,
-  });
+  // Derived from the same value that decides what is rendered, so a new screen
+  // cannot be added without the shortcuts standing down for it.
+  useShortcuts(handleShortcut, { suspended: dialogs.anyOpen || editing !== null });
 
   if (error) return <p className="board-message board-message--error">{error}</p>;
   if (!board) return <p className="board-message">Loading the board…</p>;
@@ -219,9 +218,9 @@ export const Board = () => {
           cardCount={board.columns.reduce((n, c) => n + c.cards.length, 0)}
           conflictCount={conflicts.length}
           onToggleCollapsed={toggleRail}
-          onOpenSummary={() => setSummaryOpen(true)}
-          onOpenConflicts={() => setConflictsOpen(true)}
-          onOpenArchive={() => setArchiveOpen(true)}
+          onOpenSummary={() => dialogs.show('summary')}
+          onOpenConflicts={() => dialogs.show('conflicts')}
+          onOpenArchive={() => dialogs.show('archive')}
           onChange={updateFilter}
           onClear={clearFilter}
           inputRef={filterInputRef}
@@ -251,12 +250,12 @@ export const Board = () => {
               {/* Views live in the sidebar now — Summary and Conflicts moved there
             rather than being offered in two places, which leaves the bar for
             actions: sync, settings, and creating a card. */}
-              <button className="button" onClick={() => setSettingsOpen(true)}>
+              <button className="button" onClick={() => dialogs.show('settings')}>
                 Settings
               </button>
               <button
                 className="button button--primary"
-                onClick={() => setCreating(true)}
+                onClick={() => dialogs.show('create')}
               >
                 New card
               </button>
@@ -291,29 +290,29 @@ export const Board = () => {
           </DndContext>
         </div>
       </div>
-      {creating && (
+      {dialogs.isOpen('create') && (
         <CardDialog
-          onCancel={() => setCreating(false)}
+          onCancel={() => dialogs.hide()}
           onSubmit={async (input) => {
             await createCard(input);
-            setCreating(false);
+            dialogs.hide();
           }}
         />
       )}
-      {helpOpen && <HelpOverlay onClose={() => setHelpOpen(false)} />}
-      {settingsOpen && (
-        <SettingsDialog columns={board.columns} onClose={() => setSettingsOpen(false)} />
+      {dialogs.isOpen('help') && <HelpOverlay onClose={() => dialogs.hide()} />}
+      {dialogs.isOpen('settings') && (
+        <SettingsDialog columns={board.columns} onClose={() => dialogs.hide()} />
       )}
-      {summaryOpen && <SummaryDialog onClose={() => setSummaryOpen(false)} />}
-      {archiveOpen && <ArchiveView onClose={() => setArchiveOpen(false)} />}
-      {conflictsOpen && (
+      {dialogs.isOpen('summary') && <SummaryDialog onClose={() => dialogs.hide()} />}
+      {dialogs.isOpen('archive') && <ArchiveView onClose={() => dialogs.hide()} />}
+      {dialogs.isOpen('conflicts') && (
         <ConflictDialog
           conflicts={conflicts}
           onResolve={async (id, resolution) => {
             await resolve(id, resolution);
             await refresh();
           }}
-          onClose={() => setConflictsOpen(false)}
+          onClose={() => dialogs.hide()}
         />
       )}
       {editing && (

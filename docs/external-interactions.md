@@ -72,7 +72,27 @@ other people can see. Everything else is local to the user's machine.
 
 ## Planned touchpoints
 
-None. Slice 4 (search, archive, summaries) adds no outside touchpoint.
+None. All four slices are delivered.
+
+### Slice 4 added no touchpoint — checked, not assumed
+
+Filtering, archival, the archive and the summaries read data the board already
+holds. No outside system is contacted, and no new one is configurable.
+
+Recorded explicitly because **this register is only trustworthy if the absence
+of an entry is a checked claim rather than an omission**. A slice that quietly
+added a touchpoint and quietly added no entry would look identical to this one.
+
+What slice 4 does add is a process that changes the board **unattended** — the
+archival pass, on its own hourly schedule. That is not an external interaction,
+but it is the same class of risk: something acting while nobody watches. It is
+covered the same way an interaction would be, in `archive_runs` (one row per
+pass, with what it considered, archived and skipped) and in a log line per
+archived card.
+
+That precaution is not theoretical. Slice 3's live check found an unrequested
+Jira write **only** because a write log existed to find it in; every automated
+suite was green at the time.
 
 ## Touchpoints deliberately absent
 
