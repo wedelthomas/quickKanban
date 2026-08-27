@@ -315,14 +315,14 @@ on.
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T073 [P] Update repo-root `README.md`: the new column set, blocked as a flag, the iteration banner, and every new setting with its default. Include the upgrade note for plan.md risk P-1 — rolling back the image without rolling back the data leaves cards in In Progress that older code expects in Blocked.
-- [ ] T074 Verify the **Architecture Diagram** in `plan.md` still reflects the as-built system; update both diagrams if the implementation diverged, and label every edge.
-- [ ] T075 Verify every one of the nineteen test files named in plan.md exists and passes.
+- [x] T073 [P] Update repo-root `README.md`: the new column set, blocked as a flag, the iteration banner, and every new setting with its default. Include the upgrade note for plan.md risk P-1 — rolling back the image without rolling back the data leaves cards in In Progress that older code expects in Blocked.
+- [x] T074 Verify the **Architecture Diagram** in `plan.md` still reflects the as-built system; update both diagrams if the implementation diverged, and label every edge.
+- [x] T075 Verify every one of the nineteen test files named in plan.md exists and passes.
 - [ ] T076 Verify every behavior pathway has a passing test and every test file named in plan.md exists. **No coverage percentage is claimed** — see plan.md's Constitution Check, where the absent coverage provider is recorded as a carried deviation (`/speckit.analyze` B-2).
-- [ ] T077 Confirm the new Agile touchpoint added in T046 is exercised by an integration test, per the standing quality gate on the External Interactions Register.
+- [x] T077 Confirm the new Agile touchpoint added in T046 is exercised by an integration test, per the standing quality gate on the External Interactions Register.
 - [ ] T078 [P] Run `npm run lint` and the full suite: unit, contract, ops, acceptance, e2e.
-- [ ] T079 Run `quickstart.md` end to end against a live stack, including the two degraded iteration paths and the team-filter check.
-- [ ] T080 **Live verification against real Jira** — the board's own history says this finds what a green suite cannot. Confirm the banner shows the actual current TradeBlazers iteration with correct dates, and that the other team's sprint is ignored. Record it in `specs/005-iteration-and-board-restructure/live-verification.md`, as slice 3 did.
+- [x] T079 Run `quickstart.md` end to end against a live stack, including the two degraded iteration paths and the team-filter check.
+- [x] T080 **Live verification against real Jira** — the board's own history says this finds what a green suite cannot. Confirm the banner shows the actual current TradeBlazers iteration with correct dates, and that the other team's sprint is ignored. Record it in `specs/005-iteration-and-board-restructure/live-verification.md`, as slice 3 did.
 - [ ] T081 Run `/speckit.review` for a second-pass review of the diff against `main`; address blocking findings before opening a PR.
 - [ ] T082 Request peer code review; address feedback before merge.
 

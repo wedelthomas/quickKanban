@@ -200,6 +200,15 @@ even though it is a separate interface.
 | Operational | Schema / data migration plan | Six migrations, `016`–`021`, detailed in data-model.md. The only data-moving one is `017`, covered by a dedicated test asserting no card is lost (NFR-27, TEST-402). |
 | Alternatives | Alternatives considered + rejection rationale | Eleven decisions with their rejected alternatives in research.md. The three consequential ones — retire rather than delete, a separate iteration port, and counting carry-over at the boundary rather than deriving it on read — are also in Complexity Tracking above. |
 
+**As-built check (T074, end of slice).** The diagram was one component short:
+`carry-over-service` existed in code and not here. Added above. Resolving the
+iteration is the only moment a boundary can be observed, so the carry-over pass
+hangs off `iteration-service` rather than off the API — which is a real edge
+worth drawing, not a formality.
+
+Everything else matches: the second port, its fake, the two adapters, and the
+single write edge to Jira through `JiraPort`.
+
 **Drift signal**: `/speckit.feedback`'s architecture-drift heuristics
 (`new_top_level_dirs_since_plan`, `new_runtime_dependencies`,
 `files_outside_planned_paths`) compare HEAD against this plan at story-complete
@@ -219,6 +228,7 @@ flowchart LR
   Board -->|"POST /api/cards/:id/move"| API
 
   API --> IterSvc["iteration-service<br/>resolve · cache · degrade"]
+  IterSvc --> CarrySvc["carry-over-service<br/>increment · reset"]
   API --> CardSvc["card-service<br/>blocked · move"]
   API --> Sync["sync-service<br/>(existing)"]
 
@@ -230,7 +240,7 @@ flowchart LR
   JiraPort -->|"/rest/api/3 — status writes only"| Jira
 
   IterSvc -->|"upsert iteration + provenance"| DB[("PostgreSQL")]
-  IterSvc -->|"increment / reset carried_iterations"| DB
+  CarrySvc -->|"carried_iterations · iteration_seen"| DB
   CardSvc -->|"cards.blocked · card_events"| DB
   Sync -->|"jira_links.blocked_in_jira"| DB
 
