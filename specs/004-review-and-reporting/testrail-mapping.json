@@ -3,7 +3,7 @@
   "jira_ref": "",
   "project_id": 115,
   "suite_id": 32733,
-  "last_synced_at": "2026-08-27T02:30:28Z",
+  "last_synced_at": "2026-08-27T02:46:48Z",
   "last_synced_by": "spec-testrail-sync",
   "user_stories": {
     "us1": {
@@ -17,6 +17,12 @@
       "priority": "P1",
       "section_id": 2162687,
       "section_name": "Slice 4 \u2014 Review and Reporting | US2 Archival"
+    },
+    "us3": {
+      "title": "Produce my standup update without writing it",
+      "priority": "P2",
+      "section_id": 2162688,
+      "section_name": "Slice 4 \u2014 Review and Reporting | US3 Daily summary"
     }
   },
   "scenarios": {},
@@ -137,6 +143,51 @@
       "hash": "3bd72e8f79f62e7ddd5c11918d6e5390354f103b407199b45b5ffd8406baaa2f",
       "title_at_last_sync": "TEST-312 \u2014 Archival is recorded with the system as actor",
       "automation_id": "test-312.bh-312"
+    },
+    "TEST-316": {
+      "case_id": 20000082,
+      "pins": "BH-316",
+      "user_story": "us3",
+      "section_id": 2162688,
+      "hash": "71758b38dbb1ac19eff6b8854b6e12866fa2a9b1df89ad004ee473283d71a372",
+      "title_at_last_sync": "TEST-316 \u2014 Daily summary distinguishes moved, in progress and blocked",
+      "automation_id": "test-316.bh-316"
+    },
+    "TEST-318": {
+      "case_id": 20000083,
+      "pins": "BH-318",
+      "user_story": "us3",
+      "section_id": 2162688,
+      "hash": "d6f233bf7cfefad1cf37f797e8a66983016bae54fe990a3ce34eb46df41e1a59",
+      "title_at_last_sync": "TEST-318 \u2014 Summary includes both sources and shows issue keys",
+      "automation_id": "test-318.bh-318"
+    },
+    "TEST-319": {
+      "case_id": 20000084,
+      "pins": "BH-319",
+      "user_story": "us3",
+      "section_id": 2162688,
+      "hash": "acefad3d15ad9cff883bc26865491dca8497b730639b094942330ac6f5376e03",
+      "title_at_last_sync": "TEST-319 \u2014 Sync-caused movements are marked as originating in Jira",
+      "automation_id": "test-319.bh-319"
+    },
+    "TEST-320": {
+      "case_id": 20000085,
+      "pins": "BH-320",
+      "user_story": "us3",
+      "section_id": 2162688,
+      "hash": "921e7c0013b9269618638821718768a4c479955a9912e0538edc0c0b88a04f9d",
+      "title_at_last_sync": "TEST-320 \u2014 Summary copies as plain text",
+      "automation_id": "test-320.bh-320"
+    },
+    "TEST-321": {
+      "case_id": 20000086,
+      "pins": "BH-321",
+      "user_story": "us3",
+      "section_id": 2162688,
+      "hash": "44b6e59d0d734bbd67748c0f085cdf8952520c4c140dcf67f20c812fa3fb712a",
+      "title_at_last_sync": "TEST-321 \u2014 Period with no activity produces a stated empty summary",
+      "automation_id": "test-321.bh-321"
     }
   }
 }

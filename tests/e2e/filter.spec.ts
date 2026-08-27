@@ -108,14 +108,14 @@ test.describe('filtering the board', () => {
     // shortcut exists.
     await expect(page.getByTestId('filter-text')).toBeVisible();
 
-    await page.getByTestId('filter-toggle').click();
+    await page.getByTestId('sidebar-toggle').click();
     await expect(page.getByTestId('filter-text')).toHaveCount(0);
-    await expect(page.getByTestId('filter-rail')).toHaveClass(/filter-rail--collapsed/);
+    await expect(page.getByTestId('sidebar')).toHaveClass(/sidebar--collapsed/);
 
     // Remembered across a reload, unlike the filter itself. The rail's width is
     // a preference; which cards are hidden is not (FR-310).
     await page.reload();
-    await expect(page.getByTestId('filter-rail')).toHaveClass(/filter-rail--collapsed/);
+    await expect(page.getByTestId('sidebar')).toHaveClass(/sidebar--collapsed/);
 
     // `/` opens it rather than silently doing nothing to a control that is not
     // mounted.
@@ -131,7 +131,7 @@ test.describe('filtering the board', () => {
     await page.getByTestId('filter-text').fill('alpha');
     await expect(page.getByTestId('card')).toHaveCount(1);
 
-    await page.getByTestId('filter-toggle').click();
+    await page.getByTestId('sidebar-toggle').click();
 
     // A filter still hiding cards behind a shut panel would be exactly the
     // ambiguity SC-309 exists to prevent.

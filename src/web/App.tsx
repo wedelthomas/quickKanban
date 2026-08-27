@@ -2,23 +2,16 @@ import { Board } from './board/Board.js';
 import './App.css';
 
 /**
- * Top navigation rather than the reference dashboard's left sidebar: six
- * columns at a readable width already exceed a 1440px display, and a 250px
- * rail would make the board scroll horizontally before a single card exists.
- * Reasoning recorded in docs/design/visual-language.md.
+ * A left rail rather than the top bar this started with.
+ *
+ * The rail carries identity, views and the filter, patterned on the ABS Team
+ * Reports dashboard. The original objection — that six readable columns already
+ * exceed a 1440px display, so a permanent rail pushes the board into horizontal
+ * scrolling — is answered by making it collapsible rather than by avoiding it.
+ * Recorded in docs/design/visual-language.md.
  */
 export const App = () => (
   <div className="app">
-    <header className="app-header">
-      <span className="wordmark">Quick Kanban Wall</span>
-      <nav className="nav" aria-label="Views">
-        <a className="nav-item nav-item--active" href="#board" aria-current="page">
-          Board
-        </a>
-      </nav>
-    </header>
-    <main className="app-main" id="board">
-      <Board />
-    </main>
+    <Board />
   </div>
 );

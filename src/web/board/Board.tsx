@@ -18,7 +18,8 @@ import { useSync } from '../sync/use-sync.js';
 import { SyncStatusPill } from '../sync/SyncStatus.js';
 import { useConflicts } from '../conflicts/use-conflicts.js';
 import { ConflictDialog } from '../conflicts/ConflictDialog.js';
-import { FilterBar } from './FilterBar.js';
+import { SummaryDialog } from '../summary/SummaryDialog.js';
+import { Sidebar } from './Sidebar.js';
 import { useFilter } from './use-filter.js';
 import { collisionDetection, resolveTarget } from './drag.js';
 import { matches } from '../../domain/card-filter.js';
@@ -53,6 +54,7 @@ export const Board = () => {
   const [helpOpen, setHelpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [conflictsOpen, setConflictsOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const { conflicts, resolve } = useConflicts(board);
   const {
     filter,
@@ -165,7 +167,8 @@ export const Board = () => {
   // Suspended while a dialog owns the screen, so the board's shortcuts cannot
   // reach past it and claim keys the dialog's own controls need.
   useShortcuts(handleShortcut, {
-    suspended: creating || editing !== null || settingsOpen || conflictsOpen,
+    suspended:
+      creating || editing !== null || settingsOpen || conflictsOpen || summaryOpen,
   });
 
   if (error) return <p className="board-message board-message--error">{error}</p>;
@@ -200,50 +203,57 @@ export const Board = () => {
 
   return (
     <>
-      <div className="board-bar">
-        {moveError && (
-          <p className="move-error" role="alert" data-testid="move-error">
-            {moveError}
-            <button
-              className="move-error-dismiss"
-              onClick={dismissMoveError}
-              aria-label="Dismiss"
-            >
-              ×
-            </button>
-          </p>
-        )}
-        <SyncStatusPill status={syncStatus} onRefresh={() => void syncNow()} />
-        {conflicts.length > 0 && (
-          // Only shown when there is something to decide: a permanent control
-          // for a rare event trains the eye to stop seeing it.
-          <button
-            className="button button--warning"
-            data-testid="conflict-count"
-            onClick={() => setConflictsOpen(true)}
-          >
-            {conflicts.length} conflict{conflicts.length === 1 ? '' : 's'}
-          </button>
-        )}
-        <button className="button" onClick={() => setSettingsOpen(true)}>
-          Settings
-        </button>
-        <button className="button button--primary" onClick={() => setCreating(true)}>
-          New card
-        </button>
-      </div>
       <div className="board-layout">
-        <FilterBar
+        <Sidebar
           board={board}
           filter={filter}
           active={filtering}
           collapsed={railCollapsed}
+          cardCount={board.columns.reduce((n, c) => n + c.cards.length, 0)}
+          conflictCount={conflicts.length}
           onToggleCollapsed={toggleRail}
+          onOpenSummary={() => setSummaryOpen(true)}
+          onOpenConflicts={() => setConflictsOpen(true)}
           onChange={updateFilter}
           onClear={clearFilter}
           inputRef={filterInputRef}
         />
         <div className="board-area">
+          <div className="page-head">
+            <div>
+              <h1 className="page-title">Quick Kanban</h1>
+              <p className="page-sub">
+                Everything assigned to you, and everything else you are carrying.
+              </p>
+            </div>
+            <div className="board-bar">
+              {moveError && (
+                <p className="move-error" role="alert" data-testid="move-error">
+                  {moveError}
+                  <button
+                    className="move-error-dismiss"
+                    onClick={dismissMoveError}
+                    aria-label="Dismiss"
+                  >
+                    ×
+                  </button>
+                </p>
+              )}
+              <SyncStatusPill status={syncStatus} onRefresh={() => void syncNow()} />
+              {/* Views live in the sidebar now — Summary and Conflicts moved there
+            rather than being offered in two places, which leaves the bar for
+            actions: sync, settings, and creating a card. */}
+              <button className="button" onClick={() => setSettingsOpen(true)}>
+                Settings
+              </button>
+              <button
+                className="button button--primary"
+                onClick={() => setCreating(true)}
+              >
+                New card
+              </button>
+            </div>
+          </div>
           {filtering &&
             hiddenCount > 0 &&
             visible.columns.every((c) => c.cards.length === 0) && (
@@ -286,6 +296,7 @@ export const Board = () => {
       {settingsOpen && (
         <SettingsDialog columns={board.columns} onClose={() => setSettingsOpen(false)} />
       )}
+      {summaryOpen && <SummaryDialog onClose={() => setSummaryOpen(false)} />}
       {conflictsOpen && (
         <ConflictDialog
           conflicts={conflicts}

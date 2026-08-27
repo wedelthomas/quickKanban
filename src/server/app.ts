@@ -19,6 +19,9 @@ import { TransitionService } from './sync/transition-service.js';
 import { registerMappingRoutes } from './routes/mappings.js';
 import { registerConflictRoutes } from './routes/conflicts.js';
 import { registerArchiveRoutes } from './routes/archive.js';
+import { registerSummaryRoutes } from './routes/summary.js';
+import { SummaryRepository } from './repositories/summary-repository.js';
+import { SummaryService } from './services/summary-service.js';
 import { ArchiveRepository } from './repositories/archive-repository.js';
 import { ArchiveRunRepository } from './repositories/archive-run-repository.js';
 import { ArchivalService } from './services/archival-service.js';
@@ -202,6 +205,8 @@ export const buildApp = ({
     : null;
   registerSyncRoutes(app, { sync, lock, runs });
   registerSettingsRoutes(app, settings, onIntervalChanged, onArchiveIntervalChanged);
+
+  registerSummaryRoutes(app, new SummaryService(new SummaryRepository(pool)));
 
   registerArchiveRoutes(
     app,

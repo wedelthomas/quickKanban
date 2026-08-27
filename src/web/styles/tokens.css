@@ -12,7 +12,14 @@
 :root {
   --canvas: #0b0e14;
   --surface: #161b26;
-  --surface-raised: #1b2130;
+  --surface-raised: #212939;
+
+  /* Cards have to read as objects sitting ON the column, not as regions of it.
+     A step in lightness alone was too subtle at a glance across six columns, so
+     the border lifts with it and a soft shadow does the rest. */
+  --card-border: #333c52;
+  --card-shadow: 0 1px 2px #00000059, 0 2px 6px #0000003d;
+  --card-shadow-hover: 0 2px 4px #00000066, 0 6px 14px #00000047;
   --border: #252b3a;
 
   --text: #e6e9ef;

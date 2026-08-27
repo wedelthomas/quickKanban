@@ -1,55 +1,26 @@
 .app {
   display: flex;
-  flex-direction: column;
   height: 100%;
-}
-
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
-  padding: 0 var(--space-4);
-  height: 52px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.wordmark {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.nav {
-  display: flex;
-  gap: var(--space-4);
-  height: 100%;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-1);
-  color: var(--text-muted);
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-}
-
-.nav-item--active {
-  color: var(--text);
-  border-bottom-color: var(--accent);
+  min-height: 0;
 }
 
 .app-main {
   flex: 1;
   min-height: 0;
   padding: var(--space-4);
+  /* Part of an unbroken height chain from the viewport down to the scrolling
+     card list, so the columns reach the bottom of the window whatever is above
+     them. Every link needs min-height: 0 — without it a flex item refuses to
+     shrink below its content and the chain silently stops here. */
+  display: flex;
+  flex-direction: column;
 }
 
 /* --- board layout ------------------------------------------------------- */
 
 .board-bar {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   margin-bottom: var(--space-3);
 }
@@ -58,7 +29,12 @@
   display: grid;
   grid-template-columns: repeat(6, minmax(220px, 1fr));
   gap: var(--space-3);
-  height: calc(100% - 40px);
+  /* Was `calc(100% - 40px)` — a guess at the toolbar's height that stopped
+     resolving the moment the filter rail added a wrapper between this and the
+     element it was measuring. Filling the remaining space is what was meant,
+     and it stays true no matter what else the board grows above it. */
+  flex: 1;
+  min-height: 0;
   overflow-x: auto;
 }
 
@@ -107,10 +83,19 @@
 
 .card {
   background: var(--surface-raised);
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
+  box-shadow: var(--card-shadow);
   cursor: grab;
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.card:hover {
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--border-strong, var(--card-border));
 }
 
 .card-title {
@@ -263,6 +248,9 @@
 
 .card--dragging {
   opacity: 0.4;
+  /* The faded original, not the card under the pointer. It should read as a
+     hole the card came out of, so its shadow goes with it. */
+  box-shadow: none;
 }
 
 .column--over .column-cards {
@@ -584,86 +572,257 @@ kbd {
   border-color: color-mix(in srgb, var(--column-accent, var(--border)) 35%, transparent);
 }
 
-/* --- filter rail -------------------------------------------------------- */
+/* --- summary ------------------------------------------------------------ */
 
+.summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary-periods {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.summary-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.summary-list {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--text-sm);
+}
+
+/* Quiet, but present. The point is that the reader notices a movement was not
+   theirs before they paste it, not that it dominates the line. */
+.summary-origin {
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* --- shell layout ------------------------------------------------------- */
+
+/*
+ * One unbroken height chain from the viewport to the scrolling card list:
+ * .app -> .board-layout -> .board-area -> .board -> .column -> .column-cards.
+ * Every link needs min-height: 0, because without it a flex item refuses to
+ * shrink below its content and the chain silently stops there — which is what
+ * made the columns stop short of the bottom of the window.
+ */
 .board-layout {
   display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
   min-width: 0;
 }
 
 .board-area {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 0;
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+/* --- sidebar ------------------------------------------------------------ */
+
+/*
+ * Patterned on the ABS Team Reports dashboard: a brand block, then tiny
+ * uppercase section labels over rows carrying a count on the right, the active
+ * one marked by a left accent.
+ *
+ * 232px open and 52px shut. The visual language rejected a permanent
+ * board-view rail because six readable columns already exceed a 1440px
+ * display; collapsing is what answers that, and the board takes the width back
+ * the moment the rail closes.
+ */
+.sidebar {
+  flex: 0 0 232px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.sidebar--collapsed {
+  flex-basis: 52px;
+  align-items: center;
+  padding: var(--space-3) var(--space-2);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar--collapsed .brand {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
-/*
- * 210px expanded, not the reference dashboard's 250px, and collapsible.
- * docs/design/visual-language.md rejected a permanent board-view rail because
- * six readable columns already exceed a 1440px display; collapsing is what
- * answers that, and the board reclaims the width the moment the rail is shut.
- */
-.filter-rail {
-  flex: 0 0 210px;
+.brand-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Tiny, uppercase, letter-spaced — the reference's section headings. */
+.sidebar-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  padding-left: var(--space-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sidebar-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  gap: var(--space-1);
 }
 
-.filter-rail--collapsed {
-  flex-basis: 40px;
-  padding: var(--space-2) 0;
-  align-items: center;
-}
-
-.filter-rail-toggle {
+.sidebar-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
   width: 100%;
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-2);
+  /* The left accent lives here whether the row is active or not, so switching
+     rows does not shift their text sideways. */
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: var(--radius-sm);
   background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-row:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.sidebar-row--active {
+  background: var(--surface-raised);
+  border-left-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.sidebar-count {
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sidebar-count--warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.sidebar-collapse {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border: 0;
   border-radius: var(--radius-sm);
+  background: none;
   color: var(--text-muted);
   font: inherit;
   font-size: var(--text-sm);
   cursor: pointer;
 }
 
-.filter-rail-toggle:hover {
+.sidebar-collapse:hover {
   background: var(--surface-raised);
   color: var(--text);
 }
 
-.filter-rail-toggle-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-weight: 600;
-}
-
-/* Visible whether the rail is open or shut. A filter still hiding cards behind
-   a closed panel would be exactly the ambiguity SC-309 exists to prevent. */
-.filter-rail-dot {
+.sidebar-dot {
   width: 7px;
   height: 7px;
   border-radius: 999px;
   background: var(--accent);
 }
 
-.filter-rail-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+.sidebar .field {
+  gap: 2px;
 }
 
-.filter-rail .field {
-  gap: 2px;
+/* --- page head ---------------------------------------------------------- */
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.page-sub {
+  margin: 2px 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
 }

@@ -129,6 +129,30 @@ Summary views in Slice 4, where vertical lists benefit from it and horizontal
 space is not contested. The statistic strip sits directly beneath the board
 header, where it costs vertical space only.
 
+### Revised again, 2026-08-27 — the rail becomes the app's navigation
+
+The top bar is gone. The left rail now carries what it carried in the ABS Team
+Reports reference: a brand block at the top (rounded chip, mark, product name,
+a one-line subtitle), then tiny uppercase section labels over rows that hold a
+count on the right, with the active row marked by a left accent bar.
+
+Taken from the reference deliberately:
+
+- **Brand block, not a header.** The wordmark and its subtitle sit in the rail's
+  top-left, the way the dashboard does it, so the content area opens straight
+  onto its own title.
+- **Uppercase section labels** at 10px, letter-spaced — `VIEWS`, `FILTER`.
+- **Rows with counts.** Board carries the card count; Conflicts appears only
+  when there is one to decide, and carries its count in the warning colour.
+- **The left accent bar is always present**, transparent when inactive, so
+  switching rows never shifts their text sideways.
+
+The mark is inline SVG — three columns with the middle one taller — rather than
+an image file, so it inherits the theme's colours and costs no request.
+
+Views moved into the rail and left the toolbar, rather than being offered in
+both. The toolbar now holds actions only: sync status, Settings, New card.
+
 ### Revised 2026-08-27 — a collapsible left rail on the board
 
 The board view now does carry a left rail, holding the filter controls, at the
