@@ -836,17 +836,13 @@ kbd {
   margin: 0;
   font-size: 22px;
   font-weight: 700;
-  /* Positive tracking, not negative: uppercase needs room to breathe where
-     mixed case needs tightening, and this matches the rail's wordmark. */
+  /* Always uppercase, whether it is the product name or a person's. That keeps
+     the positive tracking below correct in both cases — uppercase needs room to
+     breathe where mixed case would need tightening — and matches the rail's
+     wordmark. The stored setting keeps whatever case the user typed; only the
+     display is shouted. */
+  text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-
-/* A person's name is mixed case, and the tracking above was measured for the
-   uppercase product name. Applying it to "Thomas Wedel" spaces out a word that
-   wanted tightening — the comment above says so, so honour it rather than
-   leaving the heading looking slightly loose. */
-.page-title[data-author='true'] {
-  letter-spacing: -0.01em;
 }
 
 .page-sub {

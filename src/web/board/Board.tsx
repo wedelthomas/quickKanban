@@ -230,9 +230,7 @@ export const Board = () => {
         <div className="board-area">
           <div className="page-head">
             <div>
-              <h1 className="page-title" data-author={author ? 'true' : 'false'}>
-                {author || 'QUICK KANBAN'}
-              </h1>
+              <h1 className="page-title">{author || 'QUICK KANBAN'}</h1>
               <p className="page-sub">
                 Everything assigned to you, and everything else you are carrying.
               </p>
