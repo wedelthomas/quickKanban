@@ -8,10 +8,24 @@ here is settled; `plan.md` assumes it.
 ## R-1 — The Blocked column row cannot be deleted
 
 **Finding.** `card_events.from_column_id` and `card_events.to_column_id` both
-carry `REFERENCES columns (id)` (`004_card_events.sql`). Every historical
-movement into or out of Blocked points at `columns.id = 3`. Deleting that row
-violates those foreign keys, and the history is append-only by requirement
-(BR-31), so the rows cannot be rewritten to point elsewhere.
+carry `REFERENCES columns (id)` (`004_card_events.sql`). Any historical movement
+into or out of Blocked points at `columns.id = 3`. Deleting that row violates
+those foreign keys wherever such rows exist, and the history is append-only by
+requirement (BR-31), so the rows cannot be rewritten to point elsewhere.
+
+**Corrected during implementation (T003).** The developer's own database
+currently holds **zero** cards in Blocked and **zero** `card_events` rows
+referencing column 3 — the column was never used. So on *this* database the row
+is deletable today. That does not change the decision: a migration whose
+correctness depends on a column never having been used is not a migration, and
+the first user who had ever parked a card in Blocked would hit a foreign-key
+violation on upgrade. The retire-don't-delete rule is written for the general
+case, and this database simply happens to be the easy one.
+
+It has one practical consequence: the live data will **not** exercise the
+card-moving path (FR-404, FR-405), so `tests/ops/migration-016-021.test.ts`
+must construct that state itself rather than relying on the developer's
+database, and T080's live verification cannot cover it either.
 
 **Decision.** The Blocked column is **retired, not deleted**. Its `columns` row
 survives so that history keeps resolving; it stops being a board column.

@@ -1,0 +1,12 @@
+{
+  "spec_path": "specs/005-iteration-and-board-restructure/spec.md",
+  "jira_ref": null,
+  "project_id": 115,
+  "suite_id": 32733,
+  "last_synced_at": null,
+  "last_synced_by": null,
+  "notes": "Seeded by T002. Reachability confirmed against suite 32733 (\"Master\") in project 115. Sections and cases are populated by spec-testrail-sync at T004 and at each story's first task.",
+  "user_stories": {},
+  "scenarios": {},
+  "verification": {}
+}
