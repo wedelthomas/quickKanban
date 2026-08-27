@@ -1,0 +1,11 @@
+-- Jira's own opinion of whether an issue is blocked, kept separately from the
+-- board's. FR-416, FR-418, FR-419.
+--
+-- Two fields rather than one, because one cannot express "I say no, Jira says
+-- yes" — and FR-418 makes the local value authoritative while FR-419 requires
+-- the disagreement to be visible. The comparison between them IS the
+-- divergence.
+--
+-- NULL means never observed, which is distinct from false, observed as not
+-- blocked. A card whose Jira state has never been read is not diverging.
+ALTER TABLE jira_links ADD COLUMN IF NOT EXISTS blocked_in_jira boolean;

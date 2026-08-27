@@ -27,9 +27,9 @@ Paths below are exact and come from plan.md's Source Code section.
 
 **Purpose**: Confirm the ground this slice builds on is where the plan says.
 
-- [ ] T001 Confirm the v1 baseline is green before changing anything: `npm run typecheck`, `npm run test:unit`, `npm run lint`. Record the counts; a failure here belongs to v1, not to this slice.
-- [ ] T002 [P] Confirm the TestRail suite is reachable and note project 115 / suite 32733 in `specs/005-iteration-and-board-restructure/testrail-mapping.json`, following the shape used by slices 1–4.
-- [ ] T003 [P] Take a database snapshot before any migration runs, so the migration tasks in Phase 2 can be re-run from a known state: `docker compose exec db pg_dump -U kanban kanban > /tmp/pre-005.sql`.
+- [x] T001 Confirm the v1 baseline is green before changing anything: `npm run typecheck`, `npm run test:unit`, `npm run lint`. Record the counts; a failure here belongs to v1, not to this slice.
+- [x] T002 [P] Confirm the TestRail suite is reachable and note project 115 / suite 32733 in `specs/005-iteration-and-board-restructure/testrail-mapping.json`, following the shape used by slices 1–4.
+- [x] T003 [P] Take a database snapshot before any migration runs, so the migration tasks in Phase 2 can be re-run from a known state: `docker compose exec db pg_dump -U kanban kanban > /tmp/pre-005.sql`.
 
 ---
 
@@ -46,22 +46,22 @@ in filename order at process start).
 
 > Write first. These MUST fail before the migrations exist.
 
-- [ ] T004 [US1] Author or sync TestRail cases for BH-401, BH-402, BH-403, BH-404, BH-405 and BH-433 via `spec-testrail-sync`, before any migration is written.
-- [ ] T005 [US1] Ops test in `tests/ops/migration-016-021.test.ts` covering TEST-401 (six-column set, Blocked refused as a target), TEST-402 (**every blocked card lands in In Progress, flagged, with a system-attributed history row — this is NFR-27's no-card-lost assertion**), TEST-403 (a conflicted card migrates with its conflict intact), TEST-404 (re-running changes nothing), TEST-405 (Blocked's mapping dropped, others survive) and TEST-433 (historical movements into and out of Blocked still resolve).
+- [x] T004 [US1] Author or sync TestRail cases for BH-401, BH-402, BH-403, BH-404, BH-405 and BH-433 via `spec-testrail-sync`, before any migration is written.
+- [x] T005 [US1] Ops test in `tests/ops/migration-016-021.test.ts` covering TEST-401 (six-column set, Blocked refused as a target), TEST-402 (**every blocked card lands in In Progress, flagged, with a system-attributed history row — this is NFR-27's no-card-lost assertion**), TEST-403 (a conflicted card migrates with its conflict intact), TEST-404 (re-running changes nothing), TEST-405 (Blocked's mapping dropped, others survive) and TEST-433 (historical movements into and out of Blocked still resolve).
 
 ### Implementation for Foundational
 
-- [ ] T006 [US1] Migration `src/server/db/migrations/016_retire_blocked_column.sql` per data-model.md §016: add `columns.retired_at`, make `position` nullable, two-phase renumber, retire Blocked, insert Iteration Items as id 7. **Include research R-1's reasoning as a comment in the file itself** — the reason the row survives must live where someone tempted to drop it will read it (plan.md risk P-2).
-- [ ] T007 [US1] Migration `src/server/db/migrations/017_card_blocked.sql` per data-model.md §017: add `cards.blocked`; write one `system`-attributed `card_events` row per blocked card **before** moving it; move those cards to In Progress; renumber In Progress positions by `(position, id)`; delete the retired column's status mapping.
-- [ ] T008 [P] [US4] Migration `src/server/db/migrations/018_jira_blocked.sql`: add `jira_links.blocked_in_jira boolean`, nullable to distinguish "never observed" from "observed as not blocked".
-- [ ] T009 [P] [US2] Migration `src/server/db/migrations/019_iterations.sql`: the `iterations` table per data-model.md §019, with the `source` check constraint and the `starts_on DESC` index.
-- [ ] T010 [P] [US5] Migration `src/server/db/migrations/020_carry_over.sql`: add `cards.carried_iterations` (with its non-negative check) and `cards.iteration_seen`.
-- [ ] T011 [P] [US6] Migration `src/server/db/migrations/021_iteration_settings.sql`: the eleven settings rows per data-model.md §021, values taken from Appendix A of `docs/brd-2.md`. Note in a comment which four are written here but consumed by Slice 6.
-- [ ] T012 [US1] Update `src/shared/types.ts`: replace `blocked` with `iteration_items` in `COLUMN_KEYS` in the new order; add `blocked`, `blockedDivergesFromJira` and `carriedIterations` to `Card`; add the `Iteration` type from contracts/api.md.
-- [ ] T013 [US1] Update `src/server/repositories/board-repository.ts` and `board-row.ts` to filter `columns.retired_at IS NULL` and project the three new card fields.
-- [ ] T014 [P] [US6] Extend `src/server/repositories/settings-repository.ts` to read and write the eleven new keys.
-- [ ] T083 [P] Ops test `tests/ops/no-live-services.test.ts` — TEST-429: no adapter resolving to a real network client is constructed anywhere in the standard suite. Guards every story, so it lives in Foundational. *(Number out of sequence: added by `/speckit.analyze` finding B-1; existing task ids are stable anchors and are never renumbered.)*
-- [ ] T015 Run the migrations against the snapshot from T003 and confirm T005 now passes. Re-run them a second time and confirm nothing changes (FR-407).
+- [x] T006 [US1] Migration `src/server/db/migrations/016_retire_blocked_column.sql` per data-model.md §016: add `columns.retired_at`, make `position` nullable, two-phase renumber, retire Blocked, insert Iteration Items as id 7. **Include research R-1's reasoning as a comment in the file itself** — the reason the row survives must live where someone tempted to drop it will read it (plan.md risk P-2).
+- [x] T007 [US1] Migration `src/server/db/migrations/017_card_blocked.sql` per data-model.md §017: add `cards.blocked`; write one `system`-attributed `card_events` row per blocked card **before** moving it; move those cards to In Progress; renumber In Progress positions by `(position, id)`; delete the retired column's status mapping.
+- [x] T008 [P] [US4] Migration `src/server/db/migrations/018_jira_blocked.sql`: add `jira_links.blocked_in_jira boolean`, nullable to distinguish "never observed" from "observed as not blocked".
+- [x] T009 [P] [US2] Migration `src/server/db/migrations/019_iterations.sql`: the `iterations` table per data-model.md §019, with the `source` check constraint and the `starts_on DESC` index.
+- [x] T010 [P] [US5] Migration `src/server/db/migrations/020_carry_over.sql`: add `cards.carried_iterations` (with its non-negative check) and `cards.iteration_seen`.
+- [x] T011 [P] [US6] Migration `src/server/db/migrations/021_iteration_settings.sql`: the eleven settings rows per data-model.md §021, values taken from Appendix A of `docs/brd-2.md`. Note in a comment which four are written here but consumed by Slice 6.
+- [x] T012 [US1] Update `src/shared/types.ts`: replace `blocked` with `iteration_items` in `COLUMN_KEYS` in the new order; add `blocked`, `blockedDivergesFromJira` and `carriedIterations` to `Card`; add the `Iteration` type from contracts/api.md.
+- [x] T013 [US1] Update `src/server/repositories/board-repository.ts` and `board-row.ts` to filter `columns.retired_at IS NULL` and project the three new card fields.
+- [x] T014 [P] [US6] Extend `src/server/repositories/settings-repository.ts` to read and write the eleven new keys.
+- [x] T083 [P] Ops test `tests/ops/no-live-services.test.ts` — TEST-429: no adapter resolving to a real network client is constructed anywhere in the standard suite. Guards every story, so it lives in Foundational. *(Number out of sequence: added by `/speckit.analyze` finding B-1; existing task ids are stable anchors and are never renumbered.)*
+- [x] T015 Run the migrations against the snapshot from T003 and confirm T005 now passes. Re-run them a second time and confirm nothing changes (FR-407).
 
 **Checkpoint**: Schema is in place, the board query no longer sees a retired
 column, and every previously-blocked card is in In Progress carrying its flag.

@@ -23,6 +23,9 @@ export interface BoardRow {
   tags: string[] | null;
   created_at: Date | null;
   updated_at: Date | null;
+  blocked: boolean | null;
+  blocked_in_jira: boolean | null;
+  carried_iterations: number | null;
 }
 
 export const toCard = (row: BoardRow, today: Date): Card => ({
@@ -39,6 +42,15 @@ export const toCard = (row: BoardRow, today: Date): Card => ({
   issueKey: row.issue_key ?? null,
   issueUrl: row.issue_url ?? null,
   hasConflict: row.has_conflict === true,
+  blocked: row.blocked === true,
+  // Computed here rather than in the client, alongside `overdue`, so one
+  // definition governs (FR-419). A null blocked_in_jira means Jira's state has
+  // never been observed, which is not a disagreement.
+  blockedDivergesFromJira:
+    row.blocked_in_jira !== null &&
+    row.blocked_in_jira !== undefined &&
+    row.blocked_in_jira !== (row.blocked === true),
+  carriedIterations: row.carried_iterations ?? 0,
   createdAt: row.created_at!.toISOString(),
   updatedAt: row.updated_at!.toISOString(),
 });

@@ -5,12 +5,20 @@
 
 export const COLUMN_KEYS = [
   'backlog',
+  'iteration_items',
   'in_progress',
-  'blocked',
   'test',
   'po_review',
   'done',
 ] as const;
+
+/**
+ * `blocked` is not here. Slice 5 retired it as a column and made it something a
+ * card carries instead, but its `columns` row survives because the movement
+ * history references it — so code that resolves a historical event's column may
+ * still legitimately see this key.
+ */
+export type RetiredColumnKey = 'blocked';
 
 export type ColumnKey = (typeof COLUMN_KEYS)[number];
 
@@ -54,6 +62,20 @@ export interface Card {
   issueUrl: string | null;
   /** True while an unresolved conflict exists. The card is frozen. */
   hasConflict: boolean;
+  /**
+   * Independent of `columnId`: a card is blocked wherever it actually is. FR-403.
+   * Unlike `hasConflict`, this does NOT freeze the card — blocked is an
+   * annotation, and a blocked card still moves (FR-414).
+   */
+  blocked: boolean;
+  /**
+   * The local value disagrees with what Jira last reported. Local wins (FR-418);
+   * this exists so the disagreement is visible rather than silent (FR-419).
+   * Always false for local cards, which have no Jira opinion to differ from.
+   */
+  blockedDivergesFromJira: boolean;
+  /** Iterations this card has carried through unfinished. 0 when never carried. */
+  carriedIterations: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -104,12 +126,39 @@ export interface Conflict {
   resolution: ConflictResolution | null;
 }
 
+export type WorkingDay = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
 export interface Settings {
   jiraJql: string;
   syncIntervalSeconds: number;
   /** How long finished work stays on the board before archival takes it. */
   archiveWindowDays: number;
   archiveIntervalSeconds: number;
+
+  /** The Jira board whose active sprint supplies the iteration. FR-422. */
+  iterationBoardId: number;
+  /**
+   * Which team's sprint to take from that board. Not optional in practice: the
+   * default board is shared by two teams and carries two active sprints per
+   * iteration with identical dates, so without this the banner could show
+   * another team's name. FR-424, FR-445.
+   */
+  iterationTeamName: string;
+  /** Start of a known iteration, for the estimated fallback only. FR-428. */
+  iterationAnchorDate: string;
+  iterationCadenceDays: number;
+
+  /** Consumed here by the banner's remaining-days count. FR-431. */
+  workingDays: WorkingDay[];
+  /** Written by slice 5, consumed by slice 6's elapsed time. */
+  workingStartHour: number;
+  workingEndHour: number;
+
+  /** Configurable so a Jira administration change is not a code change. FR-438. */
+  jiraFieldBlocked: string;
+  jiraFieldBlockedOption: string;
+  jiraFieldSprint: string;
+  jiraFieldStoryPoints: string;
 }
 
 export interface BoardColumn extends Column {
@@ -226,4 +275,23 @@ export interface Problem {
   status: number;
   code: ProblemCode;
   detail: string;
+}
+
+/**
+ * The current TradeStation iteration, as last established.
+ *
+ * `provenance` is the honesty of the value, not its source system: `read` means
+ * established from the reference board this run, `cached` a previously read
+ * value shown while the source is unreachable, `estimated` computed from the
+ * configured anchor and cadence. FR-427 requires anything but `read` to be
+ * marked wherever it is displayed.
+ */
+export interface Iteration {
+  /** Null when estimated: the ordinal resets at the fiscal year and cannot be counted (FR-423). */
+  ordinalName: string | null;
+  startsOn: string;
+  endsOn: string;
+  workingDaysRemaining: number;
+  provenance: 'read' | 'cached' | 'estimated';
+  observedAt: string;
 }

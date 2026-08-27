@@ -16,7 +16,8 @@ export class BoardRepository {
   /**
    * The whole board in one query. Empty columns are preserved by the LEFT JOIN
    * — always returning six columns is a guarantee the board view and slice 4's
-   * filtered view both depend on.
+   * filtered view both depend on. Retired columns are excluded, so "six" still
+   * holds after slice 5 retired one and added another.
    */
   async readBoard(today: Date): Promise<BoardColumn[]> {
     const { rows } = await this.pool.query<BoardRow>(`
@@ -36,6 +37,8 @@ export class BoardRepository {
           ARRAY[]::text[]
         ) AS tags,
         jl.issue_key, jl.url AS issue_url,
+        jl.blocked_in_jira,
+        c.blocked, c.carried_iterations,
         (cf.card_id IS NOT NULL) AS has_conflict
       FROM columns col
       LEFT JOIN cards c
@@ -44,6 +47,10 @@ export class BoardRepository {
        AND c.archived_at IS NULL
       LEFT JOIN jira_links jl ON jl.card_id = c.id
       LEFT JOIN conflicts cf ON cf.card_id = c.id AND cf.resolved_at IS NULL
+      -- A retired column is history, not board furniture. Its row survives so
+      -- that card_events still resolves (FR-446), but it must never appear
+      -- here: FR-402.
+      WHERE col.retired_at IS NULL
       ORDER BY col.position, c.position
     `);
 
