@@ -64,7 +64,7 @@ provisions are explicitly overridden.
 
 | v1 provision | v1 text | v2 disposition |
 |---|---|---|
-| **§3 Non-goals** | "Sprint planning, estimation, velocity, burndown or capacity tooling." | **Narrowed.** Estimation, velocity and capacity *for the single user* come into scope (BR-63…BR-69). Sprint planning as a team ceremony, and burndown charts, remain out of scope. |
+| **§3 Non-goals** | "Sprint planning, estimation, velocity, burndown or capacity tooling." | **Narrowed.** Estimation, velocity, capacity and **burndown** *for the single user* come into scope (BR-63…BR-69, BR-84…BR-85). Sprint planning as a team ceremony remains out of scope. |
 | **BR-01** | "The board MUST present exactly six ordered columns: Backlog, In Progress, Blocked, Test, PO Review, Done." | **Replaced by BR-38.** Still exactly six fixed columns; Blocked is replaced by Iteration Items. |
 | **D-7** | Unmapped column means local-only — rationale: "most Jira workflows have no Blocked status". | **Rationale transferred, mechanism unchanged.** Iteration Items has the same property: no Jira status corresponds to it. The local-only column mechanism is reused as-is, not redesigned. |
 
@@ -88,13 +88,14 @@ on them and the answer is no:
 | G-10 | Effort is measured without being recorded | Time comes from movements already logged; the user never types a duration |
 | G-11 | Invisible work becomes a number | The share of hours and points spent on local versus Jira-sourced work is reportable per iteration |
 | G-12 | Time and delivery stay distinct | Hours spent and points completed are reported as two independent metrics |
+| G-13 | Progress through the iteration is visible while it runs | A burndown shows remaining committed work day by day, distinguishing work finished from scope added |
 
 ### Non-goals
 
 Everything in v1 §3's non-goals stands except as narrowed in §3 above.
 Additionally out of scope for Phase 2:
 
-- Burndown or burn-up charts of any kind.
+- Burn-up charts, and any chart of a team's progress rather than the user's own.
 - Team velocity, team capacity, or anyone else's numbers.
 - Writing sprint membership, story points, or the blocked flag back to Jira.
 - Sprint ceremonies: planning, review, retrospective tooling.
@@ -125,7 +126,7 @@ Phase 2 adds one read-only dependency:
 - Elapsed time per card, derived from the existing movement history.
 - Story points, imported from Jira and editable locally.
 - Per-iteration reporting: where time went, invisible-work share, commitment
-  versus completion, velocity.
+  versus completion, velocity, and a burndown of remaining committed work.
 - Extending the v1 summary (BR-33) with time and iteration framing.
 
 ### 6.2 Out of scope
@@ -152,7 +153,8 @@ Numbering continues from v1. RFC 2119 keywords, as before.
 | BR-41 | The migration in BR-40 MUST be recorded in the movement history, attributed to the system rather than the user, so the board's record of itself stays complete. | Must |
 | BR-42 | **Iteration Items** MUST hold the cards the user has committed to the current iteration, and placement MUST be a user action. Membership MUST NOT be derived from Jira sprint membership. | Must |
 | BR-43 | Iteration Items MUST default to having no Jira status mapping, making it a local-only column under the existing BR-17 mechanism. | Must |
-| BR-44 | Cards remaining in Iteration Items, In Progress, Test or PO Review when an iteration ends MUST remain on the board and MUST be identifiable as carry-over into the new iteration. | Must |
+| BR-44 | Cards remaining in Iteration Items, In Progress, Test or PO Review when an iteration ends MUST remain on the board and MUST carry into the new iteration. | Must |
+| BR-86 | A carried-over card MUST show, on the card face, how many iterations it has carried through, so that chronic carry-over is visible on the board rather than only in a report. | Must |
 
 ### 7.2 The blocked flag
 
@@ -214,6 +216,8 @@ Numbering continues from v1. RFC 2119 keywords, as before.
 | BR-78 | The generated summary (BR-33) MUST be able to use the iteration as its reporting period, alongside the existing day and week. | Must |
 | BR-79 | All Phase 2 reports MUST be copyable as plain text, consistent with BR-34. | Should |
 | BR-80 | A report covering a period in which data is incomplete — for instance an iteration that began before Phase 2 was installed — MUST say so rather than presenting a partial figure as a total. | Must |
+| BR-84 | The system MUST provide a burndown for an iteration, showing committed points remaining at the close of each working day across the iteration. | Must |
+| BR-85 | The burndown MUST distinguish work completed from scope added or removed after the iteration began. A chart that shows only a remaining total misrepresents a mid-iteration addition as a failure to progress. | Must |
 
 ### 7.7 Settings
 
@@ -281,6 +285,7 @@ All v1 constraints (C-1…C-5) stand.
 | D-20 | Points read from Jira, editable locally, never written | Real values exist on the user's CRM work (1, 3, 5) and are worth importing; local editing covers the majority that have none. Writing back would breach BR-22 and put the board in the business of estimating for other people's teams | Local-only points; read-only Jira points; two-way sync |
 | D-21 | Time and points are never combined | Hours-per-point invites treating an estimate as a schedule. They answer different questions and are reported side by side | A derived efficiency or throughput score |
 | D-22 | Derived metrics are recomputed, not stored | A wrong working-hours setting should correct history, not leave it frozen. The append-only log makes recomputation cheap and correct | Materialising time onto the card at transition time |
+| D-23 | The burndown separates scope change from progress | A single remaining-work line makes a card added on day six look identical to a day lost. Since the movement history records when a card entered the iteration, the distinction is free to compute and dishonest to omit | A plain remaining-total line |
 
 ---
 
@@ -292,7 +297,7 @@ beginning only after the v1 baseline is complete.
 | Slice | Contents | Requirements | Outcome |
 |---|---|---|---|
 | **5. Iteration and board restructure** | Column set changed to Backlog / Iteration Items / In Progress / Test / PO Review / Done; blocked becomes a flag with edge and badge; migration of existing blocked cards; iteration resolution from the reference board; the banner | BR-38…BR-61, BR-81…BR-83, NFR-25, NFR-27, NFR-28, NFR-30, NFR-32 | The board knows the iteration, and blocked stops costing a column |
-| **6. Time, points and iteration reporting** | Time derived from movement history; working-hours model; points import and local entry; velocity; the four Phase 2 reports; summary extended to the iteration period | BR-62…BR-80, NFR-26, NFR-29 | The board answers where the iteration went |
+| **6. Time, points and iteration reporting** | Time derived from movement history; working-hours model; points import and local entry; velocity; the Phase 2 reports and the iteration burndown; summary extended to the iteration period | BR-62…BR-80, BR-84…BR-85, NFR-26, NFR-29 | The board answers where the iteration went, and shows it going |
 
 NFR-31 is cross-cutting.
 
@@ -324,7 +329,7 @@ rather than chosen.
 | R-8 | The reference board stops maintaining dated sprints, as board 1391 already does for its *future* sprints | Iteration silently stale | Medium | Staleness is marked (BR-59); estimated fallback (BR-60); the board is configurable, so another can be nominated without a code change (BR-81) |
 | R-9 | A card parked in In Progress accrues time that was never worked | Time reports overstate effort and lose credibility | High | Blocked pauses the clock (BR-65); working hours cap the damage (BR-64); figures are recomputable once corrected (BR-67) |
 | R-10 | The BR-40 migration loses or misplaces in-flight cards | Data loss, and loss of trust in the board | Low | Tested migration is a requirement, not a practice (NFR-27); migration is recorded in history (BR-41) |
-| R-11 | Points remain sparse, making velocity noisy or meaningless | A headline metric that cannot be trusted | High | Local entry on any card (BR-70); incomplete periods are declared (BR-80); points and time are independent (BR-74), so time reporting survives unpointed work |
+| R-11 | Points remain sparse, making velocity and the burndown noisy or meaningless | Two headline outputs that cannot be trusted | High | Local entry on any card (BR-70); incomplete periods are declared (BR-80); points and time are independent (BR-74), so time reporting survives unpointed work |
 | R-12 | Agile API access is unavailable to the user's token or the endpoint changes | Iteration cannot be read | Low | Degrades to cache then to estimate (BR-58, BR-60) without blocking the board (NFR-28) |
 | R-13 | The reference board's boundaries differ by a day from another team's | Minor disagreement with a colleague's dates | Medium | Recorded as constraint C-8; the banner shows the actual dates, so the basis is visible rather than implied |
 | R-14 | Jira administration renumbers a custom field | Points or blocked silently stop importing | Low | Field identifiers are configurable (BR-82) |
@@ -345,6 +350,7 @@ Terms from v1 §13 stand. Phase 2 adds:
 | **Elapsed time** | Working-hours duration from a card's first entry into In Progress to its arrival in Done, excluding time while blocked, accumulated across repeat passes. |
 | **Invisible work** | Work on local cards — the share of hours or points that no Jira board would ever show. |
 | **Velocity** | Points on cards reaching Done within one iteration. A record, not a forecast. |
+| **Burndown** | Committed points still outstanding at the end of each working day of an iteration, with scope changes shown separately from completed work. |
 
 ---
 
