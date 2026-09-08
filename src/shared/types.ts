@@ -83,6 +83,14 @@ export interface Card {
   blockedDivergesFromJira: boolean;
   /** Iterations this card has carried through unfinished. 0 when never carried. */
   carriedIterations: number;
+  /** NULL means unpointed (FR-519); 0 is a deliberate estimate, distinct from unpointed. */
+  points: number | null;
+  /**
+   * The local value disagrees with what Jira last reported for story points
+   * (FR-518). Always false for local cards, which have no Jira opinion to
+   * differ from. Mirrors blockedDivergesFromJira's shape exactly.
+   */
+  pointsDivergesFromJira: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -221,7 +229,7 @@ export interface ArchivedCard {
   archivedReason: string | null;
 }
 
-export type SummaryPeriod = 'daily' | 'weekly';
+export type SummaryPeriod = 'daily' | 'weekly' | 'iteration';
 
 export interface SummaryMovement {
   cardId: string;
@@ -311,4 +319,76 @@ export interface Iteration {
   workingDaysRemaining: number;
   provenance: 'read' | 'cached' | 'estimated';
   observedAt: string;
+}
+
+/**
+ * The commitment snapshot taken once, the first time an iteration's ordinal
+ * is observed (FR-525, FR-526). Never updated afterward.
+ */
+export interface IterationCommitment {
+  ordinalName: string;
+  committedPoints: number;
+  committedAt: string;
+}
+
+export interface TimeByCard {
+  cardId: string;
+  title: string;
+  seconds: number;
+}
+
+export interface TimeByProject {
+  /** 'local' is one project, alongside each Jira project key seen. */
+  project: string;
+  seconds: number;
+}
+
+export interface IterationReportTime {
+  byCard: TimeByCard[];
+  byProject: TimeByProject[];
+  localShare: number;
+  jiraShare: number;
+}
+
+export interface IterationReportPoints {
+  committed: number;
+  completed: number;
+  scopeAdded: number;
+  scopeRemoved: number;
+  localShare: number;
+  jiraShare: number;
+  excludedUnpointed: number;
+}
+
+/**
+ * FR-523: withheld rather than reported as zero when no card in the period
+ * carries points. The two shapes are distinguished by the presence of
+ * `withheld`, never by a null total, so "no data" cannot be mistaken for
+ * "zero" (FR-539).
+ */
+export type IterationReportPointsSection =
+  | IterationReportPoints
+  | { withheld: true; reason: string };
+
+export interface IterationReport {
+  ordinalName: string;
+  startsOn: string;
+  endsOn: string;
+  time: IterationReportTime;
+  points: IterationReportPointsSection;
+  /** FR-542: true when the period partly predates recorded history. */
+  incomplete: boolean;
+}
+
+export interface BurndownPoint {
+  date: string;
+  outstanding: number;
+  completedThatDay: number;
+  scopeAddedThatDay: number;
+  scopeRemovedThatDay: number;
+}
+
+export interface Burndown {
+  ordinalName: string;
+  points: BurndownPoint[];
 }

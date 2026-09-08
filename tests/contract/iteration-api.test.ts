@@ -49,6 +49,7 @@ describe('GET /api/iteration', () => {
   });
 
   beforeEach(async () => {
+    await pool.query('DELETE FROM iteration_commitments');
     await pool.query('DELETE FROM iterations');
     await pool.query(
       `INSERT INTO settings (key, value) VALUES ('jira.enabled', 'true'::jsonb)

@@ -32,7 +32,7 @@ built last as the spec itself frames it).
 
 ## Phase 1: Setup
 
-- [ ] T501 Confirm the current baseline is green before changing anything:
+- [X] T501 Confirm the current baseline is green before changing anything:
   `npm run typecheck`, `npm run test:unit`, `npm run lint`. Record the
   counts; a failure here predates this slice.
 
@@ -44,38 +44,38 @@ built last as the spec itself frames it).
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T502 [P] Migration `src/server/db/migrations/024_card_points.sql` —
+- [X] T502 [P] Migration `src/server/db/migrations/024_card_points.sql` —
   per data-model.md: `cards.points` and `cards.jira_points`, both nullable
   integer, both `>= 0` when present.
-- [ ] T503 [P] Migration `src/server/db/migrations/025_card_blocked_events.sql`
+- [X] T503 [P] Migration `src/server/db/migrations/025_card_blocked_events.sql`
   — per data-model.md: append-only `card_blocked_events`, same
   `ON DELETE RESTRICT` shape as `card_events` (Principle II).
-- [ ] T504 [P] Migration `src/server/db/migrations/026_iteration_commitments.sql`
+- [X] T504 [P] Migration `src/server/db/migrations/026_iteration_commitments.sql`
   — per data-model.md: `iteration_commitments`, `ordinal_name` PK
   referencing `iterations`, immutable once inserted.
-- [ ] T505 [P] Extend `src/shared/types.ts`: `Card` gains `points: number |
+- [X] T505 [P] Extend `src/shared/types.ts`: `Card` gains `points: number |
   null` and `pointsDivergesFromJira: boolean`; add `IterationCommitment`;
   `SummaryPeriod` gains `'iteration'`.
-- [ ] T506 Extend `src/server/repositories/card-repository.ts` and
+- [X] T506 Extend `src/server/repositories/card-repository.ts` and
   `board-row.ts` to read/write `points`/`jira_points` and project
   `pointsDivergesFromJira` (`jira_points !== null && jira_points !==
   points`) — mirrors `blockedDivergesFromJira`'s existing shape exactly.
-- [ ] T507 Extend `src/server/services/card-service.ts`'s `update` path: a
+- [X] T507 Extend `src/server/services/card-service.ts`'s `update` path: a
   change to `blocked` writes one row to `card_blocked_events` (old value ≠
   new value only — setting it to its current value writes nothing).
-- [ ] T508 [P] `src/server/repositories/commitment-repository.ts` — read the
+- [X] T508 [P] `src/server/repositories/commitment-repository.ts` — read the
   commitment for an ordinal; insert one `ON CONFLICT (ordinal_name) DO
   NOTHING`, mirroring `iterations`' own write-once shape.
-- [ ] T509 `src/server/services/commitment-service.ts` —
+- [X] T509 `src/server/services/commitment-service.ts` —
   `CommitmentService.observe(currentIteration)`: on a new ordinal never
   seen before, sum the points of pointed cards currently in Iteration
   Items, In Progress, Test or PO Review and insert that as the commitment.
   Mirrors `CarryOverService`'s existing boundary-detection pattern (R-4).
-- [ ] T510 Wire `CommitmentService.observe(...)` into
+- [X] T510 Wire `CommitmentService.observe(...)` into
   `IterationService.current()` alongside the existing
   `carryOver?.observe(...)` call, same failure-swallowing treatment (a
   failed commitment write must not cost the user their banner).
-- [ ] T511 [P] `src/server/repositories/event-repository.ts` (or a small
+- [X] T511 [P] `src/server/repositories/event-repository.ts` (or a small
   sibling) gains a read returning a card's `card_events` and
   `card_blocked_events` rows together, ordered by `occurred_at` — the input
   shape `elapsed-time.ts` consumes.

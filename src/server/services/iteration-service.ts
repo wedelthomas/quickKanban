@@ -6,6 +6,7 @@ import { selectSprint } from '../../domain/sprint-selection.js';
 import { decideIteration } from '../../domain/iteration-provenance.js';
 import { workingDaysRemaining } from '../../domain/working-days.js';
 import type { CarryOverService } from './carry-over-service.js';
+import type { CommitmentService } from './commitment-service.js';
 
 /**
  * What iteration it is, established as honestly as the circumstances allow.
@@ -29,6 +30,8 @@ export class IterationService {
      * tests that care only about the banner.
      */
     private readonly carryOver?: CarryOverService,
+    /** Same boundary, same optionality, for the commitment snapshot (FR-525). */
+    private readonly commitment?: CommitmentService,
     /** Debug sink for failures that are deliberately not surfaced to the user. */
     private readonly log?: (message: string) => void,
   ) {}
@@ -72,6 +75,10 @@ export class IterationService {
     // A boundary can only be noticed here. Failures are swallowed: a stale
     // carry-over badge must not cost the user their banner.
     await this.carryOver?.observe(decided.ordinalName).catch(() => {});
+    // Same reasoning: a failed commitment snapshot must not cost the user
+    // their banner either. A missing commitment degrades gracefully at read
+    // time (report-service.ts treats it as "not yet observed").
+    await this.commitment?.observe(decided.ordinalName).catch(() => {});
 
     return {
       ...decided,

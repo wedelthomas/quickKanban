@@ -39,6 +39,8 @@ import type { IterationPort } from './jira/iteration-port.js';
 import { IterationRepository } from './repositories/iteration-repository.js';
 import { IterationService } from './services/iteration-service.js';
 import { CarryOverService } from './services/carry-over-service.js';
+import { CommitmentService } from './services/commitment-service.js';
+import { CommitmentRepository } from './repositories/commitment-repository.js';
 import { registerIterationRoutes } from './routes/iteration.js';
 import { CardRepository } from './repositories/card-repository.js';
 import { BoardRepository } from './repositories/board-repository.js';
@@ -202,6 +204,7 @@ export const buildApp = ({
     },
   );
 
+  const commitmentRepository = new CommitmentRepository(pool);
   registerIterationRoutes(
     app,
     new IterationService(
@@ -210,6 +213,7 @@ export const buildApp = ({
       iterations,
       () => new Date(),
       new CarryOverService(pool),
+      new CommitmentService(pool, commitmentRepository),
     ),
   );
 

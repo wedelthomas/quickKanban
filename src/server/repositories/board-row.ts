@@ -26,6 +26,8 @@ export interface BoardRow {
   blocked: boolean | null;
   blocked_in_jira: boolean | null;
   carried_iterations: number | null;
+  points: number | null;
+  jira_points: number | null;
 }
 
 export const toCard = (row: BoardRow, today: Date): Card => ({
@@ -51,6 +53,13 @@ export const toCard = (row: BoardRow, today: Date): Card => ({
     row.blocked_in_jira !== undefined &&
     row.blocked_in_jira !== (row.blocked === true),
   carriedIterations: row.carried_iterations ?? 0,
+  points: row.points ?? null,
+  // Same reasoning as blockedDivergesFromJira: a null jira_points means Jira's
+  // value has never been observed, which is not a disagreement.
+  pointsDivergesFromJira:
+    row.jira_points !== null &&
+    row.jira_points !== undefined &&
+    row.jira_points !== row.points,
   createdAt: row.created_at!.toISOString(),
   updatedAt: row.updated_at!.toISOString(),
 });
