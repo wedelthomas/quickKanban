@@ -114,6 +114,12 @@ JIRA_API_TOKEN=<the token>
 works with ad-hoc cards exactly as before. That is a supported state, not a
 broken one.
 
+Credentials alone are not enough, though: open Settings and check **Enable
+Jira integration**. It defaults to off, independent of whether the three
+variables above are set — a deliberate master switch, so sync, transitions
+and the live iteration read can be paused without touching `.env`. With it
+off, the board behaves exactly as if Jira were not configured at all.
+
 ### If your network intercepts TLS
 
 Symptom: every sync fails with `connectivity`, and the container logs
