@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Iteration, IterationReport } from '../../shared/types.js';
 
 const formatHours = (seconds: number): string => `${(seconds / 3600).toFixed(1)}h`;
+const formatShare = (share: number): string => `${Math.round(share * 100)}%`;
 
 /**
  * Per-card and per-project elapsed time for the current iteration (US1).
@@ -39,7 +40,11 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
 
         {iteration === undefined && !error && <p className="field-note">Loading…</p>}
 
-        {iteration === null && (
+        {iteration !== undefined && !iteration?.ordinalName && (
+          // Covers both "no iteration at all" and an estimated one with no
+          // ordinal (the ordinal resets at the fiscal year and cannot be
+          // counted — IterationBanner carries the same caveat) — neither has
+          // anything this report can be keyed against.
           <p className="field-note" data-testid="report-no-iteration">
             No current iteration to report on.
           </p>
@@ -85,6 +90,14 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
               {report.time.byProject.length === 0 && (
                 <p className="field-note">No time recorded yet.</p>
               )}
+              {report.time.byProject.length > 0 && (
+                // The invisible-work number the product exists to answer
+                // (US2): how much of the iteration's hours no Jira board
+                // would ever show.
+                <p className="field-note" data-testid="report-time-share">
+                  {formatShare(report.time.localShare)} local, {formatShare(report.time.jiraShare)} Jira
+                </p>
+              )}
             </section>
 
             <section className="summary-group" data-testid="report-by-card">
@@ -99,6 +112,32 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
               </ul>
               {report.time.byCard.length === 0 && (
                 <p className="field-note">No time recorded yet.</p>
+              )}
+            </section>
+
+            <section className="summary-group" data-testid="report-points">
+              <h3 className="field-label">Points</h3>
+              {'withheld' in report.points ? (
+                // FR-523: withheld rather than reported as a misleading zero.
+                <p className="field-note" data-testid="report-points-withheld">
+                  {report.points.reason}
+                </p>
+              ) : (
+                <>
+                  <p className="report-row">
+                    <span>Completed</span>
+                    <span>{report.points.completed}</span>
+                  </p>
+                  <p className="field-note" data-testid="report-points-share">
+                    {formatShare(report.points.localShare)} local, {formatShare(report.points.jiraShare)} Jira
+                  </p>
+                  {report.points.excludedUnpointed > 0 && (
+                    <p className="field-note" data-testid="report-points-excluded">
+                      {report.points.excludedUnpointed} card
+                      {report.points.excludedUnpointed === 1 ? '' : 's'} excluded (unpointed)
+                    </p>
+                  )}
+                </>
               )}
             </section>
           </>

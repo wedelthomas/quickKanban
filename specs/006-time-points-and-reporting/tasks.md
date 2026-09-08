@@ -195,25 +195,25 @@ points.
 
 ### Tests for User Story 2 — write first, confirm they FAIL
 
-- [ ] T525 [P] [US2] `tests/unit/iteration-report.test.ts` — the local and
+- [X] T525 [P] [US2] `tests/unit/iteration-report.test.ts` — the local and
   Jira shares of time and of points are stated and sum to 1 (BH-528); a
   zero share reads as zero, not omitted (FR-539); an iteration whose work
   is entirely Jira-sourced reports a local share of zero (spec.md US2
   scenario 3); unpointed cards are excluded from the points figures and
   counted (BH-516); an iteration with no pointed cards withholds the
   points figure with a reason rather than reporting zero (BH-517).
-- [ ] T526 [P] [US2] `tests/contract/iteration-report.test.ts` — extend:
+- [X] T526 [P] [US2] `tests/contract/iteration-report.test.ts` — extend:
   `points.localShare`/`jiraShare` present once points exist;
   `excludedUnpointed` count matches a mixed fixture.
 
 ### Implementation for User Story 2
 
-- [ ] T527 [US2] Extend `src/domain/iteration-report.ts`: assemble the
+- [X] T527 [US2] Extend `src/domain/iteration-report.ts`: assemble the
   `points` section for real now that US3 supplies `points`/`jira_points` —
   completed points this iteration split by source, unpointed cards
   excluded and counted, the whole figure withheld only when literally no
   card carries points.
-- [ ] T528 [P] [US2] `src/web/reports/` — extend the report view with the
+- [X] T528 [P] [US2] `src/web/reports/` — extend the report view with the
   local-versus-Jira share for both time and points.
 
 **Checkpoint**: the report states the invisible-work number the whole

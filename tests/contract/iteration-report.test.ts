@@ -116,6 +116,59 @@ describe('GET /api/iterations/:ordinalName/report', () => {
     expect(body.points).toMatchObject({ withheld: true });
   });
 
+  it('states local and Jira shares of points and excludes unpointed cards from the figure (BH-528, BH-516)', async () => {
+    await seedIteration('2026-08-24', '2026-09-07');
+
+    const localCardId = await createCard('Local, pointed and done');
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/cards/${localCardId}`,
+      payload: { points: 5 },
+    });
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 6, 'user', '2026-08-26T10:00:00')`,
+      [localCardId],
+    );
+
+    const { rows: jiraRows } = await pool.query<{ id: string }>(
+      `INSERT INTO cards (source, title, priority, column_id, position, points, jira_points)
+       VALUES ('jira', 'Jira, pointed and done', 'medium', 1, 1, 3, 3)
+       RETURNING id`,
+    );
+    const jiraCardId = jiraRows[0]!.id;
+    await pool.query(
+      `INSERT INTO jira_links (card_id, issue_key, issue_id, url, status_name, status_id, jira_updated_at)
+       VALUES ($1, 'AIHUB-9', '1', 'https://example.atlassian.net/browse/AIHUB-9', 'Done', '10001', now())`,
+      [jiraCardId],
+    );
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 6, 'user', '2026-08-27T10:00:00')`,
+      [jiraCardId],
+    );
+
+    const unpointedId = await createCard('Done but never pointed');
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 6, 'user', '2026-08-28T10:00:00')`,
+      [unpointedId],
+    );
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/iterations/${encodeURIComponent(ORDINAL)}/report`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as IterationReport;
+    expect(body.points).toMatchObject({
+      completed: 8,
+      localShare: 0.625,
+      jiraShare: 0.375,
+      excludedUnpointed: 1,
+    });
+  });
+
   it('marks a period predating recorded history as incomplete (BH-531, FR-542)', async () => {
     await seedIteration('2020-01-01', '2020-01-14');
     const cardId = await createCard('Old work');
