@@ -18,6 +18,7 @@ import { FakeIterationAdapter } from '../../../src/server/jira/fake-iteration-ad
 // more line here. Enumerating the keys means the next setting added leaks
 // until someone notices. Naming the full seeded set means it cannot.
 const SEEDED_SETTINGS: Record<string, unknown> = {
+  'jira.enabled': true,
   'jira.jql': 'assignee = currentUser() AND statusCategory != Done',
   'sync.interval_seconds': 300,
   'archive.window_days': 7,

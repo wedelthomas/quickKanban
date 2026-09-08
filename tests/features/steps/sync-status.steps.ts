@@ -53,3 +53,7 @@ Then('the sync status reports Jira as not configured', async function (this: Boa
   const status = await syncStatus(this);
   assert.equal(status.configured, false);
 });
+
+Given('Jira integration is turned off', async function (this: BoardWorld) {
+  await this.request('PUT', '/api/settings', { jiraEnabled: false });
+});

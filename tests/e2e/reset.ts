@@ -77,6 +77,7 @@ export const resetBoard = async (): Promise<void> => {
      -- tests on this project, each fixed by adding one more line here;
      -- enumerating them means the next one added leaks until someone notices.
      UPDATE settings SET value = d.value FROM (VALUES
+       ('jira.enabled', 'true'::jsonb),
        ('jira.jql', '"assignee = currentUser() AND statusCategory != Done"'::jsonb),
        ('sync.interval_seconds', '300'::jsonb),
        ('archive.window_days', '7'::jsonb),

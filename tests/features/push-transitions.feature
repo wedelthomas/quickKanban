@@ -30,3 +30,11 @@ Feature: Moving a card updates Jira
     And a sync runs
     When the card for issue "AIHUB-1" is moved to the "backlog" column
     Then no transition was performed in Jira
+
+  Scenario: Turning Jira integration off stops moves from transitioning the issue
+    Given the application is running
+    And Jira has an issue "AIHUB-1" with status "Open"
+    And a sync runs
+    And Jira integration is turned off
+    When the card for issue "AIHUB-1" is moved to the "test" column
+    Then no transition was performed in Jira

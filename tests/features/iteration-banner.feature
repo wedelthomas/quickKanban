@@ -60,3 +60,9 @@ Feature: The board tells me which iteration we are in
       | credentials  |
       | rate_limit   |
       | malformed    |
+
+  Scenario: Turning Jira integration off falls back to the estimated iteration
+    Given the iteration source reports both teams' sprints for "2026 S18"
+    And Jira integration is turned off
+    When the iteration is read
+    Then the iteration is marked as estimated

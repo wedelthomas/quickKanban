@@ -62,3 +62,15 @@ Feature: Knowing whether sync is working
     Given the application is running without Jira configured
     When a sync runs
     Then the request is refused with code "JIRA_NOT_CONFIGURED"
+
+  Scenario: Turning Jira integration off behaves like not configured
+    Given the application is running
+    And Jira has an issue "AIHUB-1" with status "Open"
+    And Jira integration is turned off
+    Then the sync status reports Jira as not configured
+
+  Scenario: Requesting a sync while Jira integration is off is refused clearly
+    Given the application is running
+    And Jira integration is turned off
+    When a sync runs
+    Then the request is refused with code "JIRA_NOT_CONFIGURED"

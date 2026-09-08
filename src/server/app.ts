@@ -227,7 +227,7 @@ export const buildApp = ({
         transitionService(),
       )
     : null;
-  registerSyncRoutes(app, { sync, lock, runs });
+  registerSyncRoutes(app, { sync, lock, runs, settings });
   registerSettingsRoutes(app, settings, onIntervalChanged, onArchiveIntervalChanged);
 
   registerSummaryRoutes(app, new SummaryService(new SummaryRepository(pool)));
