@@ -61,4 +61,17 @@ test.describe('settings', () => {
     await expect(dialog.getByTestId('settings-error')).toBeVisible();
     await expect(dialog).toBeVisible();
   });
+
+  test('turning Jira integration off hides the Jira-specific fields', async ({ page }) => {
+    await page.getByRole('button', { name: 'Settings' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Settings' });
+
+    await expect(dialog.getByLabel('Jira query')).toBeVisible();
+    await expect(dialog.getByTestId('jira-enabled-toggle')).toBeChecked();
+
+    await dialog.getByTestId('jira-enabled-toggle').uncheck();
+
+    await expect(dialog.getByLabel('Jira query')).toHaveCount(0);
+    await expect(dialog.getByLabel('Reference board')).toHaveCount(0);
+  });
 });

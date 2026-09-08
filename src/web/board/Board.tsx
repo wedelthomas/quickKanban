@@ -258,7 +258,9 @@ export const Board = () => {
                   </button>
                 </p>
               )}
-              <SyncStatusPill status={syncStatus} onRefresh={() => void syncNow()} />
+              {syncStatus?.configured && (
+                <SyncStatusPill status={syncStatus} onRefresh={() => void syncNow()} />
+              )}
               {/* Views live in the sidebar now — Summary and Conflicts moved there
             rather than being offered in two places, which leaves the bar for
             actions: sync, settings, and creating a card. */}

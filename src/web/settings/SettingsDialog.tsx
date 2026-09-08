@@ -116,6 +116,19 @@ export const SettingsDialog = ({
                 Shown as the board heading. Leave empty to use the product name.
               </span>
             </label>
+            <label className="filter-toggle" data-testid="jira-enabled-field">
+              <input
+                type="checkbox"
+                data-testid="jira-enabled-toggle"
+                checked={settings?.jiraEnabled ?? false}
+                disabled={!settings}
+                onChange={(e) =>
+                  settings && setSettings({ ...settings, jiraEnabled: e.target.checked })
+                }
+              />
+              Enable Jira integration
+            </label>
+            {settings?.jiraEnabled && (
             <fieldset className="field">
               <legend className="field-label">Jira</legend>
               <label className="field">
@@ -149,8 +162,9 @@ export const SettingsDialog = ({
                   }
                 />
               </label>
-            </fieldset>
+            </fieldset>)}
 
+            {settings?.jiraEnabled && (
             <fieldset className="field">
               <legend className="field-label">Jira fields</legend>
               <div className="field-row">
@@ -180,10 +194,11 @@ export const SettingsDialog = ({
                 edit rather than a release. There is no credential here and nowhere to put
                 one.
               </span>
-            </fieldset>
+            </fieldset>)}
           </div>
 
           <div className="settings-column">
+            {settings?.jiraEnabled && (
             <fieldset className="field">
               <legend className="field-label">Iteration</legend>
               <div className="field-row">
@@ -220,7 +235,7 @@ export const SettingsDialog = ({
                 That board carries one active sprint per team sharing it, so the team name
                 decides which iteration is yours.
               </span>
-            </fieldset>
+            </fieldset>)}
 
             <fieldset className="field">
               <legend className="field-label">Working week</legend>
@@ -254,6 +269,7 @@ export const SettingsDialog = ({
           </div>
 
           <div className="settings-column">
+            {settings?.jiraEnabled && (
             <MappingEditor
               columns={columns}
               mappings={mappings}
@@ -268,7 +284,7 @@ export const SettingsDialog = ({
                   ].sort((a, b) => a.columnId - b.columnId);
                 })
               }
-            />
+            />)}
           </div>
         </div>
 

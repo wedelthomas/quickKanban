@@ -32,41 +32,34 @@ export const SyncStatusPill = ({
   status: Status | null;
   onRefresh: () => void;
 }) => {
+  // The caller only renders this when status.configured is true (Board.tsx),
+  // so there is nothing left to distinguish an "unconfigured" state here.
   if (!status) return null;
 
   const failed = status.lastRun?.outcome === 'failed';
-  const state = !status.configured
-    ? 'unconfigured'
-    : status.running
-      ? 'running'
-      : failed
-        ? 'failed'
-        : 'ok';
+  const state = status.running ? 'running' : failed ? 'failed' : 'ok';
 
   return (
     <div className={`sync sync--${state}`} data-testid="sync-status" data-state={state}>
-      {state === 'unconfigured' && <span>Jira not configured</span>}
       {state === 'running' && <span>Syncing…</span>}
       {failed && (
         <span className="sync-failure">
           {FAILURE_TEXT[status.lastRun?.failureKind ?? ''] ?? 'Sync failed'}
         </span>
       )}
-      {status.lastSuccessAt && state !== 'unconfigured' && (
+      {status.lastSuccessAt && (
         // Kept visible through a failure: "failing now" and "last worked an
         // hour ago" are different facts, and the user needs both.
         <span className="sync-last">Synced {relative(status.lastSuccessAt)}</span>
       )}
-      {status.configured && (
-        <button
-          type="button"
-          className="sync-refresh"
-          onClick={onRefresh}
-          disabled={status.running}
-        >
-          Refresh
-        </button>
-      )}
+      <button
+        type="button"
+        className="sync-refresh"
+        onClick={onRefresh}
+        disabled={status.running}
+      >
+        Refresh
+      </button>
     </div>
   );
 };

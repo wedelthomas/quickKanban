@@ -58,7 +58,7 @@ test.describe('sync status', () => {
     await expect(pill).toContainText(/synced/i);
   });
 
-  test('says so plainly when Jira is not configured', async ({ page }) => {
+  test('shows nothing when Jira is not configured', async ({ page }) => {
     await page.route('**/api/sync/status', (route) =>
       route.fulfill({
         status: 200,
@@ -73,7 +73,9 @@ test.describe('sync status', () => {
     );
     await page.reload();
 
-    await expect(page.getByTestId('sync-status')).toContainText(/not configured/i);
+    // "Not configured" and "toggled off" are the same state to the user: no
+    // sync chrome at all, rather than a pill explaining why there is none.
+    await expect(page.getByTestId('sync-status')).toHaveCount(0);
   });
 
   test('the board stays fully usable while a sync is running', async ({ page }) => {
