@@ -36,6 +36,14 @@ export const cardNotFound = (id: string): DomainError =>
     `No card exists with id ${id}.`,
   );
 
+export const iterationNotFound = (ordinalName: string): DomainError =>
+  new DomainError(
+    'ITERATION_NOT_FOUND',
+    404,
+    'Iteration not found',
+    `No iteration has ever been observed with ordinal "${ordinalName}".`,
+  );
+
 export const columnNotFound = (id: number): DomainError =>
   new DomainError(
     'COLUMN_NOT_FOUND',

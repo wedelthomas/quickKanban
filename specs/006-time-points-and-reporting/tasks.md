@@ -97,7 +97,7 @@ the working hours those movements span (SC-501, SC-502).
 
 ### Tests for User Story 1 — write first, confirm they FAIL
 
-- [ ] T512 [P] [US1] `tests/unit/elapsed-time.test.ts` — every permutation:
+- [X] T512 [P] [US1] `tests/unit/elapsed-time.test.ts` — every permutation:
   time from movements alone (BH-501), Test/PO Review counted (BH-502),
   only working hours counted across a weekend (BH-503), blocked periods
   excluded (BH-504), an overnight-and-blocked overlap excluded exactly
@@ -106,7 +106,7 @@ the working hours those movements span (SC-501, SC-502).
   working-hours config changes historical figures (BH-508), time spanning
   a boundary splits and the parts sum to the whole (BH-509), an in-progress
   card reports time to date without implying completion (BH-510).
-- [ ] T513 [P] [US1] `tests/contract/iteration-report.test.ts` — `GET
+- [X] T513 [P] [US1] `tests/contract/iteration-report.test.ts` — `GET
   /api/iterations/:ordinalName/report`: 404 `ITERATION_NOT_FOUND` for an
   unobserved ordinal; 200 with time broken down both `byCard` and
   `byProject`, with local cards grouped as their own project (BH-527); an
@@ -115,22 +115,22 @@ the working hours those movements span (SC-501, SC-502).
 
 ### Implementation for User Story 1
 
-- [ ] T514 [US1] `src/domain/elapsed-time.ts` — pure. Takes ordered
+- [X] T514 [US1] `src/domain/elapsed-time.ts` — pure. Takes ordered
   movement + blocked-interval events, the working-days/hours config and
   `now`; returns working seconds per iteration span it is asked to clip
   against (research.md R-1). No I/O, no clock read internally.
-- [ ] T515 [US1] `src/domain/iteration-report.ts` — pure. Assembles
+- [X] T515 [US1] `src/domain/iteration-report.ts` — pure. Assembles
   `IterationReport.time` (`byCard`, `byProject`, shares) from
   `elapsed-time.ts`'s output joined against card metadata (source, Jira
   project key parsed from `issueKey`). Points section is `{ withheld: true,
   reason: "…" }` until US3 lands — correct today, since no card can carry
   points yet.
-- [ ] T516 [US1] `src/server/services/report-service.ts` —
+- [X] T516 [US1] `src/server/services/report-service.ts` —
   `ReportService.iterationReport(ordinalName)`: reads the iteration,
   commitment (may be absent pre-US4), every card's events, and calls
   `iteration-report.ts`. Throws `ITERATION_NOT_FOUND` for an unobserved
   ordinal.
-- [ ] T517 [US1] `src/server/routes/reports.ts` — `GET
+- [X] T517 [US1] `src/server/routes/reports.ts` — `GET
   /api/iterations/:ordinalName/report`, registered in `app.ts`.
 - [ ] T518 [P] [US1] `src/web/reports/` — a report view (dialog or panel,
   matching `SummaryDialog`'s existing pattern) showing per-card and

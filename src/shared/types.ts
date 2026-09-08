@@ -292,7 +292,8 @@ export type ProblemCode =
   | 'JIRA_UNREACHABLE'
   | 'JIRA_CREDENTIALS_REJECTED'
   | 'INVALID_DATE_RANGE'
-  | 'ARCHIVE_IN_PROGRESS';
+  | 'ARCHIVE_IN_PROGRESS'
+  | 'ITERATION_NOT_FOUND';
 
 export interface Problem {
   type: string;

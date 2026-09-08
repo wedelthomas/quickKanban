@@ -64,6 +64,32 @@ export class IterationRepository {
     );
   }
 
+  /** One iteration by its own ordinal — a past one is addressable the same way as the current one (BH-526). */
+  async findByOrdinal(ordinalName: string): Promise<CachedIteration | null> {
+    const { rows } = await this.pool.query<{
+      ordinal_name: string;
+      starts_on: string;
+      ends_on: string;
+      observed_at: Date;
+    }>(
+      `SELECT ordinal_name,
+              to_char(starts_on, 'YYYY-MM-DD') AS starts_on,
+              to_char(ends_on,   'YYYY-MM-DD') AS ends_on,
+              observed_at
+         FROM iterations
+        WHERE ordinal_name = $1`,
+      [ordinalName],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      ordinalName: row.ordinal_name,
+      startsOn: row.starts_on,
+      endsOn: row.ends_on,
+      observedAt: row.observed_at.toISOString(),
+    };
+  }
+
   /** Every iteration on record, oldest first. Slice 6's reports read this. */
   async list(): Promise<CachedIteration[]> {
     const { rows } = await this.pool.query<{

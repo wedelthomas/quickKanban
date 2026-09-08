@@ -41,6 +41,9 @@ import { IterationService } from './services/iteration-service.js';
 import { CarryOverService } from './services/carry-over-service.js';
 import { CommitmentService } from './services/commitment-service.js';
 import { CommitmentRepository } from './repositories/commitment-repository.js';
+import { ReportRepository } from './repositories/report-repository.js';
+import { ReportService } from './services/report-service.js';
+import { registerReportRoutes } from './routes/reports.js';
 import { registerIterationRoutes } from './routes/iteration.js';
 import { CardRepository } from './repositories/card-repository.js';
 import { BoardRepository } from './repositories/board-repository.js';
@@ -214,6 +217,16 @@ export const buildApp = ({
       () => new Date(),
       new CarryOverService(pool),
       new CommitmentService(pool, commitmentRepository),
+    ),
+  );
+
+  registerReportRoutes(
+    app,
+    new ReportService(
+      new IterationRepository(pool),
+      commitmentRepository,
+      new ReportRepository(pool),
+      settings,
     ),
   );
 

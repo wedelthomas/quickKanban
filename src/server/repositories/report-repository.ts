@@ -106,4 +106,17 @@ export class ReportRepository {
       blockedEvents: blockedByCard.get(row.id) ?? [],
     }));
   }
+
+  /**
+   * The earliest movement ever recorded, or null if none exists. Lets a
+   * report distinguish "this iteration's own history is fully recorded"
+   * from "part of it predates the ledger this feature reads" (FR-542,
+   * BH-531) — a structural signal rather than a guess.
+   */
+  async earliestMovementAt(): Promise<string | null> {
+    const { rows } = await this.pool.query<{ min: Date | null }>(
+      'SELECT MIN(occurred_at) FROM card_events',
+    );
+    return rows[0]?.min ? rows[0].min.toISOString() : null;
+  }
 }
