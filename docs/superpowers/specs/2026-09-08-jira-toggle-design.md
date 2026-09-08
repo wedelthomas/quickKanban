@@ -62,23 +62,35 @@ how to handle.
 becomes the single signal the frontend uses to decide whether to render any
 Jira UI at all (see Frontend section).
 
-**Scheduler** (`src/server/sync/scheduler.ts` usage in `index.ts`): the tick
-callback currently does `app.inject({ method: 'POST', url: '/api/sync/run' })`
-and throws on a >=400 response. Add a check before injecting: read
-`jiraEnabled` via the existing `settings` reference in scope; if `false`,
-return without injecting (a silent no-op tick), so a disabled toggle does not
-produce a stream of "not configured" errors in logs.
+**Scheduler**: no change needed. `Scheduler.tick()` already swallows any
+error `runSync()` throws (so one failed sync does not stop the schedule) —
+`jiraNotConfigured()` is a 409, which the tick callback in `index.ts` already
+turns into a thrown `Error` on any `>=400` response. A disabled toggle simply
+means every tick's `POST /api/sync/run` 409s and is silently swallowed,
+exactly like today's transient failures. No new code path.
 
-**Card move / transition push** (`src/server/services/card-service.ts`,
-which holds the injected `TransitionService` — see its `transitions:
-TransitionService` dependency): before invoking the transition push on a
-move, check `jiraEnabled`. If `false`, treat the move exactly like today's
-"unmapped column" case — the move succeeds locally, nothing is sent to Jira.
+**Card move / transition push** (`src/server/services/card-service.ts`):
+`CardService`'s constructor already takes an optional `jira` bundle
+(`{ transitions, mappings, links }`, present only when credentials exist).
+Add `settings: SettingsRepository` to that bundle's type — this changes
+nothing about the constructor's arity or its two existing call sites in
+`tests/unit/conflict-freeze.test.ts` that omit the bundle entirely. Inside
+`pushToJiraFirst`, after the existing `if (!this.jira) return null;` check,
+read `await this.jira.settings.read()`; if `jiraEnabled` is `false`, return
+`null` — exactly like today's "unmapped column" case: the move succeeds
+locally, nothing is sent to Jira.
 
-**`IterationService.resolve()`** (`src/server/services/iteration-service.ts`):
-check `jiraEnabled` before calling `this.source.listActiveSprints(...)`. If
-`false`, skip the call and fall into the existing cached/estimated fallback
-path exactly as if the source had failed — no new fallback logic needed.
+**`IterationService.current()`** (`src/server/services/iteration-service.ts`):
+this already reads the full `Settings` object at the top of the method. Guard
+the existing call to `readFromSource(...)` with `settings.jiraEnabled` — when
+`false`, skip straight to `read = null`, which falls into the exact same
+cached/estimated path the method already takes when the source fails or is
+absent. **The banner keeps working**: it is a local feature (an estimated
+iteration computed from `iterationAnchorDate`/`iterationCadenceDays`) that
+happens to prefer a live Jira read when one is available — turning the
+toggle off just removes that live read, the same as running with no
+credentials at all today. No frontend change needed for the banner (see
+below).
 
 **Mappings and conflicts routes**: unchanged. They stay harmless to read/edit
 even when the toggle is off, and the frontend will not surface their UI in
@@ -93,13 +105,16 @@ section render only when `settings.jiraEnabled` is `true` — unchecking the
 box in the open dialog hides them immediately (client-side conditional,
 before save).
 
-**`src/web/board/Board.tsx`**: `<IterationBanner />` and
-`<SyncStatusPill status={syncStatus} onRefresh={...} />` render only when
-`syncStatus?.configured` is `true` (the `use-sync` hook already polls
-`GET /api/sync/status`, so no new fetch is introduced). This replaces the
-existing "Jira not configured" pill text with simply not rendering the pill —
-"no credentials" and "toggled off" now look identical to the user: no Jira
-surface at all.
+**`src/web/board/Board.tsx`**: only `<SyncStatusPill status={syncStatus}
+onRefresh={...} />` changes — it renders only when `syncStatus?.configured`
+is `true` (the `use-sync` hook already polls `GET /api/sync/status`, so no
+new fetch is introduced). This replaces the existing "Jira not configured"
+pill text with simply not rendering the pill — "no credentials" and "toggled
+off" now look identical: no sync chrome at all. `<IterationBanner />` is
+**unchanged** — it already renders nothing when `/api/iteration` has nothing
+to show, and keeps rendering its estimated/cached iteration exactly as it
+does today for an unconfigured install, whether that's because credentials
+are absent or the toggle is off.
 
 **`src/web/sync/SyncStatus.tsx`**: the `state === 'unconfigured'` branch and
 its message become dead code once `Board.tsx` only renders the pill when
@@ -118,11 +133,24 @@ explicitly in the PR description and, if relevant, the README.
 
 ## Testing
 
-- Unit: `SettingsRepository` read/write round-trips `jiraEnabled`.
-- Contract: `POST /api/sync/run` and `GET /api/sync/status` behave
-  identically whether `jiraEnabled` is `false` or credentials are absent.
-- Acceptance (Gherkin): a scenario toggling `jiraEnabled` off mid-session
-  confirms sync stops, the pill/banner disappear, and a card move no longer
-  pushes a transition — mirroring the existing "Jira not configured"
-  scenarios but driven by the setting instead of missing env vars.
-- E2E: Settings dialog checkbox toggles the JQL/mapping section's visibility.
+- Unit: `CardService`'s push-suppression, with a stub `jira` bundle whose
+  `settings.read()` resolves `jiraEnabled: false`.
+- Contract: extend `tests/contract/iteration-api.test.ts` with a case that
+  sets `jiraEnabled: false` and asserts `FakeIterationAdapter.calls` stays
+  `0` while the response still carries an estimated iteration.
+- Acceptance (Gherkin): extend `tests/features/sync-status.feature` (toggle
+  off behaves like "not configured", a sync request is refused) and
+  `tests/features/push-transitions.feature` (a move performs no transition
+  when the toggle is off despite a mapped column and a synced card).
+- E2E: extend `tests/e2e/settings.spec.ts` with a case toggling "Enable Jira
+  integration" off and confirming the JQL field and mapping editor hide.
+
+**Test fixture note**: both `tests/features/steps/world.ts`'s
+`SEEDED_SETTINGS` map and `tests/e2e/reset.ts`'s settings-restore `UPDATE`
+already enumerate every setting explicitly, by design (their comments warn
+that an un-enumerated setting leaks between scenarios/tests). Add
+`jira.enabled: true` to both baselines, matching how those suites already
+run with a fake Jira adapter configured — this keeps every existing
+sync/transition/settings scenario and e2e test passing unchanged, and the
+new toggle-off scenarios/tests explicitly flip it to `false` for their own
+duration.
