@@ -1,7 +1,12 @@
 import type { BurndownPoint, IterationCommitment, WorkingDay } from '../shared/types.js';
 import type { ReportInputCard } from './iteration-report.js';
+import {
+  atLocalMidnight,
+  firstWorkingEntry,
+  lastMovement,
+  WORKING_COLUMN_KEYS,
+} from './elapsed-time.js';
 
-const WORKING_COLUMN_KEYS = new Set(['iteration_items', 'in_progress', 'test', 'po_review']);
 const DAY_KEYS: WorkingDay[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 export interface BurndownCalendar {
@@ -17,17 +22,8 @@ export interface BurndownInput {
   now: Date;
 }
 
-/** Parses a calendar date with no time component, in local terms. */
-const atLocalMidnight = (iso: string): Date => {
-  const [year, month, day] = iso.split('-').map(Number);
-  return new Date(year!, month! - 1, day!);
-};
-
 const toIsoDate = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-const sortedMovements = (card: ReportInputCard) =>
-  [...card.movements].sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
 
 /**
  * Outstanding committed points at the close of each working day (FR-531),
@@ -51,10 +47,9 @@ export const buildBurndown = (input: BurndownInput): BurndownPoint[] => {
   for (const card of cards) {
     if (card.points === null) continue;
     const points = card.points;
-    const movements = sortedMovements(card);
-    const done = movements.find((m) => m.columnKey === 'done');
-    const entry = movements.find((m) => WORKING_COLUMN_KEYS.has(m.columnKey));
-    const last = movements[movements.length - 1];
+    const done = card.movements.find((m) => m.columnKey === 'done');
+    const entry = firstWorkingEntry(card.movements);
+    const last = lastMovement(card.movements);
 
     if (done) {
       const key = done.occurredAt.slice(0, 10);

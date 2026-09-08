@@ -19,6 +19,19 @@ const DAY_KEYS: WorkingDay[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 /** The clock runs while a card sits in one of these columns (FR-502, FR-503). */
 const COUNTED_COLUMN_KEYS = new Set(['in_progress', 'test', 'po_review']);
 
+/**
+ * "Committed to this iteration" columns (FR-525) — everything short of
+ * Backlog (not yet committed) and Done (completed, counted separately).
+ * Shared by `iteration-report.ts` and `burndown.ts`, both of which derive
+ * scope added/removed from the same movement facts (research.md R-5).
+ */
+export const WORKING_COLUMN_KEYS = new Set([
+  'iteration_items',
+  'in_progress',
+  'test',
+  'po_review',
+]);
+
 export interface Movement {
   toColumnId: number;
   columnKey: string;
@@ -47,9 +60,25 @@ interface Span {
   end: Date;
 }
 
-const atLocalMidnight = (isoDate: string): Date => {
+export const atLocalMidnight = (isoDate: string): Date => {
   const [year, month, day] = isoDate.split('-').map(Number);
   return new Date(year!, month! - 1, day!);
+};
+
+/**
+ * The card's earliest movement into a working column, or null if it never
+ * entered one. Shared with `burndown.ts` — both need the same "when did
+ * this card join the commitment" fact (research.md R-5).
+ */
+export const firstWorkingEntry = (movements: Movement[]): Movement | null =>
+  [...movements]
+    .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt))
+    .find((m) => WORKING_COLUMN_KEYS.has(m.columnKey)) ?? null;
+
+/** The card's last movement, or null if it has none. */
+export const lastMovement = (movements: Movement[]): Movement | null => {
+  const sorted = [...movements].sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
+  return sorted.length > 0 ? sorted[sorted.length - 1]! : null;
 };
 
 /** The day after `isoDate`'s own midnight — an exclusive upper bound covering that whole day. */

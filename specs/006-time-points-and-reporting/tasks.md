@@ -355,9 +355,9 @@ iteration too. **Run the Story-Complete Review Gate.**
 - [X] T548 [P] `tests/e2e/reports.spec.ts` — reports are keyboard-reachable,
   legible to a screen reader, and producing one never blocks board
   interaction (BH-534, FR-545, FR-546).
-- [ ] T549 Run `quickstart.md` end to end against a running stack; record
+- [X] T549 Run `quickstart.md` end to end against a running stack; record
   any deviation.
-- [ ] T550 Duplicate-code review across `src/domain/elapsed-time.ts`,
+- [X] T550 Duplicate-code review across `src/domain/elapsed-time.ts`,
   `iteration-report.ts` and `burndown.ts` before marking the slice
   complete (constitution, Development Workflow & Quality Gates).
 

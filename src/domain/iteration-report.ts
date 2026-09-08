@@ -3,10 +3,15 @@ import type {
   IterationReport,
   IterationReportPointsSection,
 } from '../shared/types.js';
-import { computeElapsedSeconds, type BlockedInterval, type Movement } from './elapsed-time.js';
+import {
+  computeElapsedSeconds,
+  firstWorkingEntry,
+  lastMovement,
+  WORKING_COLUMN_KEYS,
+  type BlockedInterval,
+  type Movement,
+} from './elapsed-time.js';
 import type { WorkingCalendar } from './elapsed-time.js';
-
-const WORKING_COLUMN_KEYS = new Set(['iteration_items', 'in_progress', 'test', 'po_review']);
 
 /**
  * Whether an iteration's report cannot vouch for its own completeness
@@ -59,18 +64,6 @@ export interface ReportInput {
 }
 
 const share = (part: number, total: number): number => (total > 0 ? part / total : 0);
-
-/** The card's earliest movement into a working column, or null if it never entered one. */
-const firstWorkingEntry = (movements: Movement[]): Movement | null =>
-  [...movements]
-    .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt))
-    .find((m) => WORKING_COLUMN_KEYS.has(m.columnKey)) ?? null;
-
-/** The card's last movement, or null if it has none. */
-const lastMovement = (movements: Movement[]): Movement | null => {
-  const sorted = [...movements].sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
-  return sorted.length > 0 ? sorted[sorted.length - 1]! : null;
-};
 
 const withinSpan = (occurredAt: string, startsOn: string, endsOnExclusive: string): boolean =>
   occurredAt >= `${startsOn}T00:00:00` && occurredAt < endsOnExclusive;
