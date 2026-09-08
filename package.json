@@ -24,7 +24,7 @@
     "test:ops": "vitest run --config vitest.ops.config.ts",
     "test:unit": "vitest run",
     "typecheck": "tsc --noEmit",
-    "e2e:db": "docker compose up -d --wait db && docker compose exec -T db createdb -U kanban kanban_e2e 2>/dev/null || true"
+    "e2e:db": "docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --wait db && docker compose -f docker-compose.yml -f docker-compose.e2e.yml exec -T db createdb -U kanban kanban_e2e 2>/dev/null || true"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

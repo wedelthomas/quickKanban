@@ -15,6 +15,16 @@
 # running the suite and watching thirteen cards and the configured author name
 # disappear. The acceptance suite has always had a separate database
 # (docker-compose.test.yml); the browser suite simply never did.
+#
+# `name:` here is load-bearing, not decoration: without it this file inherits
+# docker-compose.yml's project name and `test:e2e` recreates the developer's
+# own `app` container (with these blank Jira credentials) in place — verified
+# the hard way too, when a `down -v` run against "the e2e stack" turned out to
+# be a `down -v` against the one and only `quick-kanban-wall` project and took
+# the real board's volume with it. `docker-compose.test.yml` already isolates
+# the acceptance suite the same way; this gives the browser suite its own
+# containers, network and volume so it can never touch the persistent instance.
+name: quick-kanban-wall-e2e
 
 services:
   app:
