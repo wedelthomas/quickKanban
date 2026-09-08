@@ -41,10 +41,11 @@ export class SyncService {
     let issues: JiraIssue[];
     try {
       const settings = await this.settings.read();
-      issues = await this.jira.searchIssues(settings.jiraJql, {
-        field: settings.jiraFieldBlocked,
-        option: settings.jiraFieldBlockedOption,
-      });
+      issues = await this.jira.searchIssues(
+        settings.jiraJql,
+        { field: settings.jiraFieldBlocked, option: settings.jiraFieldBlockedOption },
+        { field: settings.jiraFieldStoryPoints },
+      );
     } catch (error) {
       // The port's failure vocabulary is wider than a sync run's: transition
       // failures cannot occur on a read, so they collapse to connectivity here.

@@ -514,6 +514,14 @@ kbd {
 /* Amber like the conflict badge, and for a related reason: carry-over is
    something to notice and decide about, not something broken. Distinct from the
    blocked red, which means the work is stopped right now. */
+/* Board and Jira disagree about the estimate; the board's value is the one
+   in force (FR-518). Dashed for the same reason blocked-diverges is: it says
+   the two sources differ, not that anything is wrong. */
+.badge--points-diverges {
+  border-style: dashed;
+  background: transparent;
+}
+
 .badge--carried {
   border-color: var(--warning);
   color: var(--warning);

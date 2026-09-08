@@ -66,6 +66,7 @@ export class FakeJiraAdapter implements JiraPort {
       statusName: '',
       updatedAt: '',
       blockedInJira: null,
+      points: null,
       url: '',
     };
   }
@@ -149,9 +150,17 @@ export class FakeJiraAdapter implements JiraPort {
     else this.blockedKeys.delete(key);
   }
 
+  /** Which point value Jira reports for an issue, staged by key. */
+  private pointsByKey = new Map<string, number | null>();
+
+  setPointsInJira(key: string, points: number | null): void {
+    this.pointsByKey.set(key, points);
+  }
+
   async searchIssues(
     jql: string,
     blocked?: { field: string; option: string },
+    points?: { field: string },
   ): Promise<JiraIssue[]> {
     this.callCount += 1;
     this.queries.push(jql);
@@ -163,6 +172,7 @@ export class FakeJiraAdapter implements JiraPort {
     return this.issues.map((issue) => ({
       ...issue,
       blockedInJira: blocked ? this.blockedKeys.has(issue.key) : null,
+      points: points ? (this.pointsByKey.get(issue.key) ?? null) : null,
     }));
   }
 }
@@ -176,4 +186,5 @@ export const anIssue = (over: Partial<JiraIssue> & { key: string }): JiraIssue =
   url: over.url ?? `https://yourcompany.atlassian.net/browse/${over.key}`,
   key: over.key,
   blockedInJira: over.blockedInJira ?? null,
+  points: over.points ?? null,
 });

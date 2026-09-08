@@ -219,6 +219,79 @@ describe('JiraAdapter against recorded Jira responses', () => {
     expect(seenPath).toContain('fields=summary,status,updated');
     expect(seenPath).toContain('jql=assignee%20%3D%20currentUser()');
   });
+
+  it('reads only the configured story-points field, never a secondary estimate field (BH-518)', async () => {
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.startsWith('/rest/api/3/search/jql'), method: 'GET' })
+      .reply(200, {
+        issues: [
+          {
+            ...issue('AIHUB-1'),
+            fields: {
+              ...issue('AIHUB-1').fields,
+              customfield_10005: 5,
+              // A secondary estimate field Jira also carries on this issue.
+              // Reading this instead of the configured field would be BH-518's
+              // exact failure.
+              customfield_99999: 40,
+            },
+          },
+        ],
+        isLast: true,
+      });
+
+    const issues = await adapter().searchIssues('x', undefined, {
+      field: 'customfield_10005',
+    });
+    expect(issues[0]?.points).toBe(5);
+  });
+
+  it('imports an empty story-points field as unpointed, not zero (BH-515)', async () => {
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.startsWith('/rest/api/3/search/jql'), method: 'GET' })
+      .reply(200, { issues: [issue('AIHUB-1')], isLast: true });
+
+    const issues = await adapter().searchIssues('x', undefined, {
+      field: 'customfield_10005',
+    });
+    expect(issues[0]?.points).toBeNull();
+  });
+
+  it('imports a story-points field of zero as pointed-at-zero, not unpointed (BH-515)', async () => {
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.startsWith('/rest/api/3/search/jql'), method: 'GET' })
+      .reply(200, {
+        issues: [
+          {
+            ...issue('AIHUB-1'),
+            fields: { ...issue('AIHUB-1').fields, customfield_10005: 0 },
+          },
+        ],
+        isLast: true,
+      });
+
+    const issues = await adapter().searchIssues('x', undefined, {
+      field: 'customfield_10005',
+    });
+    expect(issues[0]?.points).toBe(0);
+  });
+
+  it('does not request the story-points field when not configured', async () => {
+    let seenPath = '';
+    agent
+      .get(BASE)
+      .intercept({ path: (p) => p.startsWith('/rest/api/3/search/jql'), method: 'GET' })
+      .reply((opts) => {
+        seenPath = String(opts.path);
+        return { statusCode: 200, data: { issues: [], isLast: true } };
+      });
+
+    await adapter().searchIssues('x');
+    expect(seenPath).not.toContain('customfield');
+  });
 });
 
 /**

@@ -15,6 +15,14 @@ export interface CardDraft {
   blocked: boolean;
   /** Read-only: shown so the disagreement is legible, never edited here. */
   blockedDivergesFromJira?: boolean;
+  /**
+   * The authoritative estimate. Null means unpointed; 0 is a deliberate
+   * estimate and distinct from null (FR-519). Settable on any card and never
+   * written back to Jira (FR-517).
+   */
+  points: number | null;
+  /** Read-only: shown so the disagreement is legible, never edited here. */
+  pointsDivergesFromJira?: boolean;
 }
 
 export const CardDialog = ({
@@ -36,6 +44,7 @@ export const CardDialog = ({
   const [description, setDescription] = useState(initial?.description ?? '');
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? 'medium');
   const [blocked, setBlocked] = useState<boolean>(initial?.blocked ?? false);
+  const [points, setPoints] = useState<number | null>(initial?.points ?? null);
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? '');
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +77,7 @@ export const CardDialog = ({
         dueDate: dueDate === '' ? null : dueDate,
         tags,
         blocked,
+        points,
       });
     } catch (failure) {
       // Without this the dialog sits open with no explanation and the
@@ -143,6 +153,28 @@ export const CardDialog = ({
           <span className="field-label">Tags</span>
           <TagInput tags={tags} onChange={setTags} />
         </div>
+
+        <label className="field">
+          <span className="field-label">Points</span>
+          <input
+            className="input"
+            type="number"
+            min={0}
+            step={1}
+            data-testid="card-points-input"
+            value={points === null ? '' : points}
+            onChange={(e) =>
+              setPoints(e.target.value === '' ? null : Math.max(0, Number(e.target.value)))
+            }
+          />
+        </label>
+        {initial?.pointsDivergesFromJira && (
+          // Visible without opening a second view (FR-518) — the same
+          // treatment blocked's own divergence marker already has.
+          <p className="field-note" data-testid="card-points-diverges">
+            Diverges from Jira&rsquo;s imported estimate.
+          </p>
+        )}
 
         <label className="filter-toggle">
           <input

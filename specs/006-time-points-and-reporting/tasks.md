@@ -156,26 +156,26 @@ card shows it, override it locally, confirm Jira is never written to.
   contains no write touching a story-points field, by absence of
   capability rather than by behaviour, matching how slice 2 proved the
   same thing for status.
-- [ ] T520 [P] [US3] `tests/features/points-import.feature` + steps —
+- [X] T520 [P] [US3] `tests/features/points-import.feature` + steps —
   a Jira issue carrying a point value imports onto the card (BH-512); a
   local override is used and its divergence from the imported value is
   visible on the card (BH-513); an empty field imports as unpointed and a
   zero field imports as pointed-at-zero (BH-515); a secondary estimate
   field ("Testing Points") is never read as the story estimate (BH-518).
-- [ ] T521 [P] [US3] `tests/e2e/card-points.spec.ts` — the points field is
+- [X] T521 [P] [US3] `tests/e2e/card-points.spec.ts` — the points field is
   reachable and editable by keyboard alone in the card dialog, and the
   divergence marker is visible without opening a second view.
 
 ### Implementation for User Story 3
 
-- [ ] T522 [US3] Extend `src/server/jira/jira-adapter.ts` (or the sync
+- [X] T522 [US3] Extend `src/server/jira/jira-adapter.ts` (or the sync
   read path) to read `settings.jiraFieldStoryPoints` from each imported
   issue into `jira_points`; leave `points` untouched on an existing card
   (FR-518 — local always wins) and set both equal on first import.
 - [X] T523 [US3] Extend `PATCH /api/cards/:id` (`src/server/routes/cards.ts`,
   `card-service.ts`) to accept `points: number | null`; `0` and `null` are
   both valid and distinct (FR-519). Never issues a Jira request (FR-517).
-- [ ] T524 [P] [US3] `src/web/cards/CardDialog.tsx` — a points field,
+- [X] T524 [P] [US3] `src/web/cards/CardDialog.tsx` — a points field,
   keyboard-reachable, showing the local value and the imported value's
   divergence when they differ.
 

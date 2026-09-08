@@ -98,13 +98,17 @@ export const seedJiraCard = async (opts: {
   summary: string;
   status?: string;
   columnId?: number;
+  /** Sets both `points` and `jira_points` equal, as a fresh import would. */
+  points?: number;
 }): Promise<void> => {
-  const { key, summary, status = 'Open', columnId = 1 } = opts;
+  const { key, summary, status = 'Open', columnId = 1, points } = opts;
+  const pointsSql = points === undefined ? 'NULL' : String(points);
   const sql = `
     WITH new_card AS (
-      INSERT INTO cards (source, title, priority, column_id, position)
+      INSERT INTO cards (source, title, priority, column_id, position, points, jira_points)
       VALUES ('jira', $$${summary}$$, 'medium', ${columnId},
-              COALESCE((SELECT max(position) FROM cards WHERE column_id = ${columnId}), 0) + 1)
+              COALESCE((SELECT max(position) FROM cards WHERE column_id = ${columnId}), 0) + 1,
+              ${pointsSql}, ${pointsSql})
       RETURNING id
     )
     INSERT INTO jira_links
