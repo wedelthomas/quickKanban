@@ -17,6 +17,7 @@ import type { TransitionService } from '../sync/transition-service.js';
 import type { MappingRepository } from '../repositories/mapping-repository.js';
 import type { JiraLinkRepository } from '../repositories/jira-link-repository.js';
 import type { ConflictRepository } from '../repositories/conflict-repository.js';
+import type { SettingsRepository } from '../repositories/settings-repository.js';
 import { statusForColumn } from '../../domain/column-mapping.js';
 
 export class CardService {
@@ -35,6 +36,7 @@ export class CardService {
       transitions: TransitionService;
       mappings: MappingRepository;
       links: JiraLinkRepository;
+      settings: SettingsRepository;
     },
   ) {}
 
@@ -118,6 +120,7 @@ export class CardService {
     toColumnId: number,
   ): Promise<{ transitioned: boolean; toStatus: string } | null> {
     if (!this.jira) return null;
+    if (!(await this.jira.settings.read()).jiraEnabled) return null;
 
     const link = await this.jira.links.findByCardId(cardId);
     if (!link) return null; // an ad-hoc card: Jira is never told (FR-208)

@@ -155,6 +155,7 @@ export const buildApp = ({
   registerBoardRoutes(app, new BoardService(new BoardRepository(pool)));
   const mappings = new MappingRepository(pool);
   const conflicts = new ConflictRepository(pool);
+  const settings = new SettingsRepository(pool);
   // Every attempt to change something in Jira leaves a line, whatever the
   // outcome. Never the credential — only the issue, the target and what
   // happened.
@@ -172,6 +173,7 @@ export const buildApp = ({
           transitions: transitionService(),
           mappings,
           links: new JiraLinkRepository(pool),
+          settings,
         }
       : undefined,
   );
@@ -199,8 +201,6 @@ export const buildApp = ({
       return rows[0]?.name ?? String(id);
     },
   );
-
-  const settings = new SettingsRepository(pool);
 
   registerIterationRoutes(
     app,
