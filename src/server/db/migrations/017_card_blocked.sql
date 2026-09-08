@@ -5,7 +5,7 @@
 -- statement below is re-runnable, because FR-407 requires a second application
 -- to change nothing and because a test applies this file directly.
 --
--- Empirical basis for the whole restructure: TradeStation's own Jira models
+-- Empirical basis for the whole restructure: Jira commonly models
 -- blocked as a field (customfield_10003) set on issues whose status is
 -- Development, Test or Open — orthogonal to status, exactly as here.
 

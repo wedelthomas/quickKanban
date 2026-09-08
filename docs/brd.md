@@ -73,7 +73,7 @@ Today this produces three concrete problems:
 | Role | Description | Interest |
 |---|---|---|
 | Primary user | A single engineer (the product owner of this tool) | Daily use; sole operator; sole beneficiary |
-| Jira (external system) | TradeStation Jira Cloud (`tsgjira.atlassian.net`) | Source of truth for Jira-sourced cards; receives status transitions |
+| Jira (external system) | The company's Jira Cloud instance (`yourcompany.atlassian.net`) | Source of truth for Jira-sourced cards; receives status transitions |
 
 There is exactly one human user. Every requirement below is written on that
 assumption, and multi-user concerns are explicitly out of scope.

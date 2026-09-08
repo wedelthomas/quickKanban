@@ -1,5 +1,5 @@
 Feature: The board tells me which iteration we are in
-  Every other artefact at TradeStation is organised around an iteration such as
+  Every other artefact at the company is organised around an iteration such as
   "2026 S18". The board was not, so the number had to be looked up elsewhere.
 
   The guarantee that matters here is not that the banner works. It is that the

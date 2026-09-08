@@ -3,7 +3,7 @@
 **Feature Branch**: `005-iteration-and-board-restructure`
 **Created**: 2026-08-26
 **Status**: Draft
-**Input**: User description: "Slice 5 — Iteration and board restructure. The six columns become Backlog, Iteration Items, In Progress, Test, PO Review, Done; the Blocked column is retired in favour of a card flag; and the board learns the TradeStation iteration calendar and shows it in a banner. Time, points, velocity, burndown and all Phase 2 reporting are deferred to Slice 6."
+**Input**: User description: "Slice 5 — Iteration and board restructure. The six columns become Backlog, Iteration Items, In Progress, Test, PO Review, Done; the Blocked column is retired in favour of a card flag; and the board learns the company's iteration calendar and shows it in a banner. Time, points, velocity, burndown and all Phase 2 reporting are deferred to Slice 6."
 
 **Risk Tier:** FULL
 
@@ -115,7 +115,7 @@ column.
 
 ### User Story 2 - The board tells me which iteration we are in (Priority: P1)
 
-Every other artefact at TradeStation is organised around an iteration such as
+Every other artefact at the company is organised around an iteration such as
 "2026 S18". The board is not, so the user has to look it up elsewhere. They
 want the current iteration, its dates and how much of it is left, visible
 without leaving the board.

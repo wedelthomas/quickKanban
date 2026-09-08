@@ -20,10 +20,10 @@ working on?" Version 2 answers three questions it could not: *which iteration
 are we in*, *where did my iteration actually go*, and *how much of my work is
 the invisible kind*.
 
-Three changes deliver that. The board learns the TradeStation iteration
+Three changes deliver that. The board learns the company's iteration
 calendar and displays it. The column set is restructured so that committing
 work to an iteration is a first-class move, which costs the Blocked column —
-blocked becomes a flag on the card, matching how TradeStation's own Jira
+blocked becomes a flag on the card, matching how the company's own Jira
 already models it. And the movement history that version 1 has been writing
 since Slice 1 is finally read for what it always implied: elapsed time per
 card, per iteration, split by whether the work was ever tracked in Jira.
@@ -121,7 +121,7 @@ Phase 2 adds one read-only dependency:
 
 - Restructuring the six board columns; retiring the Blocked column.
 - Blocked as a boolean card attribute, imported from Jira and settable locally.
-- Awareness of the TradeStation iteration calendar, shown in a top banner.
+- Awareness of the company's iteration calendar, shown in a top banner.
 - An Iteration Items column holding work committed to the current iteration.
 - Elapsed time per card, derived from the existing movement history.
 - Story points, imported from Jira and editable locally.
@@ -174,7 +174,7 @@ Numbering continues from v1. RFC 2119 keywords, as before.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| BR-54 | The system MUST determine the current TradeStation iteration: its ordinal name, start date and end date. | Must |
+| BR-54 | The system MUST determine the current iteration: its ordinal name, start date and end date. | Must |
 | BR-55 | The iteration MUST be read from a single configured Jira **reference board** via the Agile API, taking its active sprint's name and dates. The board MUST be configurable, defaulting to board 1391 (CRM TradeBlazers). | Must |
 | BR-56 | The iteration ordinal MUST be taken from Jira rather than computed by counting, because the ordinal resets at the fiscal-year boundary and a counting rule would drift silently. | Must |
 | BR-57 | The current iteration MUST be displayed in a persistent top banner showing its name, its date range, and the working days remaining. | Must |
@@ -256,7 +256,7 @@ All v1 constraints (C-1…C-5) stand.
 |---|---|
 | C-6 | Phase 2 additionally depends on the Jira Agile API (`/rest/agile/1.0`), which is a distinct API surface from the REST v3 endpoints used by v1. |
 | C-7 | Phase 2 is built on the completed v1 baseline. It assumes Slices 1 through 4 are finished and merged, and modifies that code rather than replacing it. |
-| C-8 | Iteration boundary dates differ by up to one day between TradeStation teams. The board reports one team's boundaries — the nominated reference board's — not a company-wide truth, because no such single truth exists in Jira. |
+| C-8 | Iteration boundary dates differ by up to one day between teams. The board reports one team's boundaries — the nominated reference board's — not a company-wide truth, because no such single truth exists in Jira. |
 
 ### Assumptions
 
@@ -264,7 +264,7 @@ All v1 constraints (C-1…C-5) stand.
 |---|---|---|
 | A-6 | The user's Jira credentials can read the Agile API for the nominated reference boards. | Iteration falls back to the configured anchor and cadence (BR-60), marked as estimated. |
 | A-7 | The reference board maintains an active sprint with populated start and end dates. | Same fallback as A-6. Verified true at time of writing for board 1391, whose active sprint is dated even though its future sprints are not. |
-| A-8 | The TradeStation cadence remains two weeks. | The fallback cadence length is configurable (BR-81); the Jira-read path is unaffected, since it takes real dates. |
+| A-8 | The company's cadence remains two weeks. | The fallback cadence length is configurable (BR-81); the Jira-read path is unaffected, since it takes real dates. |
 | A-9 | The user's own workload will continue to be sparsely pointed in Jira. | Velocity relies more heavily on locally entered points (BR-70), which is why local entry is a Must rather than a Should. |
 | A-10 | Cards do not sit parked in In Progress for long periods without real work. | Derived time overstates effort; the blocked flag (BR-65) is the intended relief valve, and R-9 tracks the residual risk. |
 
@@ -274,7 +274,7 @@ All v1 constraints (C-1…C-5) stand.
 
 | # | Decision | Rationale | Alternatives rejected |
 |---|---|---|---|
-| D-12 | Blocked becomes a card flag, not a column | TradeStation's own Jira already models it this way: `customfield_10003` "Blocked Issue" is set on issues whose status is Development, Test or Open. Blocked is empirically orthogonal to status, and a column forces it to be exclusive | Keeping the Blocked column; a seventh column |
+| D-12 | Blocked becomes a card flag, not a column | The company's own Jira already models it this way: `customfield_10003` "Blocked Issue" is set on issues whose status is Development, Test or Open. Blocked is empirically orthogonal to status, and a column forces it to be exclusive | Keeping the Blocked column; a seventh column |
 | D-13 | Blocked shown as a card edge **and** a badge | The edge is scannable across 50 cards where a badge is not; the badge names the state, satisfying BR-46 without relying on colour. The freed `--column-blocked` hue transfers to the flag | Recolouring the priority dot, which would overwrite priority on exactly the cards that most need triage |
 | D-14 | Iteration Items membership is a local decision | Only 1 of the user's 12 open issues carries a Jira sprint. Deriving membership from Jira would leave the column almost empty and useless | Auto-populating from Jira sprint membership |
 | D-15 | The iteration is read from Jira, not computed | The sprint ordinal resets at the fiscal-year boundary — PI ranges of "Sprint 20 - 1" and "Sprints 23 - 3" confirm it. A counting rule would drift silently every January | A pure anchor-plus-cadence calendar rule |
@@ -343,7 +343,7 @@ Terms from v1 §13 stand. Phase 2 adds:
 
 | Term | Definition |
 |---|---|
-| **Iteration** | The two-week TradeStation timebox, identified by an ordinal such as "2026 S18". The ordinal is common across teams; the boundary dates vary by up to a day between them. |
+| **Iteration** | The two-week company timebox, identified by an ordinal such as "2026 S18". The ordinal is common across teams; the boundary dates vary by up to a day between them. |
 | **Reference board** | The configured Jira board whose active sprint supplies the current iteration's name and dates. Defaults to 1391, CRM TradeBlazers. |
 | **Iteration Items** | The board column holding work the user has committed to the current iteration. A local decision, unrelated to Jira sprint membership. |
 | **Carry-over** | A card still unfinished when the iteration it was committed to has ended. |

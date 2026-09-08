@@ -7,8 +7,8 @@
 2. Add three lines to `.env`:
 
    ```bash
-   JIRA_BASE_URL=https://tsgjira.atlassian.net
-   JIRA_EMAIL=twedel@tradestation.com
+   JIRA_BASE_URL=https://yourcompany.atlassian.net
+   JIRA_EMAIL=you@example.com
    JIRA_API_TOKEN=<the token>
    ```
 

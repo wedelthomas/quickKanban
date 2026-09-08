@@ -194,7 +194,7 @@ freeze against the Jira port's absence after that turned out to be a live bug.
 before any implementation task in that story runs. Cases land under a new
 "Slice 3 — Two-Way Sync" section in project 115.
 
-## TradeStation SDD — Required plan close-outs
+## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory** — all 13 files become tasks.
 - **Constitution Check** ran before Phase 0 and after Phase 1; the two new

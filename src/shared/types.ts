@@ -292,7 +292,7 @@ export interface Problem {
 }
 
 /**
- * The current TradeStation iteration, as last established.
+ * The current iteration, as last established.
  *
  * `provenance` is the honesty of the value, not its source system: `read` means
  * established from the reference board this run, `cached` a previously read

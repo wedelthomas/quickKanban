@@ -10,7 +10,7 @@
     "worked": "Probing live Jira before designing surfaced real custom field ids, the fiscal-year sprint-ordinal reset, per-team iteration date drift, and the blocked field - none of which a fixture would have shown. Unbroken BRD-to-spec traceability: every FR traces to a BR, every behavior pathway cites its FRs and pins to a test. Questions carrying rendered previews made choices concrete. Reusing conventions already established by slices 1-4 rather than inventing new ones.",
     "friction": "The spec's numbering conventions had to be reverse-engineered by reading the four prior specs. Nothing documents that slice N uses FR-N00, SC-N0x, BH-Nxx and TEST-Nxx - it is discoverable only by grep. A line in the template or constitution would remove the archaeology for the next author. Otherwise the step ran smoothly.",
     "wrong": null,
-    "phase_specific": "No - the user stories stayed technology-agnostic. The vocabulary they use (iteration, reference board, active sprint, blocked) is the business's own language at TradeStation, so it reads as domain terminology rather than implementation leaking in."
+    "phase_specific": "No - the user stories stayed technology-agnostic. The vocabulary they use (iteration, reference board, active sprint, blocked) is the business's own language, so it reads as domain terminology rather than implementation leaking in."
   },
   "metrics": {
     "phase": "specify",

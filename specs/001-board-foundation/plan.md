@@ -381,7 +381,7 @@ has a `BH-###`/`TEST-###` pair authors or syncs that case to TestRail via
 runs. Practically: the story's Gherkin file and its TestRail case are created
 together, ahead of the code they describe.
 
-## TradeStation SDD — Required plan close-outs
+## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory** — every test file named above becomes a task
   in `/speckit.tasks`. There are 22.

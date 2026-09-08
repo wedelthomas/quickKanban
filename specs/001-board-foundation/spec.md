@@ -434,7 +434,7 @@ and actor, with no record rewritten by later moves.
   system runs on one machine for one person, so a single local timezone is
   sufficient and no per-user timezone handling is needed.
 - The interface follows the visual language recorded in
-  `docs/design/visual-language.md`, derived from the TradeStation AI Portal.
+  `docs/design/visual-language.md`, derived from an internal AI portal.
   That document is a plan-level input; nothing in this specification depends
   on it.
 

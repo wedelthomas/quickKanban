@@ -325,7 +325,7 @@ story's `TEST-###` cases via `spec-testrail-sync` **before** any implementation
 task in the same story runs. Cases land in TestRail project 115, suite 32733,
 under a new "Slice 2 — Jira Import" section.
 
-## TradeStation SDD — Required plan close-outs
+## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory** — all 16 test files above become tasks.
 - **Constitution Check** ran before Phase 0 and again after Phase 1; the one

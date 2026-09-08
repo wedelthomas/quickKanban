@@ -34,7 +34,7 @@ Nothing identified.
 
 **Was any user story hard to keep technology-agnostic?** No — the stories
 stayed clean. The vocabulary they use (iteration, reference board, active
-sprint, blocked) is the business's own language at TradeStation, so using it
+sprint, blocked) is the business's own language, so using it
 reads as domain terminology rather than as implementation leaking in.
 
 ## Telemetry

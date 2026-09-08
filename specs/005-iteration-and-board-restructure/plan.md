@@ -9,7 +9,7 @@
 Three changes to a board that already works. The six columns become Backlog,
 Iteration Items, In Progress, Test, PO Review, Done — Blocked leaves the board
 and becomes a flag the card carries wherever it actually is. The board learns
-the current TradeStation iteration from a nominated Jira board and shows it in
+the current iteration from a nominated Jira board and shows it in
 a banner that degrades to a cache and then to an estimate rather than ever
 failing. And cards left unfinished across a boundary say so on their face.
 
@@ -319,7 +319,7 @@ a `BH-###`/`TEST-###` pair authors or syncs that case through
 For this slice that means US1's first task syncs TEST-401…TEST-405 and
 TEST-406…TEST-408 before the migration is written.
 
-## TradeStation SDD — Required plan close-outs
+## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory.** All nineteen test files above MUST become
   tasks in `/speckit.tasks`.

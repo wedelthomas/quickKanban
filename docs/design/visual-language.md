@@ -2,7 +2,7 @@
 
 **References**, both observed 2026-08-26 and both liked by the user:
 
-1. **TradeStation AI Portal** (`portal.ai.tradestation.io`), Skills & Plugins
+1. **Internal AI Portal** (internal URL), Skills & Plugins
    page — palette, component treatment, header navigation.
 2. **ABS Team Reports** dashboard (`localhost:8080`), Compare All view —
    density, left sidebar, statistic strip, table treatment.

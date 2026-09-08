@@ -316,7 +316,7 @@ Twelve files, all of which become tasks.
 land under a new "Slice 4 — Review and Reporting" section in project 115,
 suite 32733.
 
-## TradeStation SDD — Required plan close-outs
+## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory.** All twelve files above become tasks.
 - **Constitution Check** ran before Phase 0 and again after Phase 1 design; the

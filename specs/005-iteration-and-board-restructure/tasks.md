@@ -123,7 +123,7 @@ files had the same problem and are now one.
 
 ## Phase 4: User Story 2 — The board tells me which iteration we are in (Priority: P1)
 
-**Goal**: The current TradeStation iteration, its dates and its remaining
+**Goal**: The current iteration, its dates and its remaining
 working days, visible without leaving the board — degrading to cache, then to
 an estimate, rather than ever failing.
 

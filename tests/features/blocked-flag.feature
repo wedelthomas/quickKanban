@@ -1,7 +1,7 @@
 Feature: Blocked is a state my card carries, not a place it goes
   A blocked card is still in test, or still in development. Moving it to a
   Blocked column threw that away and spent a sixth of the board's width doing
-  it. TradeStation's own Jira models blocked as a field set on issues whose
+  it. Jira commonly models blocked as a field set on issues whose
   status is Development, Test or Open — orthogonal to status, exactly as here.
 
   Background:

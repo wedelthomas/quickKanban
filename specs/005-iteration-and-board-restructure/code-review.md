@@ -9,7 +9,7 @@
 ## Summary
 
 Slice 5 restructures the board's six columns, turns Blocked into a card
-attribute, and teaches the board the TradeStation iteration calendar. It adds
+attribute, and teaches the board the company's iteration calendar. It adds
 one outbound API surface, six migrations, six pure domain functions and roughly
 2,900 lines of test.
 
@@ -123,7 +123,7 @@ file-size growth, and N-6 is the coverage deviation already carried in
 
 Six board columns become Backlog / Iteration Items / In Progress / Test /
 PO Review / Done. Blocked leaves the board and becomes a flag a card carries
-wherever the work actually is. The board reads the current TradeStation
+wherever the work actually is. The board reads the current
 iteration from a nominated Jira board and shows it in a banner that degrades to
 a cache and then to an estimate rather than ever failing.
 

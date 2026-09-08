@@ -1,4 +1,4 @@
--- The TradeStation iteration, as last established. FR-421, FR-426, FR-427.
+-- The current iteration, as last established. FR-421, FR-426, FR-427.
 --
 -- Its own table rather than a settings row: the iteration is not
 -- user-adjustable configuration, it is observed state with provenance, and

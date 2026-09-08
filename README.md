@@ -50,7 +50,7 @@ them. This board does.
 - **Generate your standup update** — what moved, what is in progress, what is
   blocked — and copy it as plain text. Daily or weekly
 
-- **The board knows which TradeStation iteration it is** — read from your
+- **The board knows which iteration it is** — read from your
   team's Jira board and shown in the banner with its dates and the working days
   left. When Jira is unreachable it shows the last one it read, marked as such,
   and falls back to a calculated estimate rather than to nothing
@@ -105,8 +105,8 @@ Generate a token at <https://id.atlassian.com/manage-profile/security/api-tokens
 — no administrator approval needed — and add three lines to `.env`:
 
 ```bash
-JIRA_BASE_URL=https://tsgjira.atlassian.net
-JIRA_EMAIL=you@tradestation.com
+JIRA_BASE_URL=https://yourcompany.atlassian.net
+JIRA_EMAIL=you@example.com
 JIRA_API_TOKEN=<the token>
 ```
 
