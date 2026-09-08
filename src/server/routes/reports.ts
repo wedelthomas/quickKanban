@@ -10,4 +10,9 @@ export const registerReportRoutes = (app: FastifyInstance, reports: ReportServic
     '/api/iterations/:ordinalName/report',
     async (request) => reports.iterationReport(request.params.ordinalName),
   );
+
+  app.get<{ Params: { ordinalName: string } }>(
+    '/api/iterations/:ordinalName/burndown',
+    async (request) => reports.burndown(request.params.ordinalName),
+  );
 };

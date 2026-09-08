@@ -1,8 +1,52 @@
 import { useEffect, useState } from 'react';
-import type { Iteration, IterationReport } from '../../shared/types.js';
+import type { Burndown, BurndownPoint, Iteration, IterationReport } from '../../shared/types.js';
 
 const formatHours = (seconds: number): string => `${(seconds / 3600).toFixed(1)}h`;
 const formatShare = (share: number): string => `${Math.round(share * 100)}%`;
+
+/**
+ * Decorative line, coloured dots for the day's cause (FR-532). Purely
+ * illustrative — `aria-hidden`, because the list beside it already states
+ * every figure in text (FR-545), which is what a screen reader reads.
+ */
+const BurndownChart = ({ points }: { points: BurndownPoint[] }) => {
+  const width = 280;
+  const height = 100;
+  const max = Math.max(1, ...points.map((p) => p.outstanding));
+  const stepX = points.length > 1 ? width / (points.length - 1) : 0;
+  const coords = points.map(
+    (p, i) => [i * stepX, height - (p.outstanding / max) * height] as const,
+  );
+
+  return (
+    <svg
+      className="burndown-chart"
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden="true"
+      preserveAspectRatio="none"
+    >
+      <polyline
+        points={coords.map(([x, y]) => `${x},${y}`).join(' ')}
+        fill="none"
+        stroke="var(--accent)"
+        strokeWidth={2}
+      />
+      {points.map((p, i) => {
+        if (p.completedThatDay === 0 && p.scopeAddedThatDay === 0) return null;
+        const [x, y] = coords[i]!;
+        return (
+          <circle
+            key={p.date}
+            cx={x}
+            cy={y}
+            r={3}
+            fill={p.completedThatDay > 0 ? 'var(--column-done)' : 'var(--warning)'}
+          />
+        );
+      })}
+    </svg>
+  );
+};
 
 /**
  * Per-card and per-project elapsed time for the current iteration (US1).
@@ -14,6 +58,7 @@ const formatShare = (share: number): string => `${Math.round(share * 100)}%`;
 export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
   const [iteration, setIteration] = useState<Iteration | null | undefined>(undefined);
   const [report, setReport] = useState<IterationReport | null>(null);
+  const [burndown, setBurndown] = useState<Burndown | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,10 +70,17 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
 
   useEffect(() => {
     if (!iteration?.ordinalName) return;
-    fetch(`/api/iterations/${encodeURIComponent(iteration.ordinalName)}/report`)
+    const ordinal = encodeURIComponent(iteration.ordinalName);
+    fetch(`/api/iterations/${ordinal}/report`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('failed'))))
       .then((r: IterationReport) => setReport(r))
       .catch(() => setError('The report could not be generated.'));
+    // Fetched independently: a burndown failure must not blank out the
+    // report the user already has (mirrors IterationBanner's own isolation).
+    fetch(`/api/iterations/${ordinal}/burndown`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((b: Burndown | null) => setBurndown(b))
+      .catch(() => {});
   }, [iteration]);
 
   return (
@@ -158,6 +210,27 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
                 </>
               )}
             </section>
+
+            {burndown && burndown.points.length > 0 && (
+              <section className="summary-group" data-testid="report-burndown">
+                <h3 className="field-label">Burndown</h3>
+                <BurndownChart points={burndown.points} />
+                {/* The chart is decorative; this list is the one legible to a
+                    screen reader and is what the SVG merely illustrates
+                    (FR-545) — every figure the chart shows is stated here in
+                    text, cause included. */}
+                <ul className="summary-list" data-testid="report-burndown-list">
+                  {burndown.points.map((p) => (
+                    <li key={p.date}>
+                      {p.date}: {p.outstanding} outstanding
+                      {p.completedThatDay > 0 && `, ${p.completedThatDay} completed`}
+                      {p.scopeAddedThatDay > 0 && `, +${p.scopeAddedThatDay} scope added`}
+                      {p.scopeRemovedThatDay > 0 && `, -${p.scopeRemovedThatDay} scope removed`}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </>
         )}
 

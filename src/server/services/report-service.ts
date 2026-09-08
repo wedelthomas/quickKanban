@@ -1,9 +1,10 @@
-import type { IterationReport } from '../../shared/types.js';
+import type { Burndown, IterationReport } from '../../shared/types.js';
 import type { IterationRepository } from '../repositories/iteration-repository.js';
 import type { CommitmentRepository } from '../repositories/commitment-repository.js';
 import type { ReportRepository } from '../repositories/report-repository.js';
 import type { SettingsRepository } from '../repositories/settings-repository.js';
 import { buildIterationReport } from '../../domain/iteration-report.js';
+import { buildBurndown } from '../../domain/burndown.js';
 import { iterationNotFound } from '../errors.js';
 
 /**
@@ -61,5 +62,33 @@ export class ReportService {
     });
   }
 
-  // burndown(ordinalName) arrives in US5 (T537), once burndown.ts exists.
+  async burndown(ordinalName: string): Promise<Burndown> {
+    const iteration = await this.iterations.findByOrdinal(ordinalName);
+    if (!iteration) throw iterationNotFound(ordinalName);
+
+    const [commitment, cards, settings] = await Promise.all([
+      this.commitments.find(ordinalName),
+      this.reports.allCards(),
+      this.settings.read(),
+    ]);
+
+    return {
+      ordinalName: iteration.ordinalName,
+      points: buildBurndown({
+        startsOn: iteration.startsOn,
+        endsOn: iteration.endsOn,
+        commitment,
+        cards: cards.map((c) => ({
+          cardId: c.cardId,
+          title: c.title,
+          project: c.source === 'local' ? 'local' : (c.project ?? 'local'),
+          points: c.points,
+          movements: c.movements,
+          blockedEvents: c.blockedEvents,
+        })),
+        calendar: { workingDays: settings.workingDays },
+        now: this.now(),
+      }),
+    };
+  }
 }

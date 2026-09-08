@@ -272,27 +272,27 @@ movement to the right cause.
 
 ### Tests for User Story 5 — write first, confirm they FAIL
 
-- [ ] T534 [P] [US5] `tests/unit/burndown.test.ts` — outstanding points at
+- [X] T534 [P] [US5] `tests/unit/burndown.test.ts` — outstanding points at
   the close of each working day (BH-523); a day of completed work
   attributes its fall to completion (BH-524); a day of scope addition
   attributes its rise to scope, distinguishable from an absence of
   progress (BH-524); a running iteration's burndown covers only elapsed
   days (BH-525); a completed iteration's burndown covers its full span
   (BH-526).
-- [ ] T535 [P] [US5] `tests/contract/burndown.test.ts` — `GET
+- [X] T535 [P] [US5] `tests/contract/burndown.test.ts` — `GET
   /api/iterations/:ordinalName/burndown`: 404 `ITERATION_NOT_FOUND` for an
   unobserved ordinal; 200 with one point per elapsed working day.
 
 ### Implementation for User Story 5
 
-- [ ] T536 [US5] `src/domain/burndown.ts` — pure. Takes the commitment,
+- [X] T536 [US5] `src/domain/burndown.ts` — pure. Takes the commitment,
   the same `card_events`-derived scope/completion facts
   `iteration-report.ts` computes, the working-days config and `now`;
   returns one `BurndownPoint` per elapsed working day of the iteration.
-- [ ] T537 [US5] Extend `report-service.ts` with `burndown(ordinalName)`,
+- [X] T537 [US5] Extend `report-service.ts` with `burndown(ordinalName)`,
   and `src/server/routes/reports.ts` with `GET
   /api/iterations/:ordinalName/burndown`.
-- [ ] T538 [P] [US5] `src/web/reports/` — a burndown chart, distinguishing
+- [X] T538 [P] [US5] `src/web/reports/` — a burndown chart, distinguishing
   completion-caused and scope-caused movement (FR-532), reachable by
   keyboard and legible to a screen reader (FR-545).
 
