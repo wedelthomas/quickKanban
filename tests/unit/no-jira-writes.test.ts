@@ -111,3 +111,25 @@ describe('slice 5 adds reads to Jira and no writes', () => {
     expect(port).not.toMatch(/setBlocked|updateBlocked|writeBlocked|setSprint/i);
   });
 });
+
+/**
+ * BH-514, FR-517. Slice 6 reads story points from Jira and never writes them
+ * back — the same shape as the blocked field and sprints above: asserted by
+ * the absence of the capability.
+ */
+describe('slice 6 reads story points and never writes them', () => {
+  const jiraAdapter = readFileSync('src/server/jira/jira-adapter.ts', 'utf8');
+  const port = readFileSync('src/server/jira/jira-port.ts', 'utf8');
+
+  it('never sends a story-points value in a request body', () => {
+    const bodies = jiraAdapter.match(/body:\s*JSON\.stringify\(([^)]*)\)/g) ?? [];
+    for (const body of bodies) {
+      expect(body).not.toMatch(/points/i);
+      expect(body).not.toMatch(/customfield/i);
+    }
+  });
+
+  it('the Jira port has nowhere to put a points write', () => {
+    expect(port).not.toMatch(/setPoints|updatePoints|writePoints|storyPoints\(/i);
+  });
+});

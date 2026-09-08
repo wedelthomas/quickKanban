@@ -151,7 +151,7 @@ card shows it, override it locally, confirm Jira is never written to.
 
 ### Tests for User Story 3 — write first, confirm they FAIL
 
-- [ ] T519 [P] [US3] `tests/unit/no-jira-writes.test.ts` — extend the
+- [X] T519 [P] [US3] `tests/unit/no-jira-writes.test.ts` — extend the
   existing structural assertion (BH-514/FR-517): the adapter's source
   contains no write touching a story-points field, by absence of
   capability rather than by behaviour, matching how slice 2 proved the
