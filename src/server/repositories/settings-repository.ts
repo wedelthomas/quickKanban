@@ -2,6 +2,7 @@ import type pg from 'pg';
 import type { Settings, WorkingDay } from '../../shared/types.js';
 
 const KEYS = {
+  jiraEnabled: 'jira.enabled',
   jql: 'jira.jql',
   interval: 'sync.interval_seconds',
   archiveWindow: 'archive.window_days',
@@ -37,6 +38,7 @@ export class SettingsRepository {
     );
     const byKey = new Map(rows.map((r) => [r.key, r.value]));
     return {
+      jiraEnabled: Boolean(byKey.get(KEYS.jiraEnabled) ?? false),
       jiraJql: String(byKey.get(KEYS.jql) ?? ''),
       syncIntervalSeconds: Number(byKey.get(KEYS.interval) ?? 300),
       archiveWindowDays: Number(byKey.get(KEYS.archiveWindow) ?? 7),
@@ -78,6 +80,7 @@ export class SettingsRepository {
     // The slice 5 settings are uniform — no per-field handling, unlike the
     // four above which predate this shape.
     for (const name of [
+      'jiraEnabled',
       'iterationBoardId',
       'iterationTeamName',
       'iterationAnchorDate',

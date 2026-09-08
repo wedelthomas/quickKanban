@@ -10,6 +10,7 @@ import { validateJql } from '../../domain/jql.js';
  */
 const updateSchema = z
   .object({
+    jiraEnabled: z.boolean().optional(),
     jiraJql: z.string().optional(),
     syncIntervalSeconds: z.number().int().min(60).max(3600).optional(),
     // Zero is valid and means "at the next pass" — the spec calls that

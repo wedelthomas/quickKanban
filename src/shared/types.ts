@@ -136,6 +136,9 @@ export interface Conflict {
 export type WorkingDay = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
 export interface Settings {
+  /** Master toggle, independent of whether credentials are configured. */
+  jiraEnabled: boolean;
+
   jiraJql: string;
   syncIntervalSeconds: number;
   /** How long finished work stays on the board before archival takes it. */
