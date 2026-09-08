@@ -232,28 +232,28 @@ scope change and completion.
 
 ### Tests for User Story 4 — write first, confirm they FAIL
 
-- [ ] T529 [P] [US4] `tests/unit/commitment.test.ts` (or extend
+- [X] T529 [P] [US4] `tests/unit/commitment.test.ts` (or extend
   `carry-over.test.ts`'s sibling) — commitment is snapshotted once at
   iteration start and does not move as cards are added or removed
   (BH-519); commitment ignores Jira sprint membership entirely, reading
   only this board's columns (BH-535, FR-547).
-- [ ] T530 [P] [US4] `tests/unit/iteration-report.test.ts` — a mid-iteration
+- [X] T530 [P] [US4] `tests/unit/iteration-report.test.ts` — a mid-iteration
   addition reports as scope added, not commitment (BH-520); velocity
   counts local and Jira-sourced cards alike (BH-521); commitment,
   completion and scope change report as three distinct figures (BH-522).
-- [ ] T531 [P] [US4] `tests/contract/iteration-report.test.ts` — extend:
+- [X] T531 [P] [US4] `tests/contract/iteration-report.test.ts` — extend:
   `points.committed`, `points.completed`, `points.scopeAdded` present and
   distinct for a fixture that adds a card mid-iteration.
 
 ### Implementation for User Story 4
 
-- [ ] T532 [US4] Extend `src/domain/iteration-report.ts`: scope
+- [X] T532 [US4] Extend `src/domain/iteration-report.ts`: scope
   added/removed derived from `card_events` — a pointed card entering a
   working column for the first time after `committed_at` is scope added;
   one leaving every working column after being part of the commitment is
   scope removed (research.md R-5). Completion is the sum of points on
   cards reaching Done within the iteration's span (velocity, FR-528).
-- [ ] T533 [P] [US4] `src/web/reports/` — extend the report view with
+- [X] T533 [P] [US4] `src/web/reports/` — extend the report view with
   commitment, completion and scope change as three distinct figures.
 
 **Checkpoint**: overcommitment is now an observable fact, not a guess.

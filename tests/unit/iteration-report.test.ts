@@ -4,6 +4,7 @@ import {
   type ReportInput,
   type ReportInputCard,
 } from '../../src/domain/iteration-report.js';
+import type { IterationCommitment } from '../../src/shared/types.js';
 
 /**
  * TEST-516, TEST-517, TEST-528, TEST-539. US2 — the local/Jira invisible-work
@@ -19,13 +20,16 @@ const CALENDAR = {
   endHour: 24,
 };
 
-const baseInput = (cards: ReportInputCard[]): ReportInput => ({
+const baseInput = (
+  cards: ReportInputCard[],
+  commitment: IterationCommitment | null = null,
+): ReportInput => ({
   ordinalName: '2026 S18',
   startsOn: '2026-08-24',
   endsOn: '2026-09-07',
   cards,
   calendar: CALENDAR,
-  commitment: null,
+  commitment,
   incomplete: false,
   now: new Date('2026-09-08T00:00:00'),
 });
@@ -44,6 +48,68 @@ const doneCard = (
     { toColumnId: 0, columnKey: 'done', occurredAt: '2026-08-25T13:00:00' },
   ],
   blockedEvents: [],
+});
+
+const workingCard = (
+  cardId: string,
+  project: string,
+  points: number | null,
+  enteredAt: string,
+): ReportInputCard => ({
+  cardId,
+  title: cardId,
+  project,
+  points,
+  movements: [{ toColumnId: 0, columnKey: 'in_progress', occurredAt: enteredAt }],
+  blockedEvents: [],
+});
+
+const COMMITMENT: IterationCommitment = {
+  ordinalName: '2026 S18',
+  committedPoints: 10,
+  committedAt: '2026-08-24T00:00:00',
+};
+
+describe('iteration report — commitment, completion and scope (US4)', () => {
+  it('reports a mid-iteration addition as scope added, commitment unchanged (BH-520)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [
+          workingCard('already-committed', 'local', 4, '2026-08-20T09:00:00'),
+          workingCard('added-later', 'local', 3, '2026-08-26T09:00:00'),
+        ],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ committed: 10, scopeAdded: 3 });
+  });
+
+  it('counts local and Jira-sourced cards alike toward velocity (BH-521)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [doneCard('local-done', 'local', 4), doneCard('jira-done', 'AIHUB', 6)],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ completed: 10 });
+  });
+
+  it('reports commitment, completion and scope change as three distinct figures (BH-522)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [
+          workingCard('still-open', 'local', 4, '2026-08-20T09:00:00'),
+          doneCard('finished', 'local', 5),
+          workingCard('added-later', 'AIHUB', 3, '2026-08-26T09:00:00'),
+        ],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ committed: 10, completed: 5, scopeAdded: 3 });
+  });
 });
 
 describe('iteration report — local/Jira split', () => {

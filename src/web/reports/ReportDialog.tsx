@@ -124,10 +124,28 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
                 </p>
               ) : (
                 <>
-                  <p className="report-row">
+                  {/* Commitment, completion and scope change as three
+                      distinct figures (FR-530) — overcommitment is now
+                      something the report states, not something the user
+                      has to notice on their own. */}
+                  <p className="report-row" data-testid="report-points-committed">
+                    <span>Committed</span>
+                    <span>{report.points.committed}</span>
+                  </p>
+                  <p className="report-row" data-testid="report-points-completed">
                     <span>Completed</span>
                     <span>{report.points.completed}</span>
                   </p>
+                  {(report.points.scopeAdded > 0 || report.points.scopeRemoved > 0) && (
+                    <p className="report-row" data-testid="report-points-scope">
+                      <span>Scope change</span>
+                      <span>
+                        {report.points.scopeAdded > 0 && `+${report.points.scopeAdded}`}
+                        {report.points.scopeAdded > 0 && report.points.scopeRemoved > 0 && ' / '}
+                        {report.points.scopeRemoved > 0 && `-${report.points.scopeRemoved}`}
+                      </span>
+                    </p>
+                  )}
                   <p className="field-note" data-testid="report-points-share">
                     {formatShare(report.points.localShare)} local, {formatShare(report.points.jiraShare)} Jira
                   </p>

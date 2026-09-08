@@ -43,6 +43,14 @@ const move = async (cardId: string, toColumnId: number): Promise<void> => {
   });
 };
 
+const seedCommitment = async (points: number, committedAt: string): Promise<void> => {
+  await pool.query(
+    `INSERT INTO iteration_commitments (ordinal_name, committed_points, committed_at)
+     VALUES ($1, $2, $3)`,
+    [ORDINAL, points, committedAt],
+  );
+};
+
 describe('GET /api/iterations/:ordinalName/report', () => {
   beforeAll(async () => {
     pool = new pg.Pool({ connectionString: CONNECTION, statement_timeout: 5_000 });
@@ -167,6 +175,43 @@ describe('GET /api/iterations/:ordinalName/report', () => {
       jiraShare: 0.375,
       excludedUnpointed: 1,
     });
+  });
+
+  it('reports commitment, completion and scope added as three distinct figures for a mid-iteration addition (BH-520, BH-522)', async () => {
+    await seedIteration('2026-08-24', '2026-09-07');
+    await seedCommitment(10, '2026-08-24T00:00:00');
+
+    const doneCardId = await createCard('Finished this iteration');
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/cards/${doneCardId}`,
+      payload: { points: 5 },
+    });
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 6, 'user', '2026-08-25T10:00:00')`,
+      [doneCardId],
+    );
+
+    const addedCardId = await createCard('Added mid-iteration');
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/cards/${addedCardId}`,
+      payload: { points: 3 },
+    });
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 2, 'user', '2026-08-26T10:00:00')`,
+      [addedCardId],
+    );
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/iterations/${encodeURIComponent(ORDINAL)}/report`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as IterationReport;
+    expect(body.points).toMatchObject({ committed: 10, completed: 5, scopeAdded: 3 });
   });
 
   it('marks a period predating recorded history as incomplete (BH-531, FR-542)', async () => {
