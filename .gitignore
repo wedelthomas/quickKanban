@@ -1,0 +1,21 @@
+
+# sdd-preset machine-specific install metadata
+.specify/presets/bdd-tdd-workflow/.install-meta.json
+
+# application
+.env
+node_modules/
+dist/
+playwright-report/
+test-results/
+
+# macOS Finder metadata
+.DS_Store
+
+# Isolated git worktrees created for feature work
+.claude/worktrees/
+
+# Corporate TLS-interception root CA, exported from the local machine.
+# Not a secret (a root certificate is public), but machine- and
+# network-specific, so it is regenerated rather than committed.
+certs/

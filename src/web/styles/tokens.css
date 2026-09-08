@@ -1,0 +1,105 @@
+/*
+ * Dark only, by decision recorded in docs/design/visual-language.md. Derived
+ * from an internal AI portal, with the density tightened because this
+ * board must show roughly 50 cards at once where the reference shows a dozen
+ * rows.
+ *
+ * Colour is rationed on purpose: one accent for anything actionable, one coral
+ * for anything destructive or late. An interface where six things are blue has
+ * taught the reader that blue means nothing.
+ */
+
+:root {
+  --canvas: #0b0e14;
+  --surface: #161b26;
+  --surface-raised: #212939;
+
+  /* Cards have to read as objects sitting ON the column, not as regions of it.
+     A step in lightness alone was too subtle at a glance across six columns, so
+     the border lifts with it and a soft shadow does the rest. */
+  --card-border: #333c52;
+  --card-shadow: 0 1px 2px #00000059, 0 2px 6px #0000003d;
+  --card-shadow-hover: 0 2px 4px #00000066, 0 6px 14px #00000047;
+  --border: #252b3a;
+
+  --text: #e6e9ef;
+  --text-muted: #8b93a7;
+
+  --accent: #3b5bfd;
+  --accent-soft: #3b5bfd28;
+  --destructive: #e04b4b;
+  /* Amber, not red: a conflict is something to decide, not something broken. */
+  --warning: #e0894b;
+  --warning-soft: #e0894b22;
+
+  /* One hue per column: a top rule, the title, and a tinted count. The cards
+     stay neutral — six columns of coloured cards would read as a swatch, and
+     the card face already spends its colour on priority and the conflict
+     badge, which are the two things that must stand out. */
+  --column-backlog: #8b93a7;
+  /* White, and the only column with no hue of its own: Iteration Items is a
+     commitment rather than a stage of work, and giving it a colour would put it
+     in the same visual grammar as the five stages it is not one of. */
+  --column-iteration-items: #e6e9ef;
+  --column-in-progress: #e0b44b;
+  --column-test: #4b9fe0;
+  --column-po-review: #3fbfb0;
+  --column-done: #4bc27a;
+
+  /* Inherited from the retired Blocked column. Slice 5 made blocked something a
+     card carries rather than a place it goes, so the hue moves with it — the
+     card face gains a left edge and a badge in this colour, and the priority
+     dot keeps its own meaning. */
+  --blocked: #e04b4b;
+  --blocked-soft: #e04b4b22;
+
+  --priority-high: #e0894b;
+  --priority-medium: #8b93a7;
+  --priority-low: #4b7fe0;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  /* Tighter than the reference: density is a requirement here (NFR-13). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-lg: 15px;
+  --text-title: 28px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The board is keyboard-driven, so the focus ring is a primary interface
+ * element rather than an accessibility afterthought. It must read clearly
+ * against --surface.
+ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

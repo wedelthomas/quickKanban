@@ -1,0 +1,31 @@
+{
+  "phase": "end-of-feature",
+  "project": "quick-kanban-wall",
+  "spec": "005-iteration-and-board-restructure",
+  "branch": "005-iteration-and-board-restructure",
+  "agent_model": "claude-opus-5[1m]",
+  "tool": "claude",
+  "client_ts": "2026-08-27T06:54:22Z",
+  "feedback": {
+    "worked": "Probing the running system over trusting the suite: every significant defect came from the live board or real Jira, never from reading code - a move into the retired column answering 200 and swallowing a card, Iteration Items unreachable because the move schema pinned toColumnId to 1..6, PATCH writing blocked and answering false, mapping payloads rejected outright, and the settings dialog rendering two columns while the stylesheet said three. Red-first exposed weak tests as well as missing code: TEST-433 passed before the migration existed. Measuring rather than reasoning found a class-name collision and a grid track sizing to its content, both invisible to reading the CSS.",
+    "friction": "The same cucumber mistake three times: a step registered as both Given and When is ambiguous because cucumber matches on the pattern, not the keyword. And constants that assumed column ids matched board positions - four defects shared that cause, including four copies of a column-id map in the step files, three of which silently produced undefined or the wrong column.",
+    "wrong": "Running the browser suite destroyed the developer's real board: tests/e2e/reset.ts truncated POSTGRES_DB rather than a test database. Twelve Jira cards returned on sync; one local card did not and is unrecoverable. Now guarded three ways.",
+    "phase_specific": "The >=90% coverage quality gate remains unmet, recorded as a carried deviation - unmeasured across all five slices, now visible in plan.md rather than implied by an unexecutable task."
+  },
+  "ai_attestation": {
+    "bucket": "all",
+    "comment": "Every line written by Claude in one session, with the developer directing requirements, design and UI feedback, including corrections made live against the running board."
+  },
+  "metrics": {
+    "phase": "end-of-feature",
+    "branch": "005-iteration-and-board-restructure",
+    "agent_model": "claude-opus-5[1m]",
+    "timestamp": "2026-08-27T06:54:22Z",
+    "tasks_completed": 81,
+    "tasks_total": 86,
+    "files_changed": 126,
+    "test_files_count": 51,
+    "remediation_tasks_added": 1,
+    "coverage_report_present": false
+  }
+}

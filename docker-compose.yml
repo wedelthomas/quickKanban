@@ -1,0 +1,80 @@
+name: quick-kanban-wall
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      # Loopback only. Widening this to 3000:3000 would expose an
+      # unauthenticated board to the network and invalidate BRD decision D-11 —
+      # the no-login choice is defensible *because* of this line.
+      - '127.0.0.1:3000:3000'
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-kanban}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-kanban}
+      PORT: '3000'
+      # Every period boundary in the board — whether a card is overdue, what
+      # "yesterday" means in a standup summary — is a LOCAL calendar day. The
+      # container would otherwise run UTC, and a summary generated at 7pm local
+      # would already have rolled into tomorrow, silently omitting the evening's
+      # work in exactly the hours before the standup it exists to serve.
+      # Override in .env if this is not your zone.
+      TZ: ${TZ:-America/Costa_Rica}
+      # Optional. Absent or blank means Jira is simply not configured, and the
+      # board runs with ad-hoc cards only — a supported state, not a failure.
+      # The token is passed through from .env and never baked into the image.
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+      # On a network that intercepts TLS, the container must trust the
+      # interceptor's root CA or every outbound HTTPS call fails with
+      # UNABLE_TO_GET_ISSUER_CERT_LOCALLY. This adds that CA *in addition to*
+      # the normal trust store — verification stays on. Never set
+      # NODE_TLS_REJECT_UNAUTHORIZED=0 here; that turns verification off
+      # entirely and would make the token interceptable by anyone.
+      NODE_EXTRA_CA_CERTS: ${NODE_EXTRA_CA_CERTS:-}
+    volumes:
+      # Present only on networks that need it; the bind is optional because
+      # the file is gitignored and may not exist.
+      - ./certs:/certs:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Reads the real endpoint, which reports ok only when the database is
+      # genuinely reachable — not merely when the process is alive.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  db:
+    image: postgres:17.2-alpine
+    # Deliberately no `ports:` entry. The database is reachable only over the
+    # compose network, never from the host.
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kanban}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-kanban}
+    volumes:
+      - kanban_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-kanban} -d ${POSTGRES_DB:-kanban}']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  # Everything lives here. Removing this volume deletes every ad-hoc card, and
+  # ad-hoc cards exist nowhere else. See README's Reset section.
+  kanban_data:

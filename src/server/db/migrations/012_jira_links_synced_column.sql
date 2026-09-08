@@ -1,0 +1,12 @@
+-- Which column the last sync left this card in.
+--
+-- The reconciler needs to know whether the *user* moved a card, and the only
+-- honest answer is "it is not where the last sync left it". Deriving that from
+-- status names instead was a live defect: a column maps to exactly one status,
+-- so an issue whose real status is a synonym of that one — "In Progress" where
+-- the column is mapped to "Development" — looked moved on every single sync,
+-- and the board tried to transition an issue nobody had touched.
+--
+-- Null means no sync has recorded a column yet, which counts as unmoved. The
+-- alternative, backfilling a guess, would push every existing card once.
+ALTER TABLE jira_links ADD COLUMN synced_column_id smallint REFERENCES columns (id);

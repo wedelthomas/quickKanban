@@ -1,0 +1,1061 @@
+.app {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-4);
+  /* Part of an unbroken height chain from the viewport down to the scrolling
+     card list, so the columns reach the bottom of the window whatever is above
+     them. Every link needs min-height: 0 — without it a flex item refuses to
+     shrink below its content and the chain silently stops here. */
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- board layout ------------------------------------------------------- */
+
+.board-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: var(--space-3);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(220px, 1fr));
+  gap: var(--space-3);
+  /* Was `calc(100% - 40px)` — a guess at the toolbar's height that stopped
+     resolving the moment the filter rail added a wrapper between this and the
+     element it was measuring. Filling the remaining space is what was meant,
+     and it stays true no matter what else the board grows above it. */
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.column-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.column-count {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.column-cards {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* --- card --------------------------------------------------------------- */
+
+.card {
+  background: var(--surface-raised);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  box-shadow: var(--card-shadow);
+  cursor: grab;
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.card:hover {
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--border-strong, var(--card-border));
+}
+
+.card-title {
+  font-size: var(--text-base);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* Metadata sits on one line so a long column stays scannable. */
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.priority {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.priority--high {
+  background: var(--priority-high);
+}
+.priority--medium {
+  background: var(--priority-medium);
+}
+.priority--low {
+  background: var(--priority-low);
+}
+
+.due--overdue {
+  color: var(--destructive);
+  font-weight: 600;
+}
+
+.tag,
+.badge {
+  padding: 1px var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* --- dialog ------------------------------------------------------------- */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #00000099;
+  /* Flex, not grid with place-items:center. Under that, the column track sizes
+     to the dialog's own content, so a percentage width inside it resolves
+     against the shrunken track — `width: min(1180px, 100%)` collapsed to 760px
+     and the three-column settings layout silently rendered as two. Measured,
+     not guessed. In flex the percentage resolves against the container. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.dialog {
+  width: min(520px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  /* A dialog taller than the window used to put its own Save button out of
+     reach with no way to scroll to it — the browser suite found this by timing
+     out on a click that resolved to a real, unreachable button. */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Settings carries far more than a form's worth of fields since slice 5: the
+   Jira query, two schedules, the iteration, the working week, three field
+   identifiers and the column mapping. Stacked in one column that is a scroll,
+   not a form — deep enough that the browser suite found the Save button
+   unreachable.
+   
+   Its OWN class, not .dialog--wide. That already existed at 760px and is worn
+   by the archive, summary and conflict dialogs; widening it would have quietly
+   resized all three. The first attempt did reuse it, lost to the later rule,
+   and rendered two columns while the CSS said three — found by measuring the
+   dialog in a browser rather than by reading the stylesheet. */
+.dialog--settings {
+  width: min(1180px, 100%);
+}
+
+/* Three columns, collapsing to two and then one as the window narrows. The
+   point is to remove the scroll rather than to make it wider and still scroll:
+   auto-fit means a narrow window degrades to a stack rather than to a squeeze,
+   and align-items:start stops a short column stretching to match a tall one. */
+.settings-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.settings-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.dialog--settings .field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.dialog--settings .field-row > .field {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.dialog--settings fieldset.field {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin: 0;
+}
+
+.dialog--settings legend {
+  padding: 0 var(--space-1);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.field-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.field-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.field-error {
+  margin: 0;
+  color: var(--destructive);
+  font-size: var(--text-sm);
+}
+
+.input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  padding: var(--space-2);
+  width: 100%;
+}
+
+.tag-input-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+  font: inherit;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.button {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.board-message {
+  color: var(--text-muted);
+}
+
+.board-message--error {
+  color: var(--destructive);
+}
+
+.card--dragging {
+  opacity: 0.4;
+  /* The faded original, not the card under the pointer. It should read as a
+     hole the card came out of, so its shadow goes with it. */
+  box-shadow: none;
+}
+
+.column--over .column-cards {
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+}
+
+.board-bar {
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.move-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 auto 0 0;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--destructive);
+  border-radius: var(--radius-sm);
+  color: var(--destructive);
+  font-size: var(--text-sm);
+}
+
+.move-error-dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.button--danger {
+  border-color: var(--destructive);
+  color: var(--destructive);
+}
+
+.dialog-actions-spacer {
+  flex: 1;
+}
+
+.confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.confirm-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.help {
+  width: min(420px, 100%);
+}
+
+.help-title {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.help-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.help-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.help-row dt {
+  flex: none;
+  width: 68px;
+}
+
+.help-row dd {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: var(--text-sm);
+}
+
+.badge--link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge--link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.field-note {
+  margin: calc(var(--space-1) * -1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sync {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: auto;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.sync--failed .sync-failure {
+  color: var(--destructive);
+  font-weight: 600;
+}
+
+.sync--running {
+  opacity: 0.8;
+}
+
+.sync-refresh {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 1px var(--space-2);
+}
+
+.sync-refresh:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.sync-refresh:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* --- conflicts ---------------------------------------------------------- */
+
+/* Ad-hoc work, in white: the card carries no issue key, so without an edge the
+   only thing marking it as yours is the ABSENCE of a key — and absence is not
+   something the eye picks up while scanning. This is the invisible work the
+   whole product exists to make visible.
+
+   Declared BEFORE .card--blocked so that a local card which is also blocked
+   reads red: same specificity, so source order decides, and blocked is the more
+   urgent of the two. */
+.card--local {
+  border-left: 3px solid var(--text);
+  padding-left: calc(var(--space-3) - 2px);
+}
+
+/* Blocked reads twice on purpose (FR-410, FR-411): a left edge that survives a
+   glance across fifty cards, and a badge that names the state so it survives
+   greyscale and colour-vision deficiency. Colour alone would satisfy neither.
+   The priority dot keeps its own meaning — recolouring it would have erased
+   priority on exactly the cards most needing triage. */
+.card--blocked {
+  border-left: 3px solid var(--blocked);
+  padding-left: calc(var(--space-3) - 2px);
+}
+
+.badge--blocked {
+  border-color: var(--blocked);
+  background: var(--blocked-soft);
+  color: var(--blocked);
+  font-weight: 600;
+}
+
+/* The board and Jira disagree, and the board's value is the one in force
+   (FR-418). Outlined rather than solid so it never reads as "this card is
+   blocked" — it says the two sources differ, which is a different fact
+   (FR-443). */
+.badge--blocked-diverges {
+  border-color: var(--blocked);
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+/* Amber like the conflict badge, and for a related reason: carry-over is
+   something to notice and decide about, not something broken. Distinct from the
+   blocked red, which means the work is stopped right now. */
+.badge--carried {
+  border-color: var(--warning);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.badge--conflict {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.button--warning {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.button--warning:hover {
+  background: var(--warning-soft);
+}
+
+.dialog--wide {
+  width: min(760px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.conflict {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.conflict-title {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* Side by side and evenly weighted — neither column is the default, because
+   the board has no opinion about which side is right. */
+.conflict-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.conflict-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.conflict-value {
+  font-size: var(--text-lg, 16px);
+  font-weight: 600;
+}
+
+/* --- column mapping ----------------------------------------------------- */
+
+.mapping-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+}
+
+.field--row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.field--row .input {
+  flex: 1;
+  max-width: 60%;
+}
+
+/* --- filter bar --------------------------------------------------------- */
+
+.filter-bar {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0 0 var(--space-3);
+}
+
+.filter-text {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.filter-bar .input {
+  padding: 4px var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Not styled as an error: a filter hiding everything is the control working,
+   not something going wrong. It just must never be silent. */
+.filter-empty-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- column accents ----------------------------------------------------- */
+
+/*
+ * One hue per column: a rule across the top, the title, and a tinted count.
+ *
+ * Keyed off the column's own data attribute rather than a class per column, so
+ * adding a colour needs no markup change. The cards themselves stay neutral —
+ * six columns of coloured cards would read as a swatch, and the card face
+ * already spends its colour on priority and on the conflict badge, which are
+ * the two things that must stand out against everything else.
+ */
+.column {
+  border-top: 2px solid var(--column-accent, var(--border));
+}
+
+.column[data-column-key='backlog'] {
+  --column-accent: var(--column-backlog);
+}
+.column[data-column-key='in_progress'] {
+  --column-accent: var(--column-in-progress);
+}
+.column[data-column-key='iteration_items'] {
+  --column-accent: var(--column-iteration-items);
+}
+.column[data-column-key='test'] {
+  --column-accent: var(--column-test);
+}
+.column[data-column-key='po_review'] {
+  --column-accent: var(--column-po-review);
+}
+.column[data-column-key='done'] {
+  --column-accent: var(--column-done);
+}
+
+.column-name {
+  color: var(--column-accent, var(--text));
+}
+
+.column-count {
+  color: var(--column-accent, var(--text-muted));
+  /* Mixed from the accent rather than six more hand-picked tokens: the tint
+     keeps the same relationship to its hue, so the six cannot drift apart. */
+  background: color-mix(in srgb, var(--column-accent, var(--border)) 14%, transparent);
+  border-color: color-mix(in srgb, var(--column-accent, var(--border)) 35%, transparent);
+}
+
+/* --- summary ------------------------------------------------------------ */
+
+.summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary-periods {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.summary-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.summary-list {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--text-sm);
+}
+
+/* Quiet, but present. The point is that the reader notices a movement was not
+   theirs before they paste it, not that it dominates the line. */
+.summary-origin {
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* --- shell layout ------------------------------------------------------- */
+
+/*
+ * One unbroken height chain from the viewport to the scrolling card list:
+ * .app -> .board-layout -> .board-area -> .board -> .column -> .column-cards.
+ * Every link needs min-height: 0, because without it a flex item refuses to
+ * shrink below its content and the chain silently stops there — which is what
+ * made the columns stop short of the bottom of the window.
+ */
+.board-layout {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.board-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+/* --- sidebar ------------------------------------------------------------ */
+
+/*
+ * Patterned on the ABS Team Reports dashboard: a brand block, then tiny
+ * uppercase section labels over rows carrying a count on the right, the active
+ * one marked by a left accent.
+ *
+ * 232px open and 52px shut. The visual language rejected a permanent
+ * board-view rail because six readable columns already exceed a 1440px
+ * display; collapsing is what answers that, and the board takes the width back
+ * the moment the rail closes.
+ */
+.sidebar {
+  flex: 0 0 232px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.sidebar--collapsed {
+  flex-basis: 52px;
+  align-items: center;
+  padding: var(--space-3) var(--space-2);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar--collapsed .brand {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/*
+ * Uppercase, letter-spaced section headings.
+ *
+ * 11px rather than the reference's 10, and at full text colour rather than
+ * muted: at 10px muted they were legible as decoration but not as structure,
+ * and the eye could not find where one section ended.
+ */
+.sidebar-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  padding-left: var(--space-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/*
+ * A rule between sections, on the second and every one after — never above the
+ * first, which already sits under the brand block's own border. Written as an
+ * adjacent-sibling rule rather than a class so adding a section cannot forget
+ * it.
+ */
+.sidebar-section + .sidebar-section {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  /* The left accent lives here whether the row is active or not, so switching
+     rows does not shift their text sideways. */
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-row:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.sidebar-row--active {
+  background: var(--surface-raised);
+  border-left-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.sidebar-count {
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sidebar-count--warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.sidebar-collapse {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.sidebar-collapse:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.sidebar-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.sidebar .field {
+  gap: 2px;
+}
+
+/* --- page head ---------------------------------------------------------- */
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+/* The iteration, under the heading. Horizontal and small: it is context for
+   everything below it, not a thing to look at. */
+.iteration {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Label and ordinal read as one phrase — "CURRENT ITERATION S18" — so they
+    share a size and weight. Only the colour separates them: the label is
+    context, the ordinal is the fact. */
+/* Label and ordinal read as one phrase — "CURRENT ITERATION S18" — so they are
+   set identically, colour included. The phrase is the unit, not its halves. */
+.iteration-label,
+.iteration-name {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.iteration-days {
+  color: var(--accent);
+}
+
+/* Only rendered when the value is NOT freshly read, so its presence is the
+   signal. Muted rather than alarming: a cached iteration is usually correct,
+   and the board is meant to keep working while Jira is away (FR-427). */
+.iteration-provenance {
+  border-color: var(--border);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  /* Always uppercase, whether it is the product name or a person's. That keeps
+     the positive tracking below correct in both cases — uppercase needs room to
+     breathe where mixed case would need tightening — and matches the rail's
+     wordmark. The stored setting keeps whatever case the user typed; only the
+     display is shouted. */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.page-sub {
+  margin: 2px 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* --- archive ------------------------------------------------------------ */
+
+.archive-range {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.archive-range .field--row {
+  gap: var(--space-2);
+}
+
+.archive-day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.archive-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.archive-card-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.archive-card-title {
+  overflow-wrap: anywhere;
+}
+
+.archive-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* The reason a card left, where one was recorded. Muted but legible: it is the
+   difference between "I finished it" and "it was taken off me". */
+.archive-reason {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}

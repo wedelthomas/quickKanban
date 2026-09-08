@@ -1,0 +1,25 @@
+# A throwaway database for the acceptance suite.
+#
+# The application's own database deliberately publishes no port (see
+# docker-compose.yml), which is correct and must stay that way. Rather than
+# weaken that, the test suite gets its own instance on a different port, with
+# storage in tmpfs so it starts clean every time and leaves nothing behind.
+
+name: quick-kanban-wall-test
+
+services:
+  db-test:
+    image: postgres:17.2-alpine
+    ports:
+      - '127.0.0.1:5433:5432'
+    environment:
+      POSTGRES_USER: kanban
+      POSTGRES_PASSWORD: test-only-not-a-secret
+      POSTGRES_DB: kanban_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U kanban -d kanban_test']
+      interval: 2s
+      timeout: 3s
+      retries: 20

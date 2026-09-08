@@ -1,0 +1,25 @@
+# Overrides for the browser suite.
+#
+# The E2E stack runs with Jira deliberately unconfigured. With a real token the
+# scheduler imports the user's actual assigned issues at unpredictable moments,
+# which lands cards in the middle of assertions about the board's contents and
+# makes the suite flaky in a way that looks like application bugs.
+#
+# Nothing is lost: the Jira browser tests seed cards directly (see
+# tests/e2e/reset.ts) precisely so they do not depend on what happens to be
+# assigned today, and the sync-status tests intercept the status endpoint.
+#
+# It also runs against its OWN database, kanban_e2e, on the same container.
+# tests/e2e/reset.ts truncates every card between tests, and until this override
+# existed it truncated the developer's real board — verified the hard way, by
+# running the suite and watching thirteen cards and the configured author name
+# disappear. The acceptance suite has always had a separate database
+# (docker-compose.test.yml); the browser suite simply never did.
+
+services:
+  app:
+    environment:
+      JIRA_BASE_URL: ''
+      JIRA_EMAIL: ''
+      JIRA_API_TOKEN: ''
+      DATABASE_URL: postgres://${POSTGRES_USER:-kanban}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/kanban_e2e

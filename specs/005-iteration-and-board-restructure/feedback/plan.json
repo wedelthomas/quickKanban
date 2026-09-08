@@ -1,0 +1,28 @@
+{
+  "phase": "plan",
+  "project": "quick-kanban-wall",
+  "spec": "005-iteration-and-board-restructure",
+  "branch": "005-iteration-and-board-restructure",
+  "agent_model": "claude-opus-5[1m]",
+  "tool": "claude",
+  "client_ts": "2026-08-27T04:27:53Z",
+  "feedback": {
+    "worked": "Reading the existing schema before designing. card_events carries foreign keys into every column a card has ever occupied, making deletion of the Blocked column impossible without breaking the append-only history the product's reporting rests on. Nothing in the spec hinted at it; only opening the migration surfaced it - the same pattern that made probing live Jira pay off during specify. The Architecture Review table also earned its keep: twenty-two rows forced consideration of rollback asymmetry, reusing the existing sync lock so resolution cannot overlap a poll, and persisting provenance rather than only logging it.",
+    "friction": null,
+    "wrong": null,
+    "phase_specific": "No regrets. Each of the three consequential decisions follows from a constraint rather than a preference: retiring the column follows from the foreign keys, the separate iteration port follows from its failures being silent by design where every existing port failure must be loud, and counting carry-over at the boundary follows from the requirement that nothing delay board load."
+  },
+  "metrics": {
+    "phase": "plan",
+    "branch": "005-iteration-and-board-restructure",
+    "agent_model": "claude-opus-5[1m]",
+    "timestamp": "2026-08-27T04:27:53Z",
+    "complexity_tracking_entries": 3,
+    "test_strategy_present": true,
+    "dependency_manifest_present": false,
+    "manifest_codebases": 0,
+    "manifest_boundaries": 0,
+    "manifest_stale_contracts": 0,
+    "manifest_freshness_checked": false
+  }
+}
