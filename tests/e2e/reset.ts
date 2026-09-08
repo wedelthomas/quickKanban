@@ -66,7 +66,9 @@ export const resetBoard = async (): Promise<void> => {
     // migration, so dropping them would leave the app with no query at all.
     // Resetting them matters — a test that changes the query would otherwise
     // leak it into every test that runs after it.
-    `TRUNCATE card_events, card_tags, tags, jira_links, sync_runs, archive_runs, conflicts, cards RESTART IDENTITY CASCADE;
+    `TRUNCATE card_events, card_blocked_events, card_tags, tags, jira_links, sync_runs,
+       archive_runs, conflicts, iteration_commitments, iterations, cards
+       RESTART IDENTITY CASCADE;
      -- Restored to the migration's seed, not truncated: a test that edits the
      -- mapping would otherwise leak into every later one. Rewritten wholesale
      -- because an unmapped column is the ABSENCE of a row, not a null in one.
@@ -83,6 +85,35 @@ export const resetBoard = async (): Promise<void> => {
        ('archive.window_days', '7'::jsonb),
        ('archive.interval_seconds', '3600'::jsonb)
      ) AS d(key, value) WHERE settings.key = d.key;`,
+  ]);
+};
+
+/**
+ * Establishes a current iteration without a live Jira sprint source.
+ *
+ * `source = 'read'` is what `IterationRepository.current()` requires — an
+ * estimated iteration is deliberately never persisted (R-4), so there is no
+ * other way to give the browser suite one deterministically.
+ */
+export const seedIteration = async (opts: {
+  ordinalName: string;
+  startsOn: string;
+  endsOn: string;
+}): Promise<void> => {
+  const { ordinalName, startsOn, endsOn } = opts;
+  await run('docker', [
+    'compose',
+    'exec',
+    '-T',
+    'db',
+    'psql',
+    '-U',
+    process.env.POSTGRES_USER ?? 'kanban',
+    '-d',
+    E2E_DATABASE,
+    '-c',
+    `INSERT INTO iterations (ordinal_name, starts_on, ends_on, source)
+     VALUES ($$${ordinalName}$$, '${startsOn}', '${endsOn}', 'read');`,
   ]);
 };
 

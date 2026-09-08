@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { resetBoard } from './reset.js';
+import { resetBoard, seedIteration } from './reset.js';
 import { createCard } from './helpers.js';
 
 /**
@@ -70,5 +70,36 @@ test.describe('the summary', () => {
     const dialog = page.getByRole('dialog', { name: 'Summary' });
     await expect(dialog.getByTestId('summary-empty')).toContainText(/no activity/i);
     await expect(dialog.getByTestId('summary-moved')).toHaveCount(0);
+  });
+
+  test('the iteration option is selectable and copies as plain text (BH-529, BH-530)', async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await seedIteration({
+      ordinalName: '2026 S18',
+      startsOn: '2026-08-24',
+      // Covers "today" (the browser suite's real clock) so both groups the
+      // summary can show are in play, not just the period-independent one.
+      endsOn: '2026-09-21',
+    });
+    await page.goto('/');
+    await createCard(page, 'Rotate staging certificates');
+    await page.keyboard.press('k');
+    await page.keyboard.press('3');
+
+    await page.getByRole('button', { name: 'Summary' }).click();
+    await page.getByTestId('summary-period-iteration').click();
+
+    const dialog = page.getByRole('dialog', { name: 'Summary' });
+    await expect(dialog.getByTestId('summary-in-progress')).toContainText(
+      'Rotate staging certificates',
+    );
+
+    await page.getByTestId('summary-copy').click();
+    const clipboard = await page.evaluate(() => navigator.clipboard.readText());
+    expect(clipboard).toContain('Rotate staging certificates');
+    expect(clipboard).not.toMatch(/[<>]/);
   });
 });

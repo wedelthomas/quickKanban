@@ -44,6 +44,14 @@ export const iterationNotFound = (ordinalName: string): DomainError =>
     `No iteration has ever been observed with ordinal "${ordinalName}".`,
   );
 
+export const noCurrentIteration = (): DomainError =>
+  new DomainError(
+    'ITERATION_NOT_FOUND',
+    404,
+    'No current iteration',
+    'No iteration has ever been read, so there is no period to bound the summary by.',
+  );
+
 export const columnNotFound = (id: number): DomainError =>
   new DomainError(
     'COLUMN_NOT_FOUND',

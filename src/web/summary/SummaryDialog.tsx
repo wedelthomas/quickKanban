@@ -26,10 +26,19 @@ export const SummaryDialog = ({ onClose }: { onClose: () => void }) => {
   useEffect(() => {
     setSummary(null);
     setCopied(false);
+    setError(null);
     fetch(`/api/summary?period=${period}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('failed'))))
       .then((s: Summary) => setSummary(s))
-      .catch(() => setError('The summary could not be generated.'));
+      .catch(() =>
+        setError(
+          // 404 ITERATION_NOT_FOUND is the one case with a more specific
+          // thing to say (BH-529) — anything else keeps the generic message.
+          period === 'iteration'
+            ? 'No current iteration to summarize.'
+            : 'The summary could not be generated.',
+        ),
+      );
   }, [period]);
 
   const copy = async (): Promise<void> => {
@@ -50,14 +59,14 @@ export const SummaryDialog = ({ onClose }: { onClose: () => void }) => {
         <div className="summary-head">
           <h2 className="help-title">Summary</h2>
           <div className="summary-periods">
-            {(['daily', 'weekly'] as const).map((p) => (
+            {(['daily', 'weekly', 'iteration'] as const).map((p) => (
               <button
                 key={p}
                 className={`button${period === p ? ' button--primary' : ''}`}
                 data-testid={`summary-period-${p}`}
                 onClick={() => setPeriod(p)}
               >
-                {p === 'daily' ? 'Daily' : 'Weekly'}
+                {p === 'daily' ? 'Daily' : p === 'weekly' ? 'Weekly' : 'Iteration'}
               </button>
             ))}
           </div>

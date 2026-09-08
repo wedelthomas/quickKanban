@@ -312,27 +312,27 @@ as plain text.
 
 ### Tests for User Story 6 — write first, confirm they FAIL
 
-- [ ] T539 [P] [US6] `tests/unit/summary.test.ts` — extend `periodBounds`'s
+- [X] T539 [P] [US6] `tests/unit/summary.test.ts` — extend `periodBounds`'s
   test for the new `'iteration'` case: bounds equal the iteration's own
   `starts_on`/`ends_on` rather than a computed window (BH-529).
-- [ ] T540 [P] [US6] `tests/contract/board-payload.test.ts` (or a new
+- [X] T540 [P] [US6] `tests/contract/board-payload.test.ts` (or a new
   `summary-period.test.ts`) — `GET /api/summary?period=iteration` returns
   404 `ITERATION_NOT_FOUND` when no iteration can be established, 200
   bounded by the iteration's dates otherwise.
-- [ ] T541 [P] [US6] `tests/e2e/summary.spec.ts` — extend: the iteration
+- [X] T541 [P] [US6] `tests/e2e/summary.spec.ts` — extend: the iteration
   option is selectable in the summary dialog and copies as plain text
   (BH-530).
 
 ### Implementation for User Story 6
 
-- [ ] T542 [US6] Extend `SummaryPeriod`'s handling in
+- [X] T542 [US6] Extend `SummaryPeriod`'s handling in
   `src/server/services/summary-service.ts`'s `periodBounds` (research.md
   R-7): `period === 'iteration'` reads the current iteration from
   `IterationRepository` and bounds the summary by its dates; throws
   `ITERATION_NOT_FOUND` when none exists.
-- [ ] T543 [US6] Extend `src/server/routes/summary.ts`'s query validation
+- [X] T543 [US6] Extend `src/server/routes/summary.ts`'s query validation
   to accept `period=iteration`.
-- [ ] T544 [P] [US6] `src/web/summary/SummaryDialog.tsx` — add the
+- [X] T544 [P] [US6] `src/web/summary/SummaryDialog.tsx` — add the
   iteration option alongside daily/weekly.
 
 **Checkpoint**: the standup update the product started with now covers the
