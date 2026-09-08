@@ -20,7 +20,7 @@
     "test:contract": "npm run test:db:up && NODE_OPTIONS=\"\" vitest run --config vitest.contract.config.ts; e=$?; npm run test:db:down; exit $e",
     "test:db:down": "docker compose -f docker-compose.test.yml down -v",
     "test:db:up": "docker compose -f docker-compose.test.yml up -d --wait",
-    "test:e2e": "npm run e2e:db && docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --wait && playwright test",
+    "test:e2e": "npm run e2e:db && docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --wait && BOARD_URL=http://127.0.0.1:3100 playwright test",
     "test:ops": "vitest run --config vitest.ops.config.ts",
     "test:unit": "vitest run",
     "typecheck": "tsc --noEmit",

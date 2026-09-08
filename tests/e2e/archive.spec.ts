@@ -9,8 +9,15 @@ const run = promisify(execFile);
 /** Backdates a card into the archive. Archival itself only stamps now(), so a
  *  card archived N days ago cannot be produced by running a pass. */
 const archiveDaysAgo = async (title: string, days: number): Promise<void> => {
+  // Both files named explicitly — see reset.ts's COMPOSE_ARGS comment. Without
+  // -f docker-compose.e2e.yml this resolves against the persistent board's own
+  // project instead of the isolated e2e one.
   await run('docker', [
     'compose',
+    '-f',
+    'docker-compose.yml',
+    '-f',
+    'docker-compose.e2e.yml',
     'exec',
     '-T',
     'db',

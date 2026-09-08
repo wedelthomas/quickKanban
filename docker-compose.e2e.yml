@@ -28,6 +28,15 @@ name: quick-kanban-wall-e2e
 
 services:
   app:
+    # A different host port too, not just a different project: the persistent
+    # instance already holds 127.0.0.1:3000, and the two must be able to run
+    # at once — a developer testing a change should not have to choose
+    # between "run e2e" and "keep the real board reachable".
+    # Compose merges `ports:` lists additively across files rather than
+    # replacing them, so the base file's 3000 mapping would otherwise still
+    # be requested alongside this one — `!override` replaces it instead.
+    ports: !override
+      - '127.0.0.1:3100:3000'
     environment:
       JIRA_BASE_URL: ''
       JIRA_EMAIL: ''

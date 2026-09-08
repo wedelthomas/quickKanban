@@ -13,6 +13,18 @@ const run = promisify(execFile);
 export const E2E_DATABASE = 'kanban_e2e';
 
 /**
+ * Every `docker compose` call in this file names both files explicitly
+ * rather than relying on the working directory's default.
+ *
+ * Without `-f docker-compose.e2e.yml`, `docker compose exec` resolves
+ * against docker-compose.yml's own project ("quick-kanban-wall") — the
+ * persistent board, not the isolated e2e stack `-f docker-compose.e2e.yml`
+ * declares (`name: quick-kanban-wall-e2e`). That silent fallback is exactly
+ * what let a seeded test card land on the real board.
+ */
+const COMPOSE_ARGS = ['compose', '-f', 'docker-compose.yml', '-f', 'docker-compose.e2e.yml'];
+
+/**
  * Refuses to run against anything but the browser suite's own database.
  *
  * A belt to docker-compose.e2e.yml's braces. That override is what makes the
@@ -22,7 +34,7 @@ export const E2E_DATABASE = 'kanban_e2e';
  */
 const assertNotTheRealBoard = async (): Promise<void> => {
   const { stdout } = await run('docker', [
-    'compose',
+    ...COMPOSE_ARGS,
     'exec',
     '-T',
     'app',
@@ -52,7 +64,7 @@ const assertNotTheRealBoard = async (): Promise<void> => {
 export const resetBoard = async (): Promise<void> => {
   await assertNotTheRealBoard();
   await run('docker', [
-    'compose',
+    ...COMPOSE_ARGS,
     'exec',
     '-T',
     'db',
@@ -102,7 +114,7 @@ export const seedIteration = async (opts: {
 }): Promise<void> => {
   const { ordinalName, startsOn, endsOn } = opts;
   await run('docker', [
-    'compose',
+    ...COMPOSE_ARGS,
     'exec',
     '-T',
     'db',
@@ -149,7 +161,7 @@ export const seedJiraCard = async (opts: {
            $$${status}$$, '10000', now()
       FROM new_card;`;
   await run('docker', [
-    'compose',
+    ...COMPOSE_ARGS,
     'exec',
     '-T',
     'db',
@@ -177,7 +189,7 @@ export const seedConflict = async (opts: {
     SELECT card_id, ${opts.boardColumnId}, $$${opts.jiraStatus}$$, $$${opts.jiraStatus}$$
       FROM jira_links WHERE issue_key = $$${opts.key}$$;`;
   await run('docker', [
-    'compose',
+    ...COMPOSE_ARGS,
     'exec',
     '-T',
     'db',
@@ -200,7 +212,7 @@ export const seedConflict = async (opts: {
  */
 export const seedCards = async (count: number): Promise<void> => {
   await run('docker', [
-    'compose',
+    ...COMPOSE_ARGS,
     'exec',
     '-T',
     'db',
