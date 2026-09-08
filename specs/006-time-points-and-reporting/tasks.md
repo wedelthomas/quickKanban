@@ -172,7 +172,7 @@ card shows it, override it locally, confirm Jira is never written to.
   read path) to read `settings.jiraFieldStoryPoints` from each imported
   issue into `jira_points`; leave `points` untouched on an existing card
   (FR-518 — local always wins) and set both equal on first import.
-- [ ] T523 [US3] Extend `PATCH /api/cards/:id` (`src/server/routes/cards.ts`,
+- [X] T523 [US3] Extend `PATCH /api/cards/:id` (`src/server/routes/cards.ts`,
   `card-service.ts`) to accept `points: number | null`; `0` and `null` are
   both valid and distinct (FR-519). Never issues a Jira request (FR-517).
 - [ ] T524 [P] [US3] `src/web/cards/CardDialog.tsx` — a points field,
