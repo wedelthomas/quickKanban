@@ -3,7 +3,7 @@ import type { IterationRepository } from '../repositories/iteration-repository.j
 import type { CommitmentRepository } from '../repositories/commitment-repository.js';
 import type { ReportRepository } from '../repositories/report-repository.js';
 import type { SettingsRepository } from '../repositories/settings-repository.js';
-import { buildIterationReport } from '../../domain/iteration-report.js';
+import { buildIterationReport, determineIncomplete } from '../../domain/iteration-report.js';
 import { buildBurndown } from '../../domain/burndown.js';
 import { iterationNotFound } from '../errors.js';
 
@@ -28,16 +28,21 @@ export class ReportService {
     const iteration = await this.iterations.findByOrdinal(ordinalName);
     if (!iteration) throw iterationNotFound(ordinalName);
 
-    const [commitment, cards, settings, earliestMovementAt] = await Promise.all([
-      this.commitments.find(ordinalName),
-      this.reports.allCards(),
-      this.settings.read(),
-      this.reports.earliestMovementAt(),
-    ]);
+    const [commitment, cards, settings, earliestMovementAt, earliestBlockedEventAt] =
+      await Promise.all([
+        this.commitments.find(ordinalName),
+        this.reports.allCards(),
+        this.settings.read(),
+        this.reports.earliestMovementAt(),
+        this.reports.earliestBlockedEventAt(),
+      ]);
 
-    const incomplete =
-      earliestMovementAt !== null &&
-      new Date(earliestMovementAt) > new Date(`${iteration.startsOn}T00:00:00`);
+    const incomplete = determineIncomplete(
+      iteration.startsOn,
+      earliestMovementAt,
+      earliestBlockedEventAt,
+      cards.some((c) => c.movements.length > 0),
+    );
 
     return buildIterationReport({
       ordinalName: iteration.ordinalName,

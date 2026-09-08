@@ -342,17 +342,17 @@ iteration too. **Run the Story-Complete Review Gate.**
 
 ## Phase 9: Polish & Cross-Cutting
 
-- [ ] T545 [P] `tests/unit/elapsed-time.test.ts` — the archived-card and
+- [X] T545 [P] `tests/unit/elapsed-time.test.ts` — the archived-card and
   blocked-history-predates-this-feature cases: an archived card still
   contributes its time (BH-511, already tested in T512's file — confirm
   coverage here rather than duplicate); time predating the blocked record
   is reported as an upper bound and the report says why (BH-536, FR-548).
-- [ ] T546 [P] `tests/unit/iteration-report.test.ts` — no reported figure
+- [X] T546 [P] `tests/unit/iteration-report.test.ts` — no reported figure
   combines time and points into one score (BH-532, FR-543).
-- [ ] T547 [P] `tests/unit/elapsed-time.test.ts` — derivation is pure across
+- [X] T547 [P] `tests/unit/elapsed-time.test.ts` — derivation is pure across
   every permutation of movements and configuration, exercised with no
   external dependency (BH-533, FR-544).
-- [ ] T548 [P] `tests/e2e/reports.spec.ts` — reports are keyboard-reachable,
+- [X] T548 [P] `tests/e2e/reports.spec.ts` — reports are keyboard-reachable,
   legible to a screen reader, and producing one never blocks board
   interaction (BH-534, FR-545, FR-546).
 - [ ] T549 Run `quickstart.md` end to end against a running stack; record

@@ -8,6 +8,34 @@ import type { WorkingCalendar } from './elapsed-time.js';
 
 const WORKING_COLUMN_KEYS = new Set(['iteration_items', 'in_progress', 'test', 'po_review']);
 
+/**
+ * Whether an iteration's report cannot vouch for its own completeness
+ * (FR-542, FR-548) — either its span predates the first movement this board
+ * ever recorded, or it predates blocked-interval tracking altogether, in
+ * which case any card's time may be an upper bound (a blocked stretch
+ * before tracking began has no interval to subtract, research.md's
+ * "Blocked time can only be excluded from this feature onward").
+ *
+ * `earliestBlockedEventAt === null` means blocked tracking has never fired
+ * at all — conservative, since that says nothing about whether any card in
+ * this iteration was ever blocked, only that this board cannot rule it out.
+ */
+export const determineIncomplete = (
+  startsOn: string,
+  earliestMovementAt: string | null,
+  earliestBlockedEventAt: string | null,
+  hasAnyMovement: boolean,
+): boolean => {
+  const start = new Date(`${startsOn}T00:00:00`);
+  const movementIncomplete =
+    earliestMovementAt !== null && new Date(earliestMovementAt) > start;
+  const blockedIncomplete =
+    earliestBlockedEventAt === null
+      ? hasAnyMovement
+      : new Date(earliestBlockedEventAt) > start;
+  return movementIncomplete || blockedIncomplete;
+};
+
 export interface ReportInputCard {
   cardId: string;
   title: string;

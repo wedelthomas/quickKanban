@@ -2,6 +2,20 @@ import { useEffect } from 'react';
 import { isTyping, matchShortcut, type ShortcutMatch } from './shortcuts.js';
 
 /**
+ * A native control that already has its own Enter/click behaviour.
+ *
+ * Found via the sidebar's Report row (slice 6): focusing it and pressing
+ * Enter was claimed as "open the focused card" (there was none) and
+ * swallowed, so the row's own click handler never ran — the same class of
+ * bug this file's `suspended` guard already fixed for a focused Save button
+ * inside a dialog, just for a button outside one.
+ */
+const isNativeControl = (target: EventTarget | null): boolean => {
+  const tag = (target as HTMLElement | null)?.tagName;
+  return tag === 'BUTTON' || tag === 'A';
+};
+
+/**
  * Binds the registry to the document. Handlers are supplied by the board, so
  * this hook knows which keys mean what and nothing about what the board does
  * with them.
@@ -22,6 +36,7 @@ export const useShortcuts = (
       if (!match) return;
       if (suspended && match.action !== 'close') return;
       if (isTyping(event.target) && match.action !== 'close') return;
+      if (match.action === 'open-card' && isNativeControl(event.target)) return;
 
       // Only claim the key once it is known to be ours and usable here.
       event.preventDefault();

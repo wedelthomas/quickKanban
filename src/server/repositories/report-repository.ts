@@ -119,4 +119,17 @@ export class ReportRepository {
     );
     return rows[0]?.min ? rows[0].min.toISOString() : null;
   }
+
+  /**
+   * When blocked-interval tracking began (FR-548). `null` means no toggle
+   * has ever been recorded — which does not mean no card was ever blocked
+   * before this feature shipped, only that this board has no record either
+   * way, so any card's time from before this instant is an upper bound.
+   */
+  async earliestBlockedEventAt(): Promise<string | null> {
+    const { rows } = await this.pool.query<{ min: Date | null }>(
+      'SELECT MIN(occurred_at) FROM card_blocked_events',
+    );
+    return rows[0]?.min ? rows[0].min.toISOString() : null;
+  }
 }

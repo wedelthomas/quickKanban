@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildIterationReport,
+  determineIncomplete,
   type ReportInput,
   type ReportInputCard,
 } from '../../src/domain/iteration-report.js';
@@ -162,5 +163,47 @@ describe('iteration report — local/Jira split', () => {
 
     expect(report.points).toMatchObject({ withheld: true });
     expect('reason' in report.points && report.points.reason.length > 0).toBe(true);
+  });
+});
+
+describe('determineIncomplete — blocked-tracking gap (BH-536, FR-548)', () => {
+  it('is complete when both movements and blocked tracking predate the iteration', () => {
+    expect(
+      determineIncomplete('2026-08-24', '2026-01-01T00:00:00', '2026-01-01T00:00:00', true),
+    ).toBe(false);
+  });
+
+  it('is incomplete when the earliest movement postdates the iteration start (FR-542)', () => {
+    expect(
+      determineIncomplete('2026-08-24', '2026-08-25T00:00:00', '2026-01-01T00:00:00', true),
+    ).toBe(true);
+  });
+
+  it('is incomplete when blocked tracking started after the iteration began (BH-536)', () => {
+    expect(
+      determineIncomplete('2026-08-24', '2026-01-01T00:00:00', '2026-08-25T00:00:00', true),
+    ).toBe(true);
+  });
+
+  it('is incomplete when blocked tracking has never fired at all, and there is history to worry about', () => {
+    expect(determineIncomplete('2026-08-24', '2026-01-01T00:00:00', null, true)).toBe(true);
+  });
+
+  it('is complete when blocked tracking has never fired but the iteration has no movements either', () => {
+    expect(determineIncomplete('2026-08-24', null, null, false)).toBe(false);
+  });
+});
+
+describe('time and points never combine into one score (BH-532, FR-543)', () => {
+  it('reports time and points as separate top-level figures only', () => {
+    const report = buildIterationReport(
+      baseInput([doneCard('local-1', 'local', 4), doneCard('jira-1', 'AIHUB', 6)]),
+    );
+
+    // Exactly the documented shape (contracts/api.md) — no blended score
+    // field sits alongside them.
+    expect(Object.keys(report).sort()).toEqual(
+      ['endsOn', 'incomplete', 'ordinalName', 'points', 'startsOn', 'time'].sort(),
+    );
   });
 });

@@ -214,6 +214,35 @@ describe('GET /api/iterations/:ordinalName/report', () => {
     expect(body.points).toMatchObject({ committed: 10, completed: 5, scopeAdded: 3 });
   });
 
+  it('still counts an archived card’s time toward its iteration (BH-511, FR-514)', async () => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(start.getDate() - 10);
+    const iso = (d: Date): string => d.toISOString().slice(0, 10);
+    await seedIteration(iso(start), iso(today));
+
+    const cardId = await createCard('Shipped and later archived');
+    const enteredAt = new Date(today);
+    enteredAt.setDate(enteredAt.getDate() - 3);
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 2, 'user', $2)`,
+      [cardId, enteredAt],
+    );
+    await pool.query(
+      `UPDATE cards SET archived_at = now(), archived_reason = 'test' WHERE id = $1`,
+      [cardId],
+    );
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/iterations/${encodeURIComponent(ORDINAL)}/report`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as IterationReport;
+    expect(body.time.byCard.some((c) => c.cardId === cardId && c.seconds > 0)).toBe(true);
+  });
+
   it('marks a period predating recorded history as incomplete (BH-531, FR-542)', async () => {
     await seedIteration('2020-01-01', '2020-01-14');
     const cardId = await createCard('Old work');
