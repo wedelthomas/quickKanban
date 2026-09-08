@@ -52,6 +52,7 @@ export const Sidebar = ({
   conflictCount,
   onToggleCollapsed,
   onOpenSummary,
+  onOpenReport,
   onOpenConflicts,
   onOpenArchive,
   onOpenShortcuts,
@@ -67,6 +68,7 @@ export const Sidebar = ({
   conflictCount: number;
   onToggleCollapsed: () => void;
   onOpenSummary: () => void;
+  onOpenReport: () => void;
   onOpenConflicts: () => void;
   onOpenArchive: () => void;
   onOpenShortcuts: () => void;
@@ -128,6 +130,13 @@ export const Sidebar = ({
               data-testid="nav-summary"
             >
               <span className="sidebar-row-name">Summary</span>
+            </button>
+            <button
+              className="sidebar-row"
+              onClick={onOpenReport}
+              data-testid="nav-report"
+            >
+              <span className="sidebar-row-name">Report</span>
             </button>
             <button
               className="sidebar-row"

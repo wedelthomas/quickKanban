@@ -21,6 +21,7 @@ import { useAuthor } from '../settings/use-author.js';
 import { IterationBanner } from './IterationBanner.js';
 import { ConflictDialog } from '../conflicts/ConflictDialog.js';
 import { SummaryDialog } from '../summary/SummaryDialog.js';
+import { ReportDialog } from '../reports/ReportDialog.js';
 import { ArchiveView } from '../archive/ArchiveView.js';
 import { Sidebar } from './Sidebar.js';
 import { useFilter } from './use-filter.js';
@@ -229,6 +230,7 @@ export const Board = () => {
           conflictCount={conflicts.length}
           onToggleCollapsed={toggleRail}
           onOpenSummary={() => dialogs.show('summary')}
+          onOpenReport={() => dialogs.show('report')}
           onOpenConflicts={() => dialogs.show('conflicts')}
           onOpenArchive={() => dialogs.show('archive')}
           onOpenShortcuts={() => dialogs.show('help')}
@@ -326,6 +328,7 @@ export const Board = () => {
         />
       )}
       {dialogs.isOpen('summary') && <SummaryDialog onClose={() => dialogs.hide()} />}
+      {dialogs.isOpen('report') && <ReportDialog onClose={() => dialogs.hide()} />}
       {dialogs.isOpen('archive') && <ArchiveView onClose={() => dialogs.hide()} />}
       {dialogs.isOpen('conflicts') && (
         <ConflictDialog

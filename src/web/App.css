@@ -717,6 +717,12 @@ kbd {
   font-size: var(--text-sm);
 }
 
+.report-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
 /* Quiet, but present. The point is that the reader notices a movement was not
    theirs before they paste it, not that it dominates the line. */
 .summary-origin {

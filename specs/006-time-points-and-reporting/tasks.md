@@ -132,7 +132,7 @@ the working hours those movements span (SC-501, SC-502).
   ordinal.
 - [X] T517 [US1] `src/server/routes/reports.ts` — `GET
   /api/iterations/:ordinalName/report`, registered in `app.ts`.
-- [ ] T518 [P] [US1] `src/web/reports/` — a report view (dialog or panel,
+- [X] T518 [P] [US1] `src/web/reports/` — a report view (dialog or panel,
   matching `SummaryDialog`'s existing pattern) showing per-card and
   per-project elapsed time for the current iteration.
 
