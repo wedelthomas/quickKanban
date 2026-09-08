@@ -50,6 +50,10 @@ describe('GET /api/iteration', () => {
 
   beforeEach(async () => {
     await pool.query('DELETE FROM iterations');
+    await pool.query(
+      `INSERT INTO settings (key, value) VALUES ('jira.enabled', 'true'::jsonb)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+    );
     source = Object.assign(source, new FakeIterationAdapter());
     source.fail(null);
   });
@@ -141,5 +145,17 @@ describe('GET /api/iteration', () => {
       `INSERT INTO settings (key, value) VALUES ('iteration.anchor_date', '"2026-08-24"'::jsonb)
        ON CONFLICT (key) DO NOTHING`,
     );
+  });
+
+  it('never calls the source when Jira integration is toggled off, and still estimates', async () => {
+    await pool.query(
+      `INSERT INTO settings (key, value) VALUES ('jira.enabled', 'false'::jsonb)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+    );
+
+    const { status, body } = await get();
+    expect(status).toBe(200);
+    expect(body?.provenance).toBe('estimated');
+    expect(source.calls).toBe(0);
   });
 });

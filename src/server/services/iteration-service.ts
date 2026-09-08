@@ -37,10 +37,12 @@ export class IterationService {
     const settings = await this.settings.read();
     const now = this.now();
 
-    const read = await this.readFromSource(
-      settings.iterationBoardId,
-      settings.iterationTeamName,
-    );
+    // A local feature that prefers a live Jira read when the toggle allows
+    // one — turning it off falls into exactly the same cached/estimated path
+    // readFromSource's own failure already takes, not a new code path.
+    const read = settings.jiraEnabled
+      ? await this.readFromSource(settings.iterationBoardId, settings.iterationTeamName)
+      : null;
     if (read) {
       // Recorded before it is returned, so the cache is warm for the first
       // outage rather than the second.
