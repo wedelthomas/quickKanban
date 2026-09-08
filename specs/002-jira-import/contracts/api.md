@@ -87,7 +87,7 @@ Consumed, not offered. Recorded here because the register points at it.
 Pagination is by opaque token, not offset: the response carries `nextPageToken`
 and `isLast`, and there is no total to compare a cursor against. The older
 `/rest/api/3/search` was removed by Atlassian and now answers **410 Gone** —
-verified against tsgjira.atlassian.net on 2026-08-26.
+verified against yourcompany.atlassian.net on 2026-08-26.
 
 Authenticated with `Authorization: Basic base64(email:token)`.
 

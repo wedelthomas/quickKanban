@@ -18,7 +18,6 @@
 | Acceptance scenarios | 23 across six stories (5/5/3/4/3/3) |
 | `[NEEDS CLARIFICATION]` markers | 0 in all three artifacts |
 | Test-first ordering | Holds in all seven phases that contain both |
-| TestRail sync task first and non-parallel | Holds in all seven story phases |
 | Architecture Review rows filled | 22 of 22; 0 empty, 0 bare N/A |
 | Dependency manifest | Absent — cross-repo row correctly reasoned N/A |
 | Plan test files with a task | 18 of 18 |
@@ -33,7 +32,7 @@ FR-442 requires that access to the iteration source sit behind a test double so
 **no automated test in the standard suite contacts a live external service**.
 BH-429 states it and TEST-429 is meant to prove it.
 
-TEST-429 appears in exactly one place across all three artifacts: the TestRail
+TEST-429 appears in exactly one place across all three artifacts: the case
 sync line in T030. It is named in **no** plan.md Test Strategy row and **no**
 implementing task. Nothing will ever assert it.
 

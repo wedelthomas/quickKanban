@@ -44,17 +44,17 @@ is deliberate (research R-1): the movement history references it.
 
 ## 3. The iteration banner
 
-With Jira reachable, the banner shows the current TradeBlazers iteration:
+With Jira reachable, the banner shows the current Anchor Team iteration:
 
 ```
-CRM TradeBlazers 2026 S18 · 24 Aug – 7 Sep · 8 working days left
+Anchor Team 2026 S18 · 24 Aug – 7 Sep · 8 working days left
 ```
 
 Then test each degradation in turn:
 
 ```bash
 # Cached: stop the app reaching Jira, reload. Banner persists, marked stale.
-docker compose exec app sh -c 'echo "127.0.0.1 tsgjira.atlassian.net" >> /etc/hosts'
+docker compose exec app sh -c 'echo "127.0.0.1 yourcompany.atlassian.net" >> /etc/hosts'
 
 # Estimated: clear the cache too, reload. Dates only, no name, marked estimated.
 docker compose exec db psql -U kanban -d kanban -c "DELETE FROM iterations;"
@@ -63,7 +63,7 @@ docker compose exec db psql -U kanban -d kanban -c "DELETE FROM iterations;"
 The board stays fully interactive throughout. That is the point of FR-429 and
 FR-430 — none of this surfaces as an error.
 
-To prove the team filter (FR-445), set `iterationTeamName` to `MDS` in
+To prove the team filter (FR-445), set `iterationTeamName` to `Signal` in
 settings: the banner switches to the other team's sprint name on the same
 dates, confirming both are present and the choice is ours.
 

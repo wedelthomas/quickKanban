@@ -113,7 +113,7 @@ return. Sync status is always visible and a failure never blocks the board.
 
 ### Verified
 - 107 unit, 11 contract, 73 acceptance scenarios, 29 browser tests
-- 26 of 26 behavior pathways green (TestRail runs 51180, 51181)
+- 26 of 26 behavior pathways green
 - Verified against real Jira: 11 issues, each linked to its own key, no duplicates
 - Credential absent from logs, board payload, sync status and settings under live traffic
 - All Critical and High CVEs cleared

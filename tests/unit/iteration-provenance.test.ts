@@ -11,7 +11,7 @@ import {
  * one *as if* it were fresh is not, because the reader would plan against it.
  */
 const read = {
-  ordinalName: 'CRM TradeBlazers 2026 S18',
+  ordinalName: 'Anchor Team 2026 S18',
   startsOn: '2026-08-24',
   endsOn: '2026-09-07',
 };
@@ -25,13 +25,13 @@ describe('deciding what the banner shows', () => {
   it('prefers what was just read', () => {
     const result = decideIteration({ read, cached, config, now });
     expect(result?.provenance).toBe('read');
-    expect(result?.ordinalName).toBe('CRM TradeBlazers 2026 S18');
+    expect(result?.ordinalName).toBe('Anchor Team 2026 S18');
   });
 
   it('falls back to the cache when nothing could be read, and marks it', () => {
     const result = decideIteration({ read: null, cached, config, now });
     expect(result?.provenance).toBe('cached');
-    expect(result?.ordinalName).toBe('CRM TradeBlazers 2026 S18');
+    expect(result?.ordinalName).toBe('Anchor Team 2026 S18');
   });
 
   it('estimates when there is neither, and carries no ordinal', () => {

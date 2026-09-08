@@ -27,7 +27,7 @@ flags the need for integration tests in `tasks.md`.
 |---|---|
 | **Direction** | Outbound HTTPS, from the app container |
 | **Introduced in** | Slice 2 (`specs/002-jira-import/`) |
-| **Contract** | `GET {JIRA_BASE_URL}/rest/api/3/search/jql?jql=…&maxResults=…&fields=summary,status,updated&nextPageToken=…`. Paginated by opaque token, not offset: the response carries `nextPageToken` and `isLast`. **`/rest/api/3/search` was removed by Atlassian and answers 410 Gone** — verified against tsgjira.atlassian.net on 2026-08-26. |
+| **Contract** | `GET {JIRA_BASE_URL}/rest/api/3/search/jql?jql=…&maxResults=…&fields=summary,status,updated&nextPageToken=…`. Paginated by opaque token, not offset: the response carries `nextPageToken` and `isLast`. **`/rest/api/3/search` was removed by Atlassian and answers 410 Gone** — verified against yourcompany.atlassian.net on 2026-08-26. |
 | **Methods used** | `GET` only. A unit test asserts the adapter's source contains no other verb and that the port exposes no write operation. |
 | **Authentication** | HTTP Basic, `email:api-token` from environment, built at call time. Never persisted, never sent to the browser, never logged. |
 | **Timeout** | 10s per request (`AbortSignal.timeout`) |
@@ -55,7 +55,7 @@ interceptable by anyone on the path.
 | **Contract** | `GET {JIRA_BASE_URL}/rest/api/3/issue/{key}/transitions?expand=transitions.fields` to read what is legal from where the issue currently sits, then `POST` the same path with a body of exactly `{"transition":{"id":"…"}}`. Also `GET /rest/api/3/status`, read-only, so the column mapping is chosen from Jira's own status names rather than typed. |
 | **Methods used** | `GET` and `POST` to the transitions path, and nothing else. No `PUT`, no field edit, no comment, no worklog. |
 | **What can change in Jira** | The issue's status, and only the status. The POST body carries no field, so no field but status *can* change (FR-209). A unit test asserts the adapter's source contains no other write path. |
-| **Which transition** | Matched on the transition's **destination status** (`transition.to.name`), never on the transition's own name. These differ routinely: on tsgjira.atlassian.net the transition named "To Development" leads to the status "Development", and "Pass" leads to "PO Approve". |
+| **Which transition** | Matched on the transition's **destination status** (`transition.to.name`), never on the transition's own name. These differ routinely: on yourcompany.atlassian.net the transition named "To Development" leads to the status "Development", and "Pass" leads to "PO Approve". |
 | **Authentication** | Same credential as the read direction: HTTP Basic, `email:api-token` from environment, built at call time. |
 | **Timeout** | 10s per request (`AbortSignal.timeout`) |
 | **Retries** | **None.** A transition is not idempotent from the board's point of view — a retry after an ambiguous failure could move an issue a second time, past where the user asked. A failed push is reported and left for the user. |
@@ -76,7 +76,7 @@ other people can see. Everything else is local to the user's machine.
 |---|---|
 | **Direction** | Outbound HTTPS, from the app container |
 | **Introduced in** | Slice 5 (`specs/005-iteration-and-board-restructure/`) |
-| **Contract** | `GET {JIRA_BASE_URL}/rest/agile/1.0/board/{boardId}/sprint?state=active&maxResults=50`. Returns `values[]` of sprints carrying `id`, `name`, `startDate`, `endDate`. A different API surface from the REST v3 endpoints above — Agile endpoints, not `/rest/api/3` — verified against tsgjira.atlassian.net on 2026-08-26. |
+| **Contract** | `GET {JIRA_BASE_URL}/rest/agile/1.0/board/{boardId}/sprint?state=active&maxResults=50`. Returns `values[]` of sprints carrying `id`, `name`, `startDate`, `endDate`. A different API surface from the REST v3 endpoints above — Agile endpoints, not `/rest/api/3` — verified against yourcompany.atlassian.net on 2026-08-26. |
 | **Authentication** | The same account email and API token as the REST touchpoints, from a gitignored `.env`. No new credential and no new place to put one. |
 | **Timeout** | 10s per request |
 | **Retries** | The shared bounded backoff (`src/domain/backoff.ts`), unchanged. 429 honours `Retry-After`. 401/403 is not retried: a rejected credential will be rejected again. |
@@ -87,11 +87,11 @@ other people can see. Everything else is local to the user's machine.
 Two properties of the real instance shape this contract and are worth stating
 here rather than only in the spec:
 
-- **Board 1391 carries two active sprints at all times**, one per team sharing
+- **Board 4200 carries two active sprints at all times**, one per team sharing
   it, with identical dates and ordinals — true across all 730 of its closed
   sprints. "The active sprint" is therefore not a well-defined thing, and the
   configured team name is what makes the choice deterministic.
-- **A sprint may be named but undated.** Board 1391's future sprints are. That
+- **A sprint may be named but undated.** Board 4200's future sprints are. That
   is ordinary, not malformed, and is treated as no result rather than an error.
 
 ## Planned touchpoints

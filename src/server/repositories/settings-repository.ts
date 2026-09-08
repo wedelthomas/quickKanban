@@ -45,8 +45,8 @@ export class SettingsRepository {
       // Defaults mirror 021_iteration_settings.sql, every one verified against
       // the live Jira. They are repeated here so a settings row deleted by hand
       // degrades to a working value rather than to NaN.
-      iterationBoardId: Number(byKey.get(KEYS.iterationBoardId) ?? 1391),
-      iterationTeamName: String(byKey.get(KEYS.iterationTeamName) ?? 'CRM TradeBlazers'),
+      iterationBoardId: Number(byKey.get(KEYS.iterationBoardId) ?? 4200),
+      iterationTeamName: String(byKey.get(KEYS.iterationTeamName) ?? 'Anchor Team'),
       iterationAnchorDate: String(byKey.get(KEYS.iterationAnchorDate) ?? '2026-08-24'),
       iterationCadenceDays: Number(byKey.get(KEYS.iterationCadenceDays) ?? 14),
       workingDays:

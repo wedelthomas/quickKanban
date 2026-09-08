@@ -8,7 +8,7 @@ CREATE TABLE column_status_mappings (
   column_id   smallint PRIMARY KEY REFERENCES columns (id),
 
   -- Matched against a transition's DESTINATION status, never against the
-  -- transition's own name. Verified against tsgjira.atlassian.net: the
+  -- transition's own name. Verified against yourcompany.atlassian.net: the
   -- transition "To Development" leads to the status "Development", and "Pass"
   -- leads to "PO Approve". Matching by transition name would fail on both.
   status_name text NOT NULL

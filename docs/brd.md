@@ -6,7 +6,7 @@
 | Product | Quick Kanban Wall |
 | Version | 1.0 |
 | Date | 2026-08-26 |
-| Author | twedel |
+| Author | the author |
 | Status | Approved for specification |
 | Downstream artifacts | `specs/*/spec.md` (BDD), `plan.md`, `tasks.md` |
 
@@ -235,7 +235,7 @@ traceability anchor for the BDD specifications.
 | ID | Constraint |
 |---|---|
 | C-1 | Deployment target is Docker Compose: one application container, one database container, one persistent volume. |
-| C-2 | Jira is Atlassian Cloud at `tsgjira.atlassian.net`, accessed via its REST API using an Atlassian account email plus a personal API token (HTTP Basic). |
+| C-2 | Jira is Atlassian Cloud at `yourcompany.atlassian.net`, accessed via its REST API using an Atlassian account email plus a personal API token (HTTP Basic). |
 | C-3 | Implementation is TypeScript end to end — React front end, Node backend, PostgreSQL. |
 | C-4 | Single user, single machine, no authentication layer. |
 | C-5 | Inbound connections from Jira (webhooks) are unavailable; synchronisation is poll-based only. |

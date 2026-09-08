@@ -311,11 +311,6 @@ to record.
 
 Twelve files, all of which become tasks.
 
-**TestRail sync point**: each story's first task syncs its `TEST-###` cases via
-`spec-testrail-sync` before any implementation task in that story runs. Cases
-land under a new "Slice 4 — Review and Reporting" section in project 115,
-suite 32733.
-
 ## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory.** All twelve files above become tasks.

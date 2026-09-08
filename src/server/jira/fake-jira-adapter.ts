@@ -173,7 +173,7 @@ export const anIssue = (over: Partial<JiraIssue> & { key: string }): JiraIssue =
   statusId: over.statusId ?? '10000',
   statusName: over.statusName ?? 'Open',
   updatedAt: over.updatedAt ?? '2026-08-26T10:00:00.000Z',
-  url: over.url ?? `https://tsgjira.atlassian.net/browse/${over.key}`,
+  url: over.url ?? `https://yourcompany.atlassian.net/browse/${over.key}`,
   key: over.key,
   blockedInJira: over.blockedInJira ?? null,
 });

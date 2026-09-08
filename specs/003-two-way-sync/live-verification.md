@@ -1,8 +1,8 @@
 # Live verification — T353
 
 **When:** 2026-08-27
-**Against:** tsgjira.atlassian.net, the user's real Jira
-**Scratch issue:** ABSARCH-44 — the only issue any write was aimed at
+**Against:** yourcompany.atlassian.net, the user's real Jira
+**Scratch issue:** PROJ-44 — the only issue any write was aimed at
 **Agreed:** explicitly, before the first write
 
 Excluded from every automated suite, by design. This is the only step in the
@@ -19,7 +19,7 @@ never as a side effect of `npm test`.
 | 4 | The adoption is attributed to sync, not the user | History: `2 → 1 by sync` ✅ |
 | 5 | Board-driven round trip | Backlog → In Progress → Backlog, both legs transitioned in Jira ✅ |
 | 6 | The issue ends where it started | `Open`, every other field untouched ✅ |
-| 7 | No other issue was touched | 12 issues seen, 0 created, 0 archived; write log names only ABSARCH-44 ✅ |
+| 7 | No other issue was touched | 12 issues seen, 0 created, 0 archived; write log names only PROJ-44 ✅ |
 
 ## What real Jira told us that no fixture could
 
@@ -38,10 +38,10 @@ The write log — added an hour earlier as a non-blocking review finding — cau
 a second entry nobody asked for:
 
 ```
-{"issueKey":"PMO-11976","targetStatus":"Development","outcome":"refused","reason":"NO_LEGAL_TRANSITION"}
+{"issueKey":"TASK-11976","targetStatus":"Development","outcome":"refused","reason":"NO_LEGAL_TRANSITION"}
 ```
 
-PMO-11976 is real work, and nobody had dragged it.
+TASK-11976 is real work, and nobody had dragged it.
 
 **Cause.** Two independent mappings had grown up beside each other. Slice 2
 places an imported issue by a hardcoded status-name table, where both
@@ -51,7 +51,7 @@ and a column can mean exactly one status. So for an issue whose real status is
 `In Progress`, the reconciler compared `Development` against `In Progress`,
 found them different, and concluded **the user had moved the card**.
 
-It then tried to transition a live issue. It failed only because PMO's
+It then tried to transition a live issue. It failed only because TASK's
 workflow has no `Development` status. On a project that had one, the board
 would have silently rewritten the status of the user's real work on the first
 sync after import — the exact failure this whole slice exists to prevent.

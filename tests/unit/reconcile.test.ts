@@ -145,7 +145,7 @@ describe('reconcile — properties that must always hold', () => {
 /**
  * Found by the live check against real Jira (T353), not by any fixture.
  *
- * PMO-11976 was imported with the real status "In Progress" and placed in the
+ * TASK-11976 was imported with the real status "In Progress" and placed in the
  * In Progress column — correctly. That column is mapped to "Development",
  * because a column can only be mapped to one status. The reconciler then
  * compared the column's mapped status name against the issue's actual status,

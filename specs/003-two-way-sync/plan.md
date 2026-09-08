@@ -21,13 +21,13 @@ user's actual Jira rather than assuming:
    decision the user made or clobbers a teammate's. Both are unrecoverable in
    the sense that matters: the user never learns it happened.
 3. **A transition's name is not its destination.** Probed against
-   tsgjira.atlassian.net on 2026-08-26: `Pass → PO Approve`,
+   yourcompany.atlassian.net on 2026-08-26: `Pass → PO Approve`,
    `To Development → Development`, `To Backlog → Open`. Matching on the
    transition's own name would fail on every one of those. The adapter matches
    on `transition.to.name`.
 
 And one consequence worth stating plainly: **legal transitions are narrow**.
-ABSARCH-11 offers only *Development* or *Cancelled*. A refused move is the
+PROJ-11 offers only *Development* or *Cancelled*. A refused move is the
 common case here, not an edge case, so the refusal path gets first-class
 treatment rather than an error toast bolted on at the end.
 
@@ -189,10 +189,6 @@ the same adapter, and `no-unbounded-writes` was already called
 `no-jira-writes`. The table above names what exists. One more file exists that
 the plan did not foresee — `tests/unit/conflict-freeze.test.ts`, guarding the
 freeze against the Jira port's absence after that turned out to be a live bug.
-
-**TestRail sync point**: each story's first task syncs its `TEST-###` cases
-before any implementation task in that story runs. Cases land under a new
-"Slice 3 — Two-Way Sync" section in project 115.
 
 ## SDD — Required plan close-outs
 

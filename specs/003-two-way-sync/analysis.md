@@ -31,14 +31,14 @@ None.
    new read in the slice.
 
 5. **Test Strategy** — all 13 test files have tasks; every story's tests
-   precede its implementation; every story's TestRail sync is its first task.
+   precede its implementation.
 
 ## Non-blocking observations
 
 1. **Story order departs from priority twice, both deliberately.** US5 (P2) is
    built first because every other story consults the mapping. US7 (P2) is
    built immediately after the push because, against this user's real
-   workflows, most moves have *no* legal transition — ABSARCH-11 offers two —
+   workflows, most moves have *no* legal transition — PROJ-11 offers two —
    so refusal is ordinary operation rather than an edge case.
 
 2. **T353 is unlike every other task in the project.** Live verification

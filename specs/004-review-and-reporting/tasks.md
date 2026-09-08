@@ -79,7 +79,6 @@ Every test task precedes the implementation it covers.
 apply each filter and confirm only matching cards remain — in place, on the same
 board, with every column still visible.
 
-- [x] T409 [US1] Sync TestRail cases TEST-301, TEST-302, TEST-303, TEST-304, TEST-305, TEST-306, TEST-307, TEST-308 via `spec-testrail-sync`
   (project 115, suite 32733, new section "Slice 4 — Review and Reporting").
   **Before any implementation task in this story.**
 
@@ -137,8 +136,6 @@ endpoint's shape being driven by test convenience rather than by US5's actual
 need. The cucumber world already has a pool and other steps already assert
 through it.
 
-- [x] T419 [US2] Sync TestRail cases TEST-309, TEST-309a, TEST-310, TEST-311, TEST-312 via
-  `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
@@ -207,8 +204,6 @@ blocked — copyable in one action.
 **Independent Test**: move several cards over two days, generate the daily
 summary, confirm it names all three groups and copies as plain text.
 
-- [x] T431 [US3] Sync TestRail cases TEST-316, TEST-318, TEST-319, TEST-320, TEST-321 via
-  `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
@@ -258,8 +253,6 @@ summary, confirm it names all three groups and copies as plain text.
 completed, in-progress and blocked work, and confirm it covers seven days
 including archived cards.
 
-- [x] T443 [US4] Sync TestRail cases TEST-317 and TEST-322 via
-  `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
@@ -289,8 +282,6 @@ including archived cards.
 **Independent Test**: archive cards across several dates, retrieve a range, and
 confirm only cards from that range appear.
 
-- [x] T448 [US5] Sync TestRail cases TEST-313, TEST-314, TEST-315 via
-  `spec-testrail-sync`. **Before any implementation task in this story.**
 
 ### Tests (must fail first)
 
@@ -345,7 +336,7 @@ Story-Complete Review Gate before Polish.**
 - [x] T465 Run `quickstart.md` end to end from a clean `docker compose up`.
 - [x] T466 Run `/speckit.review`; address blocking findings.
 - [x] T467 Request peer review.
-  **Reviewed by twedel, 2026-08-27.**
+  **Reviewed by the author, 2026-08-27.**
 
 ---
 
@@ -375,8 +366,7 @@ Story-Complete Review Gate before Polish.**
 
 ### Within a story
 
-- The TestRail sync task first, always.
-- Then tests, which must fail.
+- Tests first, which must fail.
 - Then domain (pure) → repository → service → route → interface.
 
 ### Parallel opportunities

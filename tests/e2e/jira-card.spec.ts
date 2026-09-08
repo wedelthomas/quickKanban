@@ -24,7 +24,7 @@ test.describe('a Jira card on the board', () => {
     await expect(jiraCard.getByTestId('card-source')).toHaveText('AIHUB-1');
     await expect(jiraCard.getByTestId('issue-link')).toHaveAttribute(
       'href',
-      'https://tsgjira.atlassian.net/browse/AIHUB-1',
+      'https://yourcompany.atlassian.net/browse/AIHUB-1',
     );
 
     // The absence of the badge is what marks a card as the user's own.

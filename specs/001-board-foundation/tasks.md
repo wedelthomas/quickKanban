@@ -32,14 +32,6 @@ order.
 
 ---
 
-> **TestRail sync status**: all 30 cases were synced up front to project 115
-> (`twedel-quick-kanban-wall`), suite 32733, cases 19999940–19999969, each
-> marked *To Be Automated*. The per-story sync tasks (T016, T032, T056, T067,
-> T075, T082) are therefore complete. Syncing the whole spec at once is a
-> superset of the per-story rule — every case exists and is un-run before any
-> implementation task begins, which is what the ordering rule protects.
-> Mapping: `testrail-mapping.json`.
-
 ## Phase 1: Setup
 
 **Purpose**: An empty project that compiles, lints and can run four test suites.
@@ -77,10 +69,6 @@ order.
 
 **Independent Test**: Create cards, destroy and recreate both containers, confirm the board is unchanged.
 
-### TestRail sync
-
-- [x] T016 [US3] Author or sync TestRail cases for BH-019, BH-020, BH-021, BH-022, BH-024 and BH-026 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
-
 ### Tests for User Story 3 — write first, confirm they FAIL
 
 - [x] T017 [P] [US3] `tests/ops/startup.test.ts` — first start against empty storage creates the schema and serves a six-column board; the documented single command brings both containers to healthy (BH-020, BH-024).
@@ -102,7 +90,7 @@ order.
 - [x] T030 [US3] Write `docker-compose.yml` — app and db only, named volume `kanban_data` so data survives container recreation and image rebuild (FR-030), app published to `127.0.0.1:3000`, db port unpublished, healthcheck reading T027.
 - [x] T031 [US3] Write `README.md`: start, stop, reset, and **the name of the volume whose deletion loses every ad-hoc card** (FR-038, risk R-7).
 
-- [x] T031a [US3] **Remediation, deferred to the US2 checkpoint**: run `tests/ops/persistence.test.ts` (TEST-019/BH-019) once card creation and movement exist, and record the result to TestRail run 51174. Raised by the US3 Story-Complete Review Gate: BH-019 is expressed in terms of cards on the board, so US3 can build durable storage but cannot prove it at the board level alone. The storage layer itself is proven now by TEST-020 (schema creation) and the volume configuration.
+- [x] T031a [US3] **Remediation, deferred to the US2 checkpoint**: run `tests/ops/persistence.test.ts` (TEST-019/BH-019) once card creation and movement exist. Raised by the US3 Story-Complete Review Gate: BH-019 is expressed in terms of cards on the board, so US3 can build durable storage but cannot prove it at the board level alone. The storage layer itself is proven now by TEST-020 (schema creation) and the volume configuration.
 
 **Checkpoint**: `docker compose up` yields a working, durable, loopback-only board — with TEST-019 outstanding per T031a. **Story-Complete Review Gate run; findings recorded below.**
 
@@ -122,10 +110,6 @@ order.
 **Goal**: Create a card with title, description, priority, due date and tags; see it on a dense card face in Backlog.
 
 **Independent Test**: From an empty board, create a card with all attributes and confirm each is legible without opening it.
-
-### TestRail sync
-
-- [x] T032 [US1] Author or sync TestRail cases for BH-001 through BH-006, BH-029 and BH-030 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 1 — write first, confirm they FAIL
 
@@ -166,10 +150,6 @@ order.
 
 **Independent Test**: Drag a card through all six columns and reorder within one; reload and confirm both persisted.
 
-### TestRail sync
-
-- [x] T056 [US2] Author or sync TestRail cases for BH-007 through BH-011 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
-
 ### Tests for User Story 2 — write first, confirm they FAIL
 
 - [x] T057 [P] [US2] `tests/unit/ordering.test.ts` — renumbering on insert at top, middle and end; move to an occupied position; single-card column; move to the position already held.
@@ -207,10 +187,6 @@ order.
 
 **Independent Test**: Edit all five attributes and confirm they persist; delete and confirm the card leaves the board while its record remains.
 
-### TestRail sync
-
-- [x] T067 [US4] Author or sync TestRail cases for BH-012, BH-013, BH-023 and BH-025 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
-
 ### Tests for User Story 4 — write first, confirm they FAIL
 
 - [x] T068 [P] [US4] `tests/features/card-editing.feature` + steps — all five attributes persist; delete is cancellable and, when confirmed, removes the card from the board while retaining its record; delete is refused for a seeded non-local card (BH-012, BH-013, BH-023).
@@ -244,10 +220,6 @@ order.
 
 **Independent Test**: Complete a create-then-move cycle with the pointing device untouched.
 
-### TestRail sync
-
-- [x] T075 [US5] Author or sync TestRail cases for BH-014, BH-015 and BH-027 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
-
 ### Tests for User Story 5 — write first, confirm they FAIL
 
 - [x] T076 [P] [US5] `tests/e2e/keyboard.spec.ts` — create and move by keyboard alone, help overlay lists every shortcut, closing a dialog restores focus to the originating card (BH-014, BH-015, BH-027).
@@ -279,10 +251,6 @@ order.
 **Goal**: An immutable movement record per column change, written atomically with the move.
 
 **Independent Test**: Move a card through several columns and confirm one record per column change, none for reorders, and that records survive the card's deletion.
-
-### TestRail sync
-
-- [x] T082 [US6] Author or sync TestRail cases for BH-016, BH-017, BH-018 and BH-028 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
 
 ### Tests for User Story 6 — write first, confirm they FAIL
 
@@ -321,7 +289,7 @@ order.
 - [x] T096 Run `quickstart.md` end to end on a clean checkout.
 - [x] T097 Run `/speckit.review` against the diff vs `main`; address blocking findings.
 - [x] T098 Request peer review on the PR. Automated review never replaces a human reviewer (constitution Quality Gate).
-  **Reviewed by twedel, 2026-08-27.**
+  **Reviewed by the author, 2026-08-27.**
 
 ---
 
@@ -343,7 +311,6 @@ Within US1: the three pure domain modules T041–T043; the two view components T
 
 ### Sequencing that is not negotiable
 
-- Every story's TestRail sync task completes before any implementation task in that story.
 - Every story's test tasks are written and **failing** before its implementation tasks (NFR-21).
 - T061 (ordering) before T062 (move transaction) before T063 (move service).
 - T062 before T086 — history appends inside the move's transaction, so the transaction must exist first.

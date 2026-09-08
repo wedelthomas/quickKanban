@@ -8,7 +8,7 @@
 `to.name` equals the mapped status.
 
 **Not a preference — forced by the data.** Probed against
-tsgjira.atlassian.net on 2026-08-26:
+yourcompany.atlassian.net on 2026-08-26:
 
 | Transition name | Destination status |
 |---|---|
@@ -24,7 +24,7 @@ most examples use.
 
 ### Legal transitions are narrow, so refusal is a first-class path
 
-ABSARCH-11 offers exactly two transitions: *To Development* and *Cancel*. A
+PROJ-11 offers exactly two transitions: *To Development* and *Cancel*. A
 board with six columns will therefore refuse most moves on most issues. This
 is not an error condition to be surfaced grudgingly; it is ordinary operation,
 and the interface has to make it obvious which moves are available rather than

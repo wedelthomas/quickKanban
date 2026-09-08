@@ -374,13 +374,6 @@ BDD/TDD requirement (NFR-21), not a preference.
 | `tests/ops/loopback.test.ts` | Operational | BH-022 — serves on loopback, refuses non-loopback |
 | `tests/ops/docs.test.ts` | Operational | BH-026 — README covers start, stop, reset and names the volume |
 
-**TestRail sync point**: `spec.md` carries a `## Behavior Pathways` section,
-so during `/speckit.implement` the first task in each user story's phase that
-has a `BH-###`/`TEST-###` pair authors or syncs that case to TestRail via
-`spec-testrail-sync` **before** any implementation task in that same story
-runs. Practically: the story's Gherkin file and its TestRail case are created
-together, ahead of the code they describe.
-
 ## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory** — every test file named above becomes a task

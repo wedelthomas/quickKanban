@@ -109,7 +109,7 @@ export const seedJiraCard = async (opts: {
     INSERT INTO jira_links
       (card_id, issue_key, issue_id, url, status_name, status_id, jira_updated_at)
     SELECT id, $$${key}$$, '1',
-           $$https://tsgjira.atlassian.net/browse/${key}$$,
+           $$https://yourcompany.atlassian.net/browse/${key}$$,
            $$${status}$$, '10000', now()
       FROM new_card;`;
   await run('docker', [

@@ -13,7 +13,7 @@ const PAGE_SIZE = 100;
  * Whether Jira's blocked field is set on an issue.
  *
  * The field is a MULTI-CHECKBOX, not a boolean — verified against
- * tsgjira.atlassian.net, where customfield_10003 "Blocked Issue" holds an array
+ * yourcompany.atlassian.net, where customfield_10003 "Blocked Issue" holds an array
  * whose single option is "Blocked". So "blocked" means the configured option
  * appears in the array. An absent field, an empty array, and an array without
  * the option all mean not blocked, and none of them is an error: most issues

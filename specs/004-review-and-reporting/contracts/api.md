@@ -58,8 +58,8 @@ defaults exist so opening the archive shows something useful immediately.
           "title": "Migrate the gateway",
           "priority": "medium",
           "tags": ["ops"],
-          "issueKey": "ABSARCH-11",
-          "issueUrl": "https://tsgjira.atlassian.net/browse/ABSARCH-11",
+          "issueKey": "PROJ-11",
+          "issueUrl": "https://yourcompany.atlassian.net/browse/PROJ-11",
           "archivedAt": "2026-08-20T16:04:11.201Z",
           "archivedReason": "no longer matches the query"
         }
@@ -112,7 +112,7 @@ Boundaries are calendar days in local time, the same rule due dates use (R-7).
       "cardId": "0c4f…",
       "title": "Migrate the gateway",
       "source": "jira",
-      "issueKey": "ABSARCH-11",
+      "issueKey": "PROJ-11",
       "issueUrl": "https://…",
       "fromColumn": "In Progress",
       "toColumn": "Test",
@@ -122,9 +122,9 @@ Boundaries are calendar days in local time, the same rule due dates use (R-7).
     }
   ],
   "inProgress": [{ "cardId": "…", "title": "…", "source": "local", "issueKey": null }],
-  "blocked": [{ "cardId": "…", "title": "…", "source": "jira", "issueKey": "AIP-190" }],
+  "blocked": [{ "cardId": "…", "title": "…", "source": "jira", "issueKey": "APEX-190" }],
   "empty": false,
-  "text": "*Yesterday and today*\n• ABSARCH-11 Migrate the gateway — In Progress → Test\n\n*In progress*\n• …\n\n*Blocked*\n• …"
+  "text": "*Yesterday and today*\n• PROJ-11 Migrate the gateway — In Progress → Test\n\n*In progress*\n• …\n\n*Blocked*\n• …"
 }
 ```
 

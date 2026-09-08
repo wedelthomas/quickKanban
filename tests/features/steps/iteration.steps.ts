@@ -8,7 +8,7 @@ import type { JiraFailureKind } from '../../../src/server/jira/jira-port.js';
  * Steps for the iteration banner (US2).
  *
  * The source is the fake adapter the world builds the app with, so nothing here
- * touches live Jira (FR-442). Its defaults are board 1391's real shape.
+ * touches live Jira (FR-442). Its defaults are board 4200's real shape.
  */
 
 let iteration: Iteration | null = null;
@@ -19,11 +19,11 @@ Given(
     this.iterations.setSprints([
       {
         id: 24501,
-        name: `CRM TradeBlazers ${ordinal}`,
+        name: `Anchor Team ${ordinal}`,
         startsOn: '2026-08-24',
         endsOn: '2026-09-07',
       },
-      { id: 24502, name: `MDS ${ordinal}`, startsOn: '2026-08-24', endsOn: '2026-09-07' },
+      { id: 24502, name: `Signal ${ordinal}`, startsOn: '2026-08-24', endsOn: '2026-09-07' },
     ]);
   },
 );

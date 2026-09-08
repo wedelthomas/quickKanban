@@ -14,8 +14,8 @@ const REQUEST_TIMEOUT_MS = 10_000;
  * handling rather than inventing a second policy. No new backoff, no new
  * timeout: one wrong answer about how long to wait is enough for any codebase.
  *
- * Verified against tsgjira.atlassian.net: board 1391's active sprints are
- * "CRM TradeBlazers 2026 S18" and "MDS 2026 S18", identical dates, two teams
+ * Verified against yourcompany.atlassian.net: board 4200's active sprints are
+ * "Anchor Team 2026 S18" and "Signal 2026 S18", identical dates, two teams
  * sharing one board.
  */
 export class IterationAdapter implements IterationPort {

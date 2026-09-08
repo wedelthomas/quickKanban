@@ -90,7 +90,7 @@ change rarely but the board should not hold a stale list.
 | `POST /rest/api/3/issue/{key}/transitions` | Body `{ "transition": { "id": "…" } }`. **The only write this application ever makes.** |
 
 **Matched on `transition.to.name`, never on `transition.name`.** Verified
-against tsgjira.atlassian.net: `Pass → PO Approve`, `To Development →
+against yourcompany.atlassian.net: `Pass → PO Approve`, `To Development →
 Development`, `To Backlog → Open`. Matching by transition name would fail on
 all three.
 

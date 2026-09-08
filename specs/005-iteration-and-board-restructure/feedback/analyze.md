@@ -11,7 +11,7 @@ Findings were fixable immediately — all five were resolved in a single pass
 without reopening the spec or plan phases.
 
 Worth recording alongside that: every mechanical check passed. Requirement
-coverage, pathway-to-task tracing, test-first ordering, TestRail sync placement
+coverage, pathway-to-task tracing, test-first ordering, case sync placement
 and the 22-row Architecture Review gate were all clean. Both blocking findings
 came from reading the artifacts against each other and against the repository —
 one from noticing a verification case that appeared in a sync line and nowhere

@@ -4,7 +4,7 @@
 -- user-adjustable configuration, it is observed state with provenance, and
 -- slice 6's reports need the history of them rather than only the current one.
 CREATE TABLE IF NOT EXISTS iterations (
-  -- The ordinal name as the source reported it, e.g. "CRM TradeBlazers 2026
+  -- The ordinal name as the source reported it, e.g. "Anchor Team 2026
   -- S18". Never computed: the ordinal resets at the fiscal year (observed in
   -- the PI calendar as "Sprint 20 - 1"), so counting forward is wrong every
   -- January. FR-423.

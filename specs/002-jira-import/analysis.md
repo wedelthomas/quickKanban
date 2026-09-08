@@ -50,8 +50,7 @@ checked closely:
 ### 5. Test Strategy alignment
 
 All 16 test files named in plan.md have a task. Every story's tests precede its
-implementation, and every story's TestRail sync task is its phase's first task
-with no `[P]` marker.
+implementation.
 
 ### 6. Unresolved clarifications
 

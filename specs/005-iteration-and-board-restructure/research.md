@@ -110,7 +110,7 @@ Jira's separate opinion.
 
 ## R-6 — Jira's blocked field is a multi-checkbox, not a boolean
 
-**Finding, verified against tsgjira.atlassian.net.** The field is a
+**Finding, verified against yourcompany.atlassian.net.** The field is a
 multi-checkbox whose set value is the single option `Blocked`. Issues carrying
 it were observed with statuses Development, Test and Open — confirming the
 field is orthogonal to status, which is the empirical basis for this whole
@@ -145,12 +145,12 @@ whose failures must be loud.
 
 ## R-8 — Two teams share the reference board, so selection is by name
 
-**Finding.** Board 1391 carries two active sprints at all times, one per team
+**Finding.** Board 4200 carries two active sprints at all times, one per team
 sharing it, with identical dates and ordinals — true throughout its 730-sprint
 history.
 
 **Decision.** Selection matches the configured team name against the start of
-the sprint name, defaulting to `CRM TradeBlazers`. Sprints not matching are
+the sprint name, defaulting to `Anchor Team`. Sprints not matching are
 ignored (FR-445). Where several still match, the lowest sprint id wins, so the
 result cannot depend on response ordering (FR-424).
 

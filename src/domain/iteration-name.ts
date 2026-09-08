@@ -2,7 +2,7 @@
  * The part of a sprint name worth showing.
  *
  * Sprint names carry the team that owns them, because a Jira board may serve
- * several: "CRM TradeBlazers 2026 S18", "MDS 2026 S18", "CRMOPs2026 S18
+ * several: "Anchor Team 2026 S18", "Signal 2026 S18", "OpsTeam2026 S18
  * (08/25-09/08)", "TSPRO 2026 I15". On a single-user board every one of those
  * prefixes says the same thing — yours — so the ordinal is the only part that
  * distinguishes one iteration from the next.

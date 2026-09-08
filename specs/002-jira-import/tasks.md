@@ -37,12 +37,6 @@ Stories are ordered by dependency, then priority:
 > T272–T274 added. Tasks already marked complete that the amendment invalidates
 > are unmarked rather than left standing — a checked box that no longer holds
 > is worse than an unchecked one.
->
-> **TestRail sync status**: all 25 cases synced up front to project 115,
-> suite 32733, under section 2162674 ("Slice 2 — Jira Import"), cases
-> 19999978–20000002, each *To Be Automated* and priority *Must Test* (FULL
-> tier). The per-story sync tasks are therefore complete. Mapping:
-> `testrail-mapping.json`.
 
 ## Phase 1: Setup
 
@@ -77,10 +71,6 @@ Stories are ordered by dependency, then priority:
 
 **Independent Test**: Stage three issues in the fake, run a sync, see three Backlog cards; run twenty more syncs and still see three.
 
-### TestRail sync
-
-- [x] T214 [US1] Author or sync TestRail cases for BH-101, BH-102, BH-103, BH-105, BH-106, BH-107, BH-108, BH-109 and BH-125 via `spec-testrail-sync`. **Precedes every implementation task in this phase.**
-
 ### Tests — write first, confirm they FAIL
 
 - [x] T215 [P] [US1] `tests/unit/jql.test.ts` — default query shape; empty query rejected (BH-124's unit half).
@@ -114,10 +104,6 @@ Stories are ordered by dependency, then priority:
 
 **Independent Test**: With one imported and one ad-hoc card side by side, confirm the source of each at a glance, and that delete and title-edit are refused on the imported one.
 
-### TestRail sync
-
-- [x] T229 [US2] Author or sync TestRail cases for BH-104 and BH-110 via `spec-testrail-sync`.
-
 ### Tests — write first, confirm they FAIL
 
 - [x] T230 [P] [US2] `tests/features/jira-card-identity.feature` + steps — key shown, marked Jira-sourced, delete and title edit refused with stated reasons (BH-104, BH-110).
@@ -147,10 +133,6 @@ Stories are ordered by dependency, then priority:
 
 **Independent Test**: Import an issue, remove it from the query result, sync, and find the card in Done and archived with a reason; put it back and find the same card restored.
 
-### TestRail sync
-
-- [x] T235 [US5] Author or sync TestRail cases for BH-111, BH-112 and BH-113 via `spec-testrail-sync`.
-
 ### Tests — write first, confirm they FAIL
 
 - [x] T236 [P] [US5] `tests/features/issue-disappearance.feature` + steps — archived into Done not deleted, reason recorded, movement attributed to sync, and the same card restored rather than duplicated (BH-111, BH-112, BH-113).
@@ -178,10 +160,6 @@ Stories are ordered by dependency, then priority:
 **Goal**: Syncs happen at startup, on an interval, and on demand — and never two at once.
 
 **Independent Test**: With a short interval, stage a new issue and watch it appear without touching the board; then fire fifty concurrent refreshes and confirm one sync ran.
-
-### TestRail sync
-
-- [x] T240 [US3] Author or sync TestRail cases for BH-114, BH-115, BH-116, BH-117 and BH-124 via `spec-testrail-sync`.
 
 ### Tests — write first, confirm they FAIL
 
@@ -218,10 +196,6 @@ Stories are ordered by dependency, then priority:
 
 **Independent Test**: Watch the pill through success, in-progress and failure; confirm the board stays fully usable while Jira is unreachable.
 
-### TestRail sync
-
-- [x] T250 [US4] Author or sync TestRail cases for BH-118, BH-119, BH-120 and BH-121 via `spec-testrail-sync`.
-
 ### Tests — write first, confirm they FAIL
 
 - [x] T251 [P] [US4] `tests/features/sync-status.feature` + steps — success then failure then cleared, last-success retained through failure, rejected credentials read differently from connectivity loss, and a failed sync leaves no partial change and blocks nothing (BH-118, BH-119, BH-121).
@@ -242,10 +216,6 @@ Stories are ordered by dependency, then priority:
 **Goal**: The token is nowhere it could leak, and its absence is a supported state.
 
 **Independent Test**: Inspect every browser payload and every log line across a successful sync, a failed sync and an authentication failure; find nothing.
-
-### TestRail sync
-
-- [x] T256 [US6] Author or sync TestRail cases for BH-122 and BH-123 via `spec-testrail-sync`.
 
 ### Tests — write first, confirm they FAIL
 
@@ -274,7 +244,7 @@ Stories are ordered by dependency, then priority:
 - [x] T269 Run `quickstart.md` end to end — including the no-token path, which must work.
 - [x] T270 Run `/speckit.review` against the diff; address blocking findings.
 - [x] T271 Request peer review.
-  **Reviewed by twedel, 2026-08-27.**
+  **Reviewed by the author, 2026-08-27.**
 
 ---
 
@@ -294,7 +264,6 @@ Foundational migrations T204–T207; the four `[P]` foundational modules; each s
 
 ### Not negotiable
 
-- Every story's TestRail sync completes before its implementation tasks.
 - Every story's tests are written and **failing** first (NFR-21).
 - T222 (credentials) before T223 (adapter) — the adapter cannot build a header before something reads one.
 - T227 (sync service) before T237 (disappearance), T245 (lock) and T247 (scheduler).

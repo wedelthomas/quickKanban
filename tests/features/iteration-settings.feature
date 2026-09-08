@@ -7,19 +7,19 @@ Feature: I can point the board at my own team's calendar
     Given the application is running
 
   Scenario: Changing the team switches which sprint the banner reports
-    # Board 1391 carries both teams' sprints for the same iteration with
+    # Board 4200 carries both teams' sprints for the same iteration with
     # identical dates, so this is the setting that decides which name is shown.
     Given the iteration source reports both teams' sprints for "2026 S18"
     And the iteration is read
-    And the iteration is named "CRM TradeBlazers 2026 S18"
-    When the "iterationTeamName" setting is changed to "MDS"
+    And the iteration is named "Anchor Team 2026 S18"
+    When the "iterationTeamName" setting is changed to "Signal"
     And the iteration is read
-    Then the iteration is named "MDS 2026 S18"
+    Then the iteration is named "Signal 2026 S18"
 
   Scenario: Settings survive a restart
-    When the "iterationTeamName" setting is changed to "MDS"
+    When the "iterationTeamName" setting is changed to "Signal"
     And the application is restarted
-    Then the "iterationTeamName" setting is "MDS"
+    Then the "iterationTeamName" setting is "Signal"
 
   Scenario: A cadence outside the plausible range is refused
     When the "iterationCadenceDays" setting is changed to 0

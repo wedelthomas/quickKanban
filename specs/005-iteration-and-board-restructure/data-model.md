@@ -134,8 +134,8 @@ Carries FR-437, FR-438, FR-439. Values are chosen from Appendix A of
 
 ```sql
 INSERT INTO settings (key, value) VALUES
-  ('iteration.board_id',        '1391'::jsonb),
-  ('iteration.team_name',       '"CRM TradeBlazers"'::jsonb),
+  ('iteration.board_id',        '4200'::jsonb),
+  ('iteration.team_name',       '"Anchor Team"'::jsonb),
   ('iteration.anchor_date',     '"2026-08-24"'::jsonb),
   ('iteration.cadence_days',    '14'::jsonb),
   ('working.days',              '["mon","tue","wed","thu","fri"]'::jsonb),

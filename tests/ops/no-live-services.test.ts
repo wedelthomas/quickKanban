@@ -29,11 +29,9 @@ const STANDARD_SUITE = ['tests/unit', 'tests/contract', 'tests/features'];
  * correctly use as a stand-in.
  */
 const LIVE_HOSTS = [
-  'tsgjira.atlassian.net',
+  'yourcompany.atlassian.net',
   'api.atlassian.com',
   'atlassian.net/rest',
-  'monex.testrail.net',
-  'testrail.net/index.php',
 ];
 
 /** Environment variables that only ever carry real-service coordinates. */

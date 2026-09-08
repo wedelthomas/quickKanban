@@ -24,8 +24,8 @@ const SEEDED_SETTINGS: Record<string, unknown> = {
   'archive.interval_seconds': 3600,
   // Slice 5. Added here for the reason the comment above gives: a setting not
   // named in this set leaks between scenarios until someone notices.
-  'iteration.board_id': 1391,
-  'iteration.team_name': 'CRM TradeBlazers',
+  'iteration.board_id': 4200,
+  'iteration.team_name': 'Anchor Team',
   'iteration.anchor_date': '2026-08-24',
   'iteration.cadence_days': 14,
   'working.days': ['mon', 'tue', 'wed', 'thu', 'fri'],
@@ -43,7 +43,7 @@ export class BoardWorld extends World {
   pool!: pg.Pool;
   /** Staged by the Jira steps; the app is built against this, never live Jira. */
   jira!: FakeJiraAdapter;
-  /** The iteration source, likewise fake. Defaults to board 1391's real shape. */
+  /** The iteration source, likewise fake. Defaults to board 4200's real shape. */
   iterations!: FakeIterationAdapter;
   response!: { status: number; body: unknown };
   /** The card produced by the most recent creating step, for later assertions. */

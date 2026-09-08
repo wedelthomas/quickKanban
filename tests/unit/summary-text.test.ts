@@ -95,9 +95,9 @@ describe('issue keys (BH-318)', () => {
 
   it('prefixes a Jira-sourced card in the state groups too', () => {
     const text = renderSummaryText(
-      summary({ inProgress: [card({ source: 'jira', issueKey: 'AIP-190' })] }),
+      summary({ inProgress: [card({ source: 'jira', issueKey: 'APEX-190' })] }),
     );
-    expect(text).toContain('• AIP-190 Draft the quarterly report');
+    expect(text).toContain('• APEX-190 Draft the quarterly report');
   });
 
   it('adds no prefix to an ad-hoc card', () => {

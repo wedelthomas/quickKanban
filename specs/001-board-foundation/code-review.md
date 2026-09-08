@@ -104,7 +104,7 @@ volume.
 
 ### Verified
 - 46 unit tests, 39 acceptance scenarios (177 steps), 18 browser tests, 4 ops tests
-- 30 of 30 behavior pathways green, recorded across TestRail runs 51174–51179
+- 30 of 30 behavior pathways green
 - Board loads in 2–3ms with 50 cards (target: under 1s)
 - 100 column changes produced exactly 100 history records, none same-column
 - Data survives destroying and recreating both containers

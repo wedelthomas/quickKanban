@@ -1,6 +1,6 @@
 # Live Verification — Slice 5
 
-Run against `tsgjira.atlassian.net` on 2026-08-27, after the automated suites
+Run against `yourcompany.atlassian.net` on 2026-08-27, after the automated suites
 were green.
 
 This project has learned twice that a green suite is not the same as a working
@@ -15,7 +15,7 @@ new field read, so the same discipline applies.
 ```
 GET /api/iteration
 {
-  "ordinalName": "CRM TradeBlazers 2026 S18",
+  "ordinalName": "Anchor Team 2026 S18",
   "startsOn": "2026-08-24",
   "endsOn": "2026-09-07",
   "provenance": "read",
@@ -23,19 +23,19 @@ GET /api/iteration
 }
 ```
 
-Matches what board 1391 reports. Displayed as **S18**.
+Matches what board 4200 reports. Displayed as **S18**.
 
 ## 2. The team filter genuinely discriminates
 
-Board 1391 returned both active sprints, as it always does:
+Board 4200 returned both active sprints, as it always does:
 
 ```
-CRM TradeBlazers 2026 S18 | 2026-08-24 -> 2026-09-07
-MDS 2026 S18              | 2026-08-24 -> 2026-09-07
+Anchor Team 2026 S18 | 2026-08-24 -> 2026-09-07
+Signal 2026 S18              | 2026-08-24 -> 2026-09-07
 ```
 
-Setting `iterationTeamName` to `MDS` switched the reported iteration to
-`MDS 2026 S18`; restoring it switched back. **This is the check a fixture
+Setting `iterationTeamName` to `Signal` switched the reported iteration to
+`Signal 2026 S18`; restoring it switched back. **This is the check a fixture
 cannot make**, because the fixture's two sprints are ones I wrote — here the
 board really does serve two teams, and picking the wrong one would have been
 invisible in every automated test.
@@ -44,7 +44,7 @@ invisible in every automated test.
 
 | Condition | Result |
 |---|---|
-| Board reachable | `read`, CRM TradeBlazers 2026 S18 |
+| Board reachable | `read`, Anchor Team 2026 S18 |
 | Board id 999999 (does not exist) | `cached`, last read shown |
 | Bad board **and** cache cleared | `estimated`, **no name**, 2026-08-24 → 2026-09-07 |
 | Throughout all of the above | `GET /api/board` answered 200 in 7ms |
@@ -92,7 +92,7 @@ Measured after the fix: **1180px wide, three 374px columns, zero overflow.**
 Nothing wrong with the implementation, which is itself worth recording — but
 four things were only ever *confirmed* here rather than in a test:
 
-1. That board 1391 really does return two active sprints, so the team filter is
+1. That board 4200 really does return two active sprints, so the team filter is
    load-bearing rather than defensive.
 2. That the blocked field really is a multi-checkbox array on a real issue.
 3. That the degraded paths behave the same against the real adapter as against

@@ -13,7 +13,7 @@ import type { JiraCredentials } from '../../src/server/jira/credentials.js';
 /**
  * The real adapter against recorded Jira response shapes.
  *
- * These are the shapes tsgjira.atlassian.net actually returns, captured on
+ * These are the shapes yourcompany.atlassian.net actually returns, captured on
  * 2026-08-26 — not invented ones. The distinction matters: the endpoint this
  * adapter was first written against, /rest/api/3/search, has been removed by
  * Atlassian and answers 410 Gone. Fixtures copied from documentation would
@@ -222,8 +222,8 @@ describe('JiraAdapter against recorded Jira responses', () => {
 });
 
 /**
- * The write side, against the shapes tsgjira.atlassian.net returned on
- * 2026-08-26 for ABSARCH-44. Two facts here were discovered by asking real
+ * The write side, against the shapes yourcompany.atlassian.net returned on
+ * 2026-08-26 for PROJ-44. Two facts here were discovered by asking real
  * Jira and would not have been guessed from documentation: a transition's name
  * is not its destination status, and the legal set is narrow and depends on
  * where the issue currently sits.
@@ -253,7 +253,7 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
     agent
       .get(BASE)
       .intercept({
-        path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/,
+        path: /\/rest\/api\/3\/issue\/PROJ-44\/transitions/,
         method: 'GET',
       })
       .reply(200, {
@@ -269,7 +269,7 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
         ],
       });
 
-    const transitions = await adapter().getTransitions('ABSARCH-44');
+    const transitions = await adapter().getTransitions('PROJ-44');
 
     expect(transitions).toEqual([
       {
@@ -286,7 +286,7 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
     agent
       .get(BASE)
       .intercept({
-        path: /\/rest\/api\/3\/issue\/ABSARCH-44\/transitions/,
+        path: /\/rest\/api\/3\/issue\/PROJ-44\/transitions/,
         method: 'GET',
       })
       .reply(200, {
@@ -300,7 +300,7 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
         ],
       });
 
-    const [transition] = await adapter().getTransitions('ABSARCH-44');
+    const [transition] = await adapter().getTransitions('PROJ-44');
     expect(transition?.requiresFields).toBe(true);
   });
 
@@ -308,13 +308,13 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
     let sentBody: string | undefined;
     agent
       .get(BASE)
-      .intercept({ path: '/rest/api/3/issue/ABSARCH-44/transitions', method: 'POST' })
+      .intercept({ path: '/rest/api/3/issue/PROJ-44/transitions', method: 'POST' })
       .reply(204, (options) => {
         sentBody = options.body as string;
         return '';
       });
 
-    await adapter().transitionIssue('ABSARCH-44', '11');
+    await adapter().transitionIssue('PROJ-44', '11');
 
     // The whole of FR-209 in one assertion: an extra key here would be a field
     // this board silently overwrote in someone else's issue.
@@ -324,13 +324,13 @@ describe('JiraAdapter transitions against recorded Jira responses', () => {
   it('reports a refused transition as malformed rather than reporting success', async () => {
     agent
       .get(BASE)
-      .intercept({ path: '/rest/api/3/issue/ABSARCH-44/transitions', method: 'POST' })
+      .intercept({ path: '/rest/api/3/issue/PROJ-44/transitions', method: 'POST' })
       .reply(400, {
         errorMessages: ['Transition id 999 is not valid for this issue.'],
         errors: {},
       });
 
-    await expect(adapter().transitionIssue('ABSARCH-44', '999')).rejects.toBeInstanceOf(
+    await expect(adapter().transitionIssue('PROJ-44', '999')).rejects.toBeInstanceOf(
       JiraError,
     );
   });

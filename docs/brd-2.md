@@ -6,7 +6,7 @@
 | Product | Quick Kanban Wall |
 | Version | 2.0 |
 | Date | 2026-08-26 |
-| Author | twedel |
+| Author | the author |
 | Status | Draft for review |
 | Predecessor | `docs/brd.md` v1.0 (BR-01…BR-37, NFR-01…NFR-24) — remains in force except where §3 below supersedes it |
 | Downstream artifacts | `specs/005-*/spec.md`, `specs/006-*/spec.md`, and their plans and task lists |
@@ -111,7 +111,7 @@ Phase 2 adds one read-only dependency:
 
 | Role | Description | Interest |
 |---|---|---|
-| Jira Agile API (external) | `/rest/agile/1.0` on `tsgjira.atlassian.net` | Source of the iteration calendar: the reference board's active sprint name, ordinal and boundary dates |
+| Jira Agile API (external) | `/rest/agile/1.0` on `yourcompany.atlassian.net` | Source of the iteration calendar: the reference board's active sprint name, ordinal and boundary dates |
 
 ---
 
@@ -175,7 +175,7 @@ Numbering continues from v1. RFC 2119 keywords, as before.
 | ID | Requirement | Priority |
 |---|---|---|
 | BR-54 | The system MUST determine the current iteration: its ordinal name, start date and end date. | Must |
-| BR-55 | The iteration MUST be read from a single configured Jira **reference board** via the Agile API, taking its active sprint's name and dates. The board MUST be configurable, defaulting to board 1391 (CRM TradeBlazers). | Must |
+| BR-55 | The iteration MUST be read from a single configured Jira **reference board** via the Agile API, taking its active sprint's name and dates. The board MUST be configurable, defaulting to board 4200 (Anchor Team). | Must |
 | BR-56 | The iteration ordinal MUST be taken from Jira rather than computed by counting, because the ordinal resets at the fiscal-year boundary and a counting rule would drift silently. | Must |
 | BR-57 | The current iteration MUST be displayed in a persistent top banner showing its name, its date range, and the working days remaining. | Must |
 | BR-58 | The resolved iteration MUST be cached, and the board MUST continue to display the last known iteration when Jira is unreachable, consistent with BR-20. | Must |
@@ -263,7 +263,7 @@ All v1 constraints (C-1…C-5) stand.
 | ID | Assumption | If wrong |
 |---|---|---|
 | A-6 | The user's Jira credentials can read the Agile API for the nominated reference boards. | Iteration falls back to the configured anchor and cadence (BR-60), marked as estimated. |
-| A-7 | The reference board maintains an active sprint with populated start and end dates. | Same fallback as A-6. Verified true at time of writing for board 1391, whose active sprint is dated even though its future sprints are not. |
+| A-7 | The reference board maintains an active sprint with populated start and end dates. | Same fallback as A-6. Verified true at time of writing for board 4200, whose active sprint is dated even though its future sprints are not. |
 | A-8 | The company's cadence remains two weeks. | The fallback cadence length is configurable (BR-81); the Jira-read path is unaffected, since it takes real dates. |
 | A-9 | The user's own workload will continue to be sparsely pointed in Jira. | Velocity relies more heavily on locally entered points (BR-70), which is why local entry is a Must rather than a Should. |
 | A-10 | Cards do not sit parked in In Progress for long periods without real work. | Derived time overstates effort; the blocked flag (BR-65) is the intended relief valve, and R-9 tracks the residual risk. |
@@ -278,11 +278,11 @@ All v1 constraints (C-1…C-5) stand.
 | D-13 | Blocked shown as a card edge **and** a badge | The edge is scannable across 50 cards where a badge is not; the badge names the state, satisfying BR-46 without relying on colour. The freed `--column-blocked` hue transfers to the flag | Recolouring the priority dot, which would overwrite priority on exactly the cards that most need triage |
 | D-14 | Iteration Items membership is a local decision | Only 1 of the user's 12 open issues carries a Jira sprint. Deriving membership from Jira would leave the column almost empty and useless | Auto-populating from Jira sprint membership |
 | D-15 | The iteration is read from Jira, not computed | The sprint ordinal resets at the fiscal-year boundary — PI ranges of "Sprint 20 - 1" and "Sprints 23 - 3" confirm it. A counting rule would drift silently every January | A pure anchor-plus-cadence calendar rule |
-| D-16 | One configurable reference board, defaulting to CRM TradeBlazers | The user's own team's board is the iteration they actually work to, and it carries a live dated active sprint. Making it configurable costs a setting; making it a fallback chain would have been speculative machinery for a problem not yet observed | An ordered list of fallback boards; hard-coding the board |
+| D-16 | One configurable reference board, defaulting to Anchor Team | The user's own team's board is the iteration they actually work to, and it carries a live dated active sprint. Making it configurable costs a setting; making it a fallback chain would have been speculative machinery for a problem not yet observed | An ordered list of fallback boards; hard-coding the board |
 | D-17 | Time is derived from the movement history | The data already exists under BR-31. Timers require discipline the user will not reliably sustain, and Jira worklogs are empty across every one of the user's issues | Start/stop timers; manual entry; Jira worklogs |
 | D-18 | Working-hours clock, not wall clock | A card started Friday afternoon and finished Monday morning is three hours of work, not sixty-six. Wall clock would make every overnight card unreadable as effort | Raw elapsed time |
 | D-19 | Time counts Test and PO Review | Waiting on review is part of how long the work took, and it is the part the user most needs evidence for when discussing throughput | Counting only hands-on In Progress time |
-| D-20 | Points read from Jira, editable locally, never written | Real values exist on the user's CRM work (1, 3, 5) and are worth importing; local editing covers the majority that have none. Writing back would breach BR-22 and put the board in the business of estimating for other people's teams | Local-only points; read-only Jira points; two-way sync |
+| D-20 | Points read from Jira, editable locally, never written | Real values exist on the user's ANCHOR work (1, 3, 5) and are worth importing; local editing covers the majority that have none. Writing back would breach BR-22 and put the board in the business of estimating for other people's teams | Local-only points; read-only Jira points; two-way sync |
 | D-21 | Time and points are never combined | Hours-per-point invites treating an estimate as a schedule. They answer different questions and are reported side by side | A derived efficiency or throughput score |
 | D-22 | Derived metrics are recomputed, not stored | A wrong working-hours setting should correct history, not leave it frozen. The append-only log makes recomputation cheap and correct | Materialising time onto the card at transition time |
 | D-23 | The burndown separates scope change from progress | A single remaining-work line makes a card added on day six look identical to a day lost. Since the movement history records when a card entered the iteration, the distinction is free to compute and dishonest to omit | A plain remaining-total line |
@@ -326,7 +326,7 @@ rather than chosen.
 
 | ID | Risk | Impact | Likelihood | Mitigation |
 |---|---|---|---|---|
-| R-8 | The reference board stops maintaining dated sprints, as board 1391 already does for its *future* sprints | Iteration silently stale | Medium | Staleness is marked (BR-59); estimated fallback (BR-60); the board is configurable, so another can be nominated without a code change (BR-81) |
+| R-8 | The reference board stops maintaining dated sprints, as board 4200 already does for its *future* sprints | Iteration silently stale | Medium | Staleness is marked (BR-59); estimated fallback (BR-60); the board is configurable, so another can be nominated without a code change (BR-81) |
 | R-9 | A card parked in In Progress accrues time that was never worked | Time reports overstate effort and lose credibility | High | Blocked pauses the clock (BR-65); working hours cap the damage (BR-64); figures are recomputable once corrected (BR-67) |
 | R-10 | The BR-40 migration loses or misplaces in-flight cards | Data loss, and loss of trust in the board | Low | Tested migration is a requirement, not a practice (NFR-27); migration is recorded in history (BR-41) |
 | R-11 | Points remain sparse, making velocity and the burndown noisy or meaningless | Two headline outputs that cannot be trusted | High | Local entry on any card (BR-70); incomplete periods are declared (BR-80); points and time are independent (BR-74), so time reporting survives unpointed work |
@@ -344,7 +344,7 @@ Terms from v1 §13 stand. Phase 2 adds:
 | Term | Definition |
 |---|---|
 | **Iteration** | The two-week company timebox, identified by an ordinal such as "2026 S18". The ordinal is common across teams; the boundary dates vary by up to a day between them. |
-| **Reference board** | The configured Jira board whose active sprint supplies the current iteration's name and dates. Defaults to 1391, CRM TradeBlazers. |
+| **Reference board** | The configured Jira board whose active sprint supplies the current iteration's name and dates. Defaults to 4200, Anchor Team. |
 | **Iteration Items** | The board column holding work the user has committed to the current iteration. A local decision, unrelated to Jira sprint membership. |
 | **Carry-over** | A card still unfinished when the iteration it was committed to has ended. |
 | **Elapsed time** | Working-hours duration from a card's first entry into In Progress to its arrival in Done, excluding time while blocked, accumulated across repeat passes. |
@@ -356,7 +356,7 @@ Terms from v1 §13 stand. Phase 2 adds:
 
 ## Appendix A — Live Jira findings
 
-Verified against `tsgjira.atlassian.net` on 2026-08-26 while drafting this
+Verified against `yourcompany.atlassian.net` on 2026-08-26 while drafting this
 document. Recorded because these values are assumptions the design rests on,
 and because each one was checked rather than presumed.
 
@@ -365,7 +365,7 @@ and because each one was checked rather than presumed.
 | Field | Id | Evidence |
 |---|---|---|
 | Sprint | `customfield_10000` | Type `greenhopper:gh-sprint`. The only sprint field among four name matches; the others are migrated text areas. |
-| Story Points | `customfield_10005` | Confirmed as the estimation field by three independent board configurations: 1391 (CRM), 837 (CORP), 5600 (AIP). Type `customfieldtypes:float`. |
+| Story Points | `customfield_10005` | Confirmed as the estimation field by three independent board configurations: 4200 (ANCHOR), 4300 (CORE), 4400 (APEX). Type `customfieldtypes:float`. |
 | Blocked Issue | `customfield_10003` | Multi-checkbox with value `Blocked`. Observed set on live issues in TSPRO, OXS, EA, HT, AI and BOWI. |
 
 `customfield_20512` "Story point estimate" is the team-managed-project variant
@@ -376,29 +376,29 @@ works in is company-managed. It is the wrong field here.
 
 | Source | Iteration 18 |
 |---|---|
-| Board 1391 — `CRM TradeBlazers 2026 S18` | 2026-08-24 → 2026-09-07 |
-| Board 1391 — `MDS 2026 S18` | 2026-08-24 → 2026-09-07 |
-| Board 837 — `CRMOPs2026 S18 (08/25-09/08)` | 2026-08-25 → 2026-09-08 |
+| Board 4200 — `Anchor Team 2026 S18` | 2026-08-24 → 2026-09-07 |
+| Board 4200 — `Signal 2026 S18` | 2026-08-24 → 2026-09-07 |
+| Board 4300 — `OpsTeam2026 S18 (08/25-09/08)` | 2026-08-25 → 2026-09-08 |
 | Confluence, TPT space — `2026 i18` | 2026-08-24 → 2026-09-04 |
 
 Three teams, one ordinal, three date ranges. The Confluence pages quote the
 Monday-to-Friday working window; Jira quotes boundary timestamps. This is the
 evidence behind constraint C-8.
 
-### Reference board suitability — why 1391 is the default
+### Reference board suitability — why 4200 is the default
 
 | Board | Type | Active sprint | Dated future sprints |
 |---|---|---|---|
-| 1391 CRM TradeBlazers | scrum | Yes | **No** — future entries are undated backlogs ("Ronin - Automation", "IE Deprecation") |
-| 837 CRM Ops | scrum | Yes | **Yes** — S19 through S23, dated to 2026-11-17 |
-| 5600 AIP board | scrum | **No** | No — zero sprints of any state |
-| 3506 ABSARCH board | kanban | n/a | n/a — no estimation field configured |
+| 4200 Anchor Team | scrum | Yes | **No** — future entries are undated backlogs ("Ronin - Automation", "IE Deprecation") |
+| 4300 Ops Team | scrum | Yes | **Yes** — S19 through S23, dated to 2026-11-17 |
+| 4400 APEX board | scrum | **No** | No — zero sprints of any state |
+| 4500 PROJ board | kanban | n/a | n/a — no estimation field configured |
 
 This is the evidence behind D-16 and R-8.
 
 ### The fiscal-year ordinal reset
 
-The Confluence page ["PI Planning Dates - FYE2027"](https://tsgjira.atlassian.net/wiki/spaces/TDM/pages/2538274817)
+The Confluence page ["PI Planning Dates - FYE2027"](https://yourcompany.atlassian.net/wiki/spaces/DOCS/pages/1000000001)
 describes program increments spanning `Sprint 20 - 1` and `Sprints 23 - 3`.
 The sprint ordinal wraps to 1 at the fiscal-year boundary rather than
 incrementing indefinitely. This is the evidence behind BR-56 and D-15, and the
@@ -406,8 +406,8 @@ reason a computed calendar rule was rejected.
 
 ### The user's current workload
 
-Twelve open assigned issues across five projects — ABSARCH, AIP, CRM, CORP,
-PMO. Of these, one carries a sprint and one carries a story-point value (0.0).
+Twelve open assigned issues across five projects — PROJ, APEX, ANCHOR, CORE,
+TASK. Of these, one carries a sprint and one carries a story-point value (0.0).
 No issue carries any value in `timespent` or `timeoriginalestimate`.
 
 This is the evidence behind D-14, D-17, A-9 and R-11: iteration membership,

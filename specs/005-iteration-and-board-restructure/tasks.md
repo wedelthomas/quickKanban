@@ -28,7 +28,6 @@ Paths below are exact and come from plan.md's Source Code section.
 **Purpose**: Confirm the ground this slice builds on is where the plan says.
 
 - [x] T001 Confirm the v1 baseline is green before changing anything: `npm run typecheck`, `npm run test:unit`, `npm run lint`. Record the counts; a failure here belongs to v1, not to this slice.
-- [x] T002 [P] Confirm the TestRail suite is reachable and note project 115 / suite 32733 in `specs/005-iteration-and-board-restructure/testrail-mapping.json`, following the shape used by slices 1–4.
 - [x] T003 [P] Take a database snapshot before any migration runs, so the migration tasks in Phase 2 can be re-run from a known state: `docker compose exec db pg_dump -U kanban kanban > /tmp/pre-005.sql`.
 
 ---
@@ -46,7 +45,6 @@ in filename order at process start).
 
 > Write first. These MUST fail before the migrations exist.
 
-- [x] T004 [US1] Author or sync TestRail cases for BH-401, BH-402, BH-403, BH-404, BH-405 and BH-433 via `spec-testrail-sync`, before any migration is written.
 - [x] T005 [US1] Ops test in `tests/ops/migration-016-021.test.ts` covering TEST-401 (six-column set, Blocked refused as a target), TEST-402 (**every blocked card lands in In Progress, flagged, with a system-attributed history row — this is NFR-27's no-card-lost assertion**), TEST-403 (a conflicted card migrates with its conflict intact), TEST-404 (re-running changes nothing), TEST-405 (Blocked's mapping dropped, others survive) and TEST-433 (historical movements into and out of Blocked still resolve).
 
 ### Implementation for Foundational
@@ -79,7 +77,6 @@ move recorded against the system.
 
 ### Tests for User Story 1
 
-- [x] T016 [US1] Author or sync TestRail cases for BH-406, BH-407, BH-408 and BH-427 via `spec-testrail-sync`, before the implementation tasks below.
 - [x] T017 [P] [US1] Contract test `tests/contract/retired-column.test.ts` — TEST-401's write-path half: a move into the retired column is refused with `COLUMN_RETIRED` and 422.
 - [x] T018 [P] [US1] Contract test `tests/contract/board-payload.test.ts` — TEST-406: `blocked`, `blockedDivergesFromJira` and `carriedIterations` present; no retired column returned.
 - [x] T019 [P] [US1] Acceptance feature `tests/features/blocked-flag.feature` and steps — TEST-406, TEST-407, TEST-408: set and clear, move while blocked, filter by blocked, summary grouping driven by the flag.
@@ -133,7 +130,6 @@ the banner persists, marked as not freshly read.
 
 ### Tests for User Story 2
 
-- [x] T030 [US2] Author or sync TestRail cases for BH-416 through BH-422, BH-428, BH-429 and BH-430 via `spec-testrail-sync`, before the implementation tasks below.
 - [x] T031 [P] [US2] Unit test `tests/unit/sprint-selection.test.ts` — TEST-417 (the configured team's sprint wins over another team's regardless of response order), TEST-418 (an undated active sprint yields no iteration), TEST-430 (a lower reported ordinal is displayed as reported, never counted forward).
 - [x] T032 [P] [US2] Unit test `tests/unit/working-days.test.ts` — TEST-416's arithmetic: working days remaining across weekends and a configured working-day set.
 - [x] T033 [P] [US2] Unit test `tests/unit/iteration-provenance.test.ts` — TEST-419 (cached, marked stale), TEST-420 (estimated, marked, no ordinal name), TEST-422 (an elapsed iteration stops being presented as current).
@@ -157,9 +153,9 @@ the banner persists, marked as not freshly read.
 **Checkpoint**: US1 and US2 both work independently. **Story-Complete Review
 Gate PASSED.**
 
-Verified live against tsgjira.atlassian.net: the banner reads
-`CRM TradeBlazers 2026 S18`, 24 Aug – 7 Sep, correctly choosing TradeBlazers
-over the MDS sprint sharing board 1391, and displays it as `S18`.
+Verified live against yourcompany.atlassian.net: the banner reads
+`Anchor Team 2026 S18`, 24 Aug – 7 Sep, correctly choosing Anchor Team
+over the Signal sprint sharing board 4200, and displays it as `S18`.
 
 Two findings recorded during this story:
 
@@ -184,7 +180,6 @@ there automatically.
 
 ### Tests for User Story 3
 
-- [x] T047 [US3] Author or sync TestRail cases for BH-409, BH-410 and BH-425 via `spec-testrail-sync`, before the implementation tasks below.
 - [x] T048 [P] [US3] Acceptance feature `tests/features/iteration-items.feature` and steps — TEST-409 (moving a Jira card in issues no Jira request), TEST-410 (sync never places a card there), TEST-425 (placement survives a reload). **Note**: TEST-410's fixture carries a sprint on the issue, but production code must remain ignorant of the sprint field — reading it onto cards is out of scope. The assertion is negative: nothing happens.
 
 ### Implementation for User Story 3
@@ -221,7 +216,6 @@ locally, and confirm later syncs do not re-set it and the divergence shows.
 
 ### Tests for User Story 4
 
-- [x] T052 [US4] Author or sync TestRail cases for BH-411 through BH-415 and BH-431 via `spec-testrail-sync`, before the implementation tasks below.
 - [x] T053 [P] [US4] Unit test `tests/unit/blocked-divergence.test.ts` — TEST-412 (a locally cleared flag survives a sync still reporting blocked), TEST-414 (the divergence indication clears once the states agree).
 - [x] T054 [P] [US4] Extend `tests/unit/no-jira-writes.test.ts` — TEST-415: every Jira write in the suite leaves the blocked field untouched.
 - [x] T055 [P] [US4] Acceptance feature `tests/features/blocked-from-jira.feature` and steps — TEST-411 (import), TEST-413 (a diverging card still moves), TEST-431 (the divergence marker is distinguishable from the blocked indicator).
@@ -259,7 +253,6 @@ have carried.
 
 ### Tests for User Story 5
 
-- [x] T062 [US5] Author or sync TestRail cases for BH-423, BH-424 and BH-432 via `spec-testrail-sync`, before the implementation tasks below.
 - [x] T063 [P] [US5] Unit test `tests/unit/carry-over.test.ts` — TEST-424 (a twice-carried card shows two), TEST-432 (returning to Backlog resets), plus reaching Done resetting (FR-444).
 - [x] T064 [P] [US5] Acceptance feature `tests/features/carry-over.feature` and steps — TEST-423: unfinished cards survive a boundary in place.
 
@@ -290,7 +283,6 @@ banner follows, restart, and confirm the setting survived.
 
 ### Tests for User Story 6
 
-- [x] T068 [US6] Author or sync TestRail cases for BH-426 via `spec-testrail-sync`, before the implementation tasks below.
 - [x] T069 [P] [US6] Acceptance feature `tests/features/iteration-settings.feature` and steps — TEST-426: changed settings survive a restart, and a changed team name switches the banner to the other team's sprint on the same dates.
 
 ### Implementation for User Story 6
@@ -322,7 +314,7 @@ on.
 - [x] T077 Confirm the new Agile touchpoint added in T046 is exercised by an integration test, per the standing quality gate on the External Interactions Register.
 - [x] T078 [P] Run `npm run lint` and the full suite: unit, contract, ops, acceptance, e2e.
 - [x] T079 Run `quickstart.md` end to end against a live stack, including the two degraded iteration paths and the team-filter check.
-- [x] T080 **Live verification against real Jira** — the board's own history says this finds what a green suite cannot. Confirm the banner shows the actual current TradeBlazers iteration with correct dates, and that the other team's sprint is ignored. Record it in `specs/005-iteration-and-board-restructure/live-verification.md`, as slice 3 did.
+- [x] T080 **Live verification against real Jira** — the board's own history says this finds what a green suite cannot. Confirm the banner shows the actual current Anchor Team iteration with correct dates, and that the other team's sprint is ignored. Record it in `specs/005-iteration-and-board-restructure/live-verification.md`, as slice 3 did.
 - [x] T081 Run `/speckit.review` for a second-pass review of the diff against `main`; address blocking findings before opening a PR.
 - [ ] T082 Request peer code review; address feedback before merge.
 
@@ -355,7 +347,6 @@ sits on."
 
 ### Within Each User Story
 
-- The TestRail sync task runs first and is not `[P]`.
 - Tests are written and MUST fail before the implementation they cover.
 - Migrations before repositories, repositories before services, services before
   routes, routes before the interface.

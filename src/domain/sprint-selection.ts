@@ -1,7 +1,7 @@
 /**
  * Which sprint on the reference board is *the* iteration.
  *
- * Pure, and deliberately so: every case below came from board 1391 as it
+ * Pure, and deliberately so: every case below came from board 4200 as it
  * actually is, and each one is a table entry rather than a live call.
  *
  * "Take the active sprint" is not a well-defined instruction on that board. Two
@@ -13,7 +13,7 @@
 export interface Sprint {
   id: number;
   name: string;
-  /** Null is ordinary, not malformed: board 1391's future sprints are undated. */
+  /** Null is ordinary, not malformed: board 4200's future sprints are undated. */
   startsOn: string | null;
   endsOn: string | null;
 }

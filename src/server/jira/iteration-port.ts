@@ -18,7 +18,7 @@ export interface IterationPort {
   /**
    * Every active sprint on the board, unfiltered.
    *
-   * Choosing among them is the caller's job, not the adapter's: board 1391
+   * Choosing among them is the caller's job, not the adapter's: board 4200
    * carries two at all times, one per team sharing it, and which one is "ours"
    * is configuration rather than a property of the response.
    */

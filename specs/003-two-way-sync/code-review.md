@@ -177,7 +177,7 @@ After the fixes: 132 unit, 105 acceptance scenarios (620 steps), 16 contract,
 ## Outstanding from the task list
 
 - **T353**, the live round-trip against real Jira on the scratch issue
-  ABSARCH-44, is not run. It is the only task in the project that changes data
+  PROJ-44, is not run. It is the only task in the project that changes data
   other people can see and is excluded from every suite by design.
 - **TEST-225** ("full-matrix run ends with no silently divergent card") is not
   recorded as passed. The reconciler's input matrix is covered by property

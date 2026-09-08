@@ -14,7 +14,7 @@ resolution failure degrades to cache, then to estimate, then to `null`
 
 ```jsonc
 {
-  "ordinalName": "CRM TradeBlazers 2026 S18",  // null when estimated (R-11)
+  "ordinalName": "Anchor Team 2026 S18",  // null when estimated (R-11)
   "startsOn": "2026-08-24",
   "endsOn": "2026-09-07",
   "workingDaysRemaining": 8,
@@ -100,8 +100,8 @@ Gains, alongside the existing `jiraJql`, `syncIntervalSeconds`,
 
 ```jsonc
 {
-  "iterationBoardId": 1391,
-  "iterationTeamName": "CRM TradeBlazers",
+  "iterationBoardId": 4200,
+  "iterationTeamName": "Anchor Team",
   "iterationAnchorDate": "2026-08-24",
   "iterationCadenceDays": 14,
   "workingDays": ["mon", "tue", "wed", "thu", "fri"],
@@ -140,7 +140,7 @@ interface IterationPort {
 interface Sprint {
   id: number;
   name: string;
-  startsOn: string | null;   // null is real: board 1391's future sprints
+  startsOn: string | null;   // null is real: board 4200's future sprints
   endsOn: string | null;
 }
 ```

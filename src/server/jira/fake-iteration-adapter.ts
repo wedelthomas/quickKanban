@@ -8,7 +8,7 @@ import { JiraError, type JiraFailureKind } from './jira-port.js';
  * Exists so that no automated test contacts live Jira (FR-442, NFR-25) — a
  * property tests/ops/no-live-services.test.ts asserts rather than assumes.
  *
- * Defaults to the shape board 1391 really has: two active sprints, one per team
+ * Defaults to the shape board 4200 really has: two active sprints, one per team
  * sharing the board, with identical dates. Anything that works against a single
  * tidy sprint but not against this has not been tested against reality.
  */
@@ -16,11 +16,11 @@ export class FakeIterationAdapter implements IterationPort {
   private sprints: Sprint[] = [
     {
       id: 24501,
-      name: 'CRM TradeBlazers 2026 S18',
+      name: 'Anchor Team 2026 S18',
       startsOn: '2026-08-24',
       endsOn: '2026-09-07',
     },
-    { id: 24502, name: 'MDS 2026 S18', startsOn: '2026-08-24', endsOn: '2026-09-07' },
+    { id: 24502, name: 'Signal 2026 S18', startsOn: '2026-08-24', endsOn: '2026-09-07' },
   ];
 
   private failure: JiraFailureKind | null = null;
@@ -32,12 +32,12 @@ export class FakeIterationAdapter implements IterationPort {
     this.sprints = sprints;
   }
 
-  /** Board 1391's real future-sprint shape: named, but carrying no dates. */
+  /** Board 4200's real future-sprint shape: named, but carrying no dates. */
   setUndatedSprint(): void {
     this.sprints = [
       {
         id: 25000,
-        name: 'CRM TradeBlazers Ronin - Automation',
+        name: 'Anchor Team Ronin - Automation',
         startsOn: null,
         endsOn: null,
       },

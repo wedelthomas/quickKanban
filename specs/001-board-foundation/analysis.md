@@ -51,9 +51,7 @@ substring scan would corrupt the record.
 ### 5. Test Strategy alignment
 
 All 22 test files named in plan.md's Test Strategy have a corresponding task.
-Test tasks precede implementation tasks in all six story phases. Each story's
-TestRail sync task is its phase's first task and carries no `[P]` marker, so
-it cannot run alongside the work that depends on it.
+Test tasks precede implementation tasks in all six story phases.
 
 ### 6. Architecture Review gate
 

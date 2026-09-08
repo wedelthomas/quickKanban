@@ -234,7 +234,7 @@ flowchart LR
   API --> Sync["sync-service<br/>(existing)"]
 
   IterSvc -->|"listActiveSprints(boardId)"| IterPort{{"IterationPort<br/>(new)"}}
-  IterPort -->|"GET /rest/agile/1.0/board/1391/sprint?state=active"| Jira[("Jira Cloud")]
+  IterPort -->|"GET /rest/agile/1.0/board/4200/sprint?state=active"| Jira[("Jira Cloud")]
   IterPort -.->|"test double"| FakeIter["fake-iteration-adapter"]
 
   Sync -->|"searchIssues · transitionIssue"| JiraPort{{"JiraPort<br/>(existing)"}}
@@ -312,12 +312,6 @@ treatment, keyboard operation, density).
 | `tests/e2e/blocked-card.spec.ts` | E2E | BH-427 — edge and badge visible, distinguishable without colour, keyboard-operable |
 | `tests/e2e/iteration-banner.spec.ts` | E2E | BH-428 — banner present with ~50 cards, no column scrolling |
 | `tests/ops/no-live-services.test.ts` | Ops | BH-429 — no adapter resolving to a real network client is constructed anywhere in the standard suite |
-
-**TestRail sync point**: the first task in each user story's phase that carries
-a `BH-###`/`TEST-###` pair authors or syncs that case through
-`spec-testrail-sync` **before** any implementation task in the same story runs.
-For this slice that means US1's first task syncs TEST-401…TEST-405 and
-TEST-406…TEST-408 before the migration is written.
 
 ## SDD — Required plan close-outs
 

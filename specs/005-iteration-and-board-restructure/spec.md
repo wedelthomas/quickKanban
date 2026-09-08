@@ -30,7 +30,7 @@ this slice directly.
 
 - Q: Where does the current TS iteration come from? → A: A single configured
   Jira reference board, taken from that board's active sprint, defaulting to
-  the CRM TradeBlazers board. Not computed from a calendar rule: the sprint ordinal
+  the Anchor Team board. Not computed from a calendar rule: the sprint ordinal
   resets at the fiscal-year boundary, so a counting rule would drift silently
   every January.
 - Q: Should the iteration come from the cards themselves? → A: No. Only 1 of
@@ -61,8 +61,8 @@ this slice directly.
   blocked? → A: A distinct marker on the card face, rendered outlined rather
   than solid so it reads as "the two sources disagree" and not as "this card is
   blocked". The solid badge and red edge remain reserved for actually blocked.
-- Q: Board 1391 carries two active sprints per iteration, one per team sharing
-  it. Which is used? → A: TradeBlazers only. The other team's sprints are
+- Q: Board 4200 carries two active sprints per iteration, one per team sharing
+  it. Which is used? → A: Anchor Team only. The other team's sprints are
   ignored. Their dates and ordinals match, but the displayed name would differ,
   so the choice must be explicit rather than incidental.
 - Q: What resets the carry-over count? → A: Reaching Done, or returning to
@@ -134,7 +134,7 @@ marked as not freshly read.
 **Acceptance Scenarios**:
 
 1. **Given** a configured reference board whose active sprint is named
-   "CRM TradeBlazers 2026 S18" running 2026-08-24 to 2026-09-07, **When** the
+   "Anchor Team 2026 S18" running 2026-08-24 to 2026-09-07, **When** the
    board loads, **Then** the banner shows that name, that date range, and the
    number of working days remaining.
 2. **Given** an iteration has been resolved and cached, **When** the source
@@ -281,13 +281,13 @@ setting survived.
   That mapping is discarded without disturbing the mappings for surviving
   columns.
 - **The reference board has an active sprint with a name but null dates.** This
-  is real — board 1391's future sprints are undated. Treated as no result.
-- **The reference board has no active sprint at all.** Also real: board 5600
+  is real — board 4200's future sprints are undated. Treated as no result.
+- **The reference board has no active sprint at all.** Also real: board 4400
   has zero sprints of any state. Treated as no result.
 - **Two sprints are active on the reference board simultaneously.** This is the
-  normal state, not an exception: board 1391 is shared by two teams, and every
-  iteration in its 730-sprint history exists twice — "CRM TradeBlazers 2026 S18"
-  alongside "MDS 2026 S18", with identical dates. The configured team name
+  normal state, not an exception: board 4200 is shared by two teams, and every
+  iteration in its 730-sprint history exists twice — "Anchor Team 2026 S18"
+  alongside "Signal 2026 S18", with identical dates. The configured team name
   decides, and the other team's sprints are ignored.
 - **The iteration ends while the board is open.** The banner must not continue
   asserting a finished iteration indefinitely.
@@ -366,8 +366,8 @@ setting survived.
   computed by counting, because the ordinal resets at the fiscal-year boundary.
 - **FR-424**: Where the reference board reports more than one active sprint, the
   sprint MUST be selected by a configured team name, defaulting to
-  "CRM TradeBlazers". Selection MUST NOT depend on response ordering. Two
-  concurrently active sprints is the steady state on board 1391, not an edge
+  "Anchor Team". Selection MUST NOT depend on response ordering. Two
+  concurrently active sprints is the steady state on board 4200, not an edge
   case: two teams share it, and each iteration exists there twice.
 - **FR-445**: Sprints on the reference board belonging to another team MUST be
   ignored entirely.
@@ -462,7 +462,7 @@ setting survived.
   that code rather than replacing it.
 - The user's Jira credentials can read the iteration source for the configured
   reference board. If they cannot, the estimated fallback covers it.
-- Board 1391 continues to carry a dated active sprint. Its *future* sprints are
+- Board 4200 continues to carry a dated active sprint. Its *future* sprints are
   undated, which is why lookahead is not attempted in this slice.
 - The iteration cadence is two weeks, used only by the estimated fallback; the
   read path takes whatever dates it is given.

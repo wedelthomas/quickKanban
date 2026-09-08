@@ -319,12 +319,6 @@ pin, per NFR-21.
 | `tests/e2e/jira-card.spec.ts` | E2E | Jira card face: key, link, marking; refusals surfaced — BH-104, BH-110 |
 | `tests/e2e/settings.spec.ts` | E2E | Query and interval edited and persisted; no credential field — BH-122, BH-124 |
 
-**TestRail sync point**: `spec.md` carries `## Behavior Pathways`, so during
-`/speckit.implement` the first task in each story's phase authors or syncs that
-story's `TEST-###` cases via `spec-testrail-sync` **before** any implementation
-task in the same story runs. Cases land in TestRail project 115, suite 32733,
-under a new "Slice 2 — Jira Import" section.
-
 ## SDD — Required plan close-outs
 
 - **Test Strategy is mandatory** — all 16 test files above become tasks.

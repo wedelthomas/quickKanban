@@ -57,9 +57,9 @@ describe('GET /api/iteration', () => {
   it('reports the configured team’s sprint, ignoring the other team on the board', async () => {
     const { status, body } = await get();
     expect(status).toBe(200);
-    // The fake defaults to board 1391's real shape: two active sprints with
+    // The fake defaults to board 4200's real shape: two active sprints with
     // identical dates, one per team sharing it.
-    expect(body?.ordinalName).toBe('CRM TradeBlazers 2026 S18');
+    expect(body?.ordinalName).toBe('Anchor Team 2026 S18');
     expect(body?.provenance).toBe('read');
     expect(body?.startsOn).toBe('2026-08-24');
     expect(body?.endsOn).toBe('2026-09-07');
@@ -71,7 +71,7 @@ describe('GET /api/iteration', () => {
 
     const { status, body } = await get();
     expect(status).toBe(200);
-    expect(body?.ordinalName).toBe('CRM TradeBlazers 2026 S18');
+    expect(body?.ordinalName).toBe('Anchor Team 2026 S18');
     expect(body?.provenance).toBe('cached');
   });
 
@@ -100,14 +100,14 @@ describe('GET /api/iteration', () => {
   });
 
   it('treats an undated active sprint as no result', async () => {
-    // Real: board 1391's future sprints are named but carry no dates.
+    // Real: board 4200's future sprints are named but carry no dates.
     source.setUndatedSprint();
     const { body } = await get();
     expect(body?.provenance).toBe('estimated');
   });
 
   it('treats a board with no active sprint as no result', async () => {
-    // Also real: board 5600 has zero sprints of any state.
+    // Also real: board 4400 has zero sprints of any state.
     source.setNoActiveSprints();
     const { body } = await get();
     expect(body?.provenance).toBe('estimated');

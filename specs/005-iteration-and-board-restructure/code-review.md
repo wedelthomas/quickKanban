@@ -133,14 +133,14 @@ the External Interactions Register.
 ## Verified
 
 - 271 unit, 32 contract, 168 acceptance (1,016 steps), 26 ops, 54 e2e
-- Live against tsgjira.atlassian.net — see `live-verification.md`
+- Live against yourcompany.atlassian.net — see `live-verification.md`
 
 ## NOT tested
 
 - Load or concurrency beyond the existing sync lock
 - A real fiscal-year ordinal reset (January); the behaviour is unit-tested
   against a synthetic lower ordinal
-- Any Jira instance other than tsgjira.atlassian.net
+- Any Jira instance other than yourcompany.atlassian.net
 
 ## Follow-ups deferred
 
