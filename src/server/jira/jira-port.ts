@@ -26,6 +26,12 @@ export interface JiraIssue {
    * express exactly one write, and it is issue status (BR-22, FR-417).
    */
   blockedInJira: boolean | null;
+  /**
+   * The configured story-points field's value, read as a number. Null when
+   * the field was not requested, not present on this instance, or empty on
+   * the issue (BH-515) — an empty field imports as unpointed, never as zero.
+   */
+  points: number | null;
 }
 
 /**
@@ -55,6 +61,13 @@ export interface JiraPort {
   searchIssues(
     jql: string,
     blocked?: { field: string; option: string },
+    /**
+     * `field` names the story-points custom field (BH-518 — a secondary
+     * estimate field, e.g. "Testing Points", must never be read as the
+     * story estimate, so this is the one field ever consulted). Omitted
+     * means do not ask for it.
+     */
+    points?: { field: string },
   ): Promise<JiraIssue[]>;
 
   /** Legal from the issue's status right now. Never cached — that status is

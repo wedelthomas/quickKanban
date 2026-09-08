@@ -6,6 +6,7 @@ import {
   type StateRow,
   type SummaryInput,
 } from '../../src/domain/summary.js';
+import { periodBounds } from '../../src/server/services/summary-service.js';
 
 /**
  * Covers BH-316, BH-319 and BH-321.
@@ -188,5 +189,19 @@ describe('ordering', () => {
       }),
     );
     expect(s.moved.map((m) => m.cardId)).toEqual(['first', 'second']);
+  });
+});
+
+describe('periodBounds — iteration (BH-529)', () => {
+  it('bounds equal the iteration’s own dates rather than a computed window', () => {
+    const bounds = periodBounds('iteration', new Date('2026-09-01T12:00:00'), {
+      startsOn: '2026-08-24',
+      endsOn: '2026-09-07',
+    });
+    expect(bounds.fromLabel).toBe('2026-08-24');
+    expect(bounds.toLabel).toBe('2026-09-07');
+    expect(bounds.from).toEqual(new Date('2026-08-24T00:00:00'));
+    // Exclusive upper bound the day after ends_on, so ends_on itself counts.
+    expect(bounds.to).toEqual(new Date('2026-09-08T00:00:00'));
   });
 });

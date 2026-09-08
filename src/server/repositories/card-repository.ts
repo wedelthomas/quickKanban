@@ -214,8 +214,8 @@ export class CardRepository {
     try {
       await client.query('BEGIN');
 
-      const { rows } = await client.query<{ id: string; source: string }>(
-        'SELECT id, source FROM cards WHERE id = $1 AND deleted_at IS NULL FOR UPDATE',
+      const { rows } = await client.query<{ id: string; source: string; blocked: boolean }>(
+        'SELECT id, source, blocked FROM cards WHERE id = $1 AND deleted_at IS NULL FOR UPDATE',
         [id],
       );
       const card = rows[0];
@@ -245,12 +245,25 @@ export class CardRepository {
       // above deliberately names only the fields Jira is authoritative for, and
       // blocked is not one of them (FR-412, FR-418).
       if (input.blocked !== undefined) set('blocked', input.blocked);
+      // Same permission as blocked: points is never one of the jira-owned
+      // fields the guard above names (FR-516 — settable on any card).
+      if (input.points !== undefined) set('points', input.points);
 
       if (sets.length > 0) {
         values.push(id);
         await client.query(
           `UPDATE cards SET ${sets.join(', ')}, updated_at = now() WHERE id = $${values.length}`,
           values,
+        );
+      }
+
+      // Written only on a genuine change (old value ≠ new), inside the same
+      // transaction as the update it describes — the blocked-interval log
+      // elapsed-time.ts reads (FR-505, R-3 in research.md).
+      if (input.blocked !== undefined && input.blocked !== card.blocked) {
+        await client.query(
+          'INSERT INTO card_blocked_events (card_id, blocked) VALUES ($1, $2)',
+          [id, input.blocked],
         );
       }
 
@@ -358,7 +371,7 @@ export class CardRepository {
            ARRAY[]::text[]
          ) AS tags,
          jl.issue_key, jl.url AS issue_url, jl.blocked_in_jira,
-         c.blocked, c.carried_iterations,
+         c.blocked, c.carried_iterations, c.points, c.jira_points,
          (cf.card_id IS NOT NULL) AS has_conflict
        FROM cards c
        JOIN columns col ON col.id = c.column_id

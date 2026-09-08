@@ -62,6 +62,7 @@ describe('moving a card against the restructured column set', () => {
 
   beforeEach(async () => {
     await pool.query('DELETE FROM card_events');
+    await pool.query('DELETE FROM card_blocked_events');
     await pool.query('DELETE FROM cards');
   });
 

@@ -31,6 +31,24 @@ const readBlocked = (
     return typeof value === 'string' && value.trim().toLowerCase() === wanted;
   });
 };
+/**
+ * The story-points custom field's value, read as a number.
+ *
+ * An absent or empty field is unpointed (null), never zero (BH-515) — Jira
+ * represents "no estimate" as a missing field, and this preserves that
+ * distinction rather than coercing it to 0 the way `Number(undefined)` would
+ * otherwise invite.
+ */
+const readPoints = (
+  fields: Record<string, unknown> | undefined,
+  points: { field: string },
+): number | null => {
+  const raw = fields?.[points.field];
+  if (raw === null || raw === undefined) return null;
+  const value = typeof raw === 'number' ? raw : Number(raw);
+  return Number.isFinite(value) ? value : null;
+};
+
 const REQUEST_TIMEOUT_MS = 10_000;
 
 interface Page {
@@ -84,6 +102,7 @@ export class JiraAdapter implements JiraPort {
   async searchIssues(
     jql: string,
     blocked?: { field: string; option: string },
+    points?: { field: string },
   ): Promise<JiraIssue[]> {
     const issues: JiraIssue[] = [];
     let pageToken: string | null = null;
@@ -92,7 +111,7 @@ export class JiraAdapter implements JiraPort {
     // first page. The endpoint pages by opaque token rather than offset, so
     // there is no total to compare against — `isLast` is the only signal.
     for (;;) {
-      const page: Page = await this.fetchPage(jql, pageToken, blocked);
+      const page: Page = await this.fetchPage(jql, pageToken, blocked, points);
       issues.push(...page.issues);
       if (page.isLast || !page.nextPageToken) break;
       pageToken = page.nextPageToken;
@@ -223,6 +242,7 @@ export class JiraAdapter implements JiraPort {
     jql: string,
     pageToken: string | null,
     blocked?: { field: string; option: string },
+    points?: { field: string },
   ): Promise<Page> {
     // /rest/api/3/search was removed by Atlassian and now answers 410 Gone.
     // This is its replacement; `fields` is required, because the endpoint
@@ -231,10 +251,11 @@ export class JiraAdapter implements JiraPort {
       `${this.credentials.baseUrl}/rest/api/3/search/jql` +
       `?jql=${encodeURIComponent(jql)}` +
       `&maxResults=${PAGE_SIZE}` +
-      // The blocked field is requested only when configured. Asking for a
-      // field this Jira does not have is not an error — Jira omits it — but not
-      // asking keeps the payload honest about what was actually wanted.
-      `&fields=summary,status,updated${blocked ? `,${blocked.field}` : ''}` +
+      // The blocked and points fields are requested only when configured.
+      // Asking for a field this Jira does not have is not an error — Jira
+      // omits it — but not asking keeps the payload honest about what was
+      // actually wanted.
+      `&fields=summary,status,updated${blocked ? `,${blocked.field}` : ''}${points ? `,${points.field}` : ''}` +
       (pageToken ? `&nextPageToken=${encodeURIComponent(pageToken)}` : '');
 
     let lastError: JiraError | null = null;
@@ -281,13 +302,17 @@ export class JiraAdapter implements JiraPort {
         );
       }
 
-      return this.parse(await response.json().catch(() => null), blocked);
+      return this.parse(await response.json().catch(() => null), blocked, points);
     }
 
     throw lastError ?? new JiraError('connectivity', 'Jira could not be reached.');
   }
 
-  private parse(body: unknown, blocked?: { field: string; option: string }): Page {
+  private parse(
+    body: unknown,
+    blocked?: { field: string; option: string },
+    points?: { field: string },
+  ): Page {
     const payload = body as {
       issues?: unknown;
       nextPageToken?: unknown;
@@ -318,6 +343,7 @@ export class JiraAdapter implements JiraPort {
         updatedAt: new Date(updated).toISOString(),
         url: `${this.credentials.baseUrl}/browse/${key}`,
         blockedInJira: blocked ? readBlocked(raw.fields, blocked) : null,
+        points: points ? readPoints(raw.fields, points) : null,
       };
     });
 

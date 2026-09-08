@@ -38,7 +38,7 @@ export class BoardRepository {
         ) AS tags,
         jl.issue_key, jl.url AS issue_url,
         jl.blocked_in_jira,
-        c.blocked, c.carried_iterations,
+        c.blocked, c.carried_iterations, c.points, c.jira_points,
         (cf.card_id IS NOT NULL) AS has_conflict
       FROM columns col
       LEFT JOIN cards c

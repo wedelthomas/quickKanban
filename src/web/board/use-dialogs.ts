@@ -6,6 +6,7 @@ export type DialogName =
   | 'help'
   | 'settings'
   | 'summary'
+  | 'report'
   | 'archive'
   | 'conflicts';
 

@@ -53,6 +53,10 @@ export const updateCardSchema = z
     // this is not a field Jira owns — the board keeps its own opinion and never
     // writes it back (FR-417).
     blocked: z.boolean().optional(),
+    // Settable on any card, local or Jira-sourced (FR-516). Null and 0 are
+    // both valid and distinct — null means unpointed, 0 a deliberate
+    // estimate (FR-519). Never written back to Jira (FR-517).
+    points: z.number().int().min(0).nullable().optional(),
   })
   .refine(
     (value) => Object.keys(value).length > 0,

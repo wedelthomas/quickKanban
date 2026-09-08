@@ -3,11 +3,11 @@ import { z } from 'zod';
 import type { SummaryService } from '../services/summary-service.js';
 import { validationFailed } from '../errors.js';
 
-// Only the two the spec requires (FR-325). An arbitrary range is out of scope,
-// and offering one would need its own decision about what a summary of six
-// months even means.
+// 'iteration' joined 'daily'/'weekly' in slice 6 (FR-540). An arbitrary range
+// is still out of scope, and offering one would need its own decision about
+// what a summary of six months even means.
 const querySchema = z.object({
-  period: z.enum(['daily', 'weekly']).default('daily'),
+  period: z.enum(['daily', 'weekly', 'iteration']).default('daily'),
 });
 
 export const registerSummaryRoutes = (

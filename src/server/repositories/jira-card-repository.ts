@@ -34,9 +34,13 @@ export class JiraCardRepository {
     knownCardId: string | null,
   ): Promise<{ cardId: string; outcome: 'created' | 'updated' }> {
     if (knownCardId) {
+      // jira_points always tracks Jira's own value; points (the authoritative,
+      // locally-editable figure) is never touched here — FR-518, local always
+      // wins.
       await client.query(
-        `UPDATE cards SET title = $2, updated_at = now() WHERE id = $1 AND title <> $2`,
-        [knownCardId, issue.summary],
+        `UPDATE cards SET title = $2, jira_points = $3, updated_at = now()
+          WHERE id = $1 AND (title <> $2 OR jira_points IS DISTINCT FROM $3)`,
+        [knownCardId, issue.summary, issue.points],
       );
       return { cardId: knownCardId, outcome: 'updated' };
     }
@@ -56,11 +60,14 @@ export class JiraCardRepository {
         WHERE column_id = $1 AND deleted_at IS NULL AND archived_at IS NULL`,
       [columnId],
     );
+    // Both columns start equal on first import (FR-518) — points is the
+    // authoritative value from here on, and only ever diverges from
+    // jira_points once the user overrides it locally.
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO cards (source, title, priority, column_id, position)
-       VALUES ('jira', $1, 'medium', $2, 1)
+      `INSERT INTO cards (source, title, priority, column_id, position, points, jira_points)
+       VALUES ('jira', $1, 'medium', $2, 1, $3, $3)
        RETURNING id`,
-      [issue.summary, columnId],
+      [issue.summary, columnId, issue.points],
     );
     return { cardId: rows[0]!.id, outcome: 'created' };
   }

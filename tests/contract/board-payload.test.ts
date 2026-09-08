@@ -40,6 +40,7 @@ describe('the card payload carries slice 5 fields from every path', () => {
 
   beforeEach(async () => {
     await pool.query('DELETE FROM card_events');
+    await pool.query('DELETE FROM card_blocked_events');
     await pool.query('DELETE FROM cards');
   });
 

@@ -87,6 +87,27 @@ export const CardView = ({
             ≠ Jira
           </span>
         )}
+        {card.points !== null && (
+          <span
+            className="badge badge--points"
+            data-testid="card-points"
+            title={`${card.points} point${card.points === 1 ? '' : 's'}`}
+          >
+            {card.points}
+          </span>
+        )}
+        {card.pointsDivergesFromJira && (
+          // Not a conflict, and deliberately not styled like one: visible
+          // without opening the card (FR-518), and the local value already
+          // wins — there is nothing here to decide.
+          <span
+            className="badge badge--points-diverges"
+            data-testid="card-points-diverges"
+            title="Jira's imported estimate differs. Your value is the one in force."
+          >
+            ≠ Jira
+          </span>
+        )}
         {card.carriedIterations > 0 && (
           // Only when it has actually carried. A "0" on every card would be
           // noise on the one row the board can least afford to crowd, and would
