@@ -51,6 +51,14 @@ const seedCommitment = async (points: number, committedAt: string): Promise<void
   );
 };
 
+const cancel = async (cardId: string, reason: string): Promise<void> => {
+  await app.inject({
+    method: 'POST',
+    url: `/api/cards/${cardId}/cancel`,
+    payload: { reason },
+  });
+};
+
 describe('GET /api/iterations/:ordinalName/report', () => {
   beforeAll(async () => {
     pool = new pg.Pool({ connectionString: CONNECTION, statement_timeout: 5_000 });
@@ -241,6 +249,59 @@ describe('GET /api/iterations/:ordinalName/report', () => {
     expect(res.statusCode).toBe(200);
     const body = res.json() as IterationReport;
     expect(body.time.byCard.some((c) => c.cardId === cardId && c.seconds > 0)).toBe(true);
+  });
+
+  it('reports a cancelled card’s points as withdrawn scope (BH-616, BH-617, slice 7)', async () => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(start.getDate() - 10);
+    // LOCAL calendar date, not UTC — burndown.ts buckets by local day
+    // (atLocalMidnight), and a host west of Greenwich sees a different
+    // date in each if this used toISOString() the way the other fixtures
+    // in this file do (harmless there, since they never check exact day
+    // attribution the way this test does).
+    const iso = (d: Date): string =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    await seedIteration(iso(start), iso(today));
+
+    const committedAt = new Date(today);
+    committedAt.setDate(committedAt.getDate() - 9);
+    await seedCommitment(10, committedAt.toISOString());
+
+    const cardId = await createCard('Withdrawn work');
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/cards/${cardId}`,
+      payload: { points: 5 },
+    });
+    // Entered the working column before the commitment was taken.
+    const enteredAt = new Date(today);
+    enteredAt.setDate(enteredAt.getDate() - 9);
+    enteredAt.setHours(enteredAt.getHours() - 1);
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 2, 'user', $2)`,
+      [cardId, enteredAt],
+    );
+
+    await cancel(cardId, 'No longer needed');
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/iterations/${encodeURIComponent(ORDINAL)}/report`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as IterationReport;
+    expect(body.points).toMatchObject({ committed: 10, completed: 0, withdrawn: 5 });
+
+    const burndownRes = await app.inject({
+      method: 'GET',
+      url: `/api/iterations/${encodeURIComponent(ORDINAL)}/burndown`,
+    });
+    expect(burndownRes.statusCode).toBe(200);
+    const burndown = burndownRes.json() as { points: { withdrawnThatDay: number }[] };
+    const totalWithdrawn = burndown.points.reduce((sum, p) => sum + p.withdrawnThatDay, 0);
+    expect(totalWithdrawn).toBe(5);
   });
 
   it('marks a period predating recorded history as incomplete (BH-531, FR-542)', async () => {

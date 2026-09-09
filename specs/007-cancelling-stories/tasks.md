@@ -194,7 +194,7 @@ and are absent from completed work.
 
 ### Tests for User Story 3 — write first, confirm they FAIL
 
-- [ ] T717 [P] [US3] `tests/unit/iteration-report.test.ts` — extend: a
+- [X] T717 [P] [US3] `tests/unit/iteration-report.test.ts` — extend: a
   committed card's points report as `withdrawn`, dated the day it was
   cancelled (BH-616); a cancelled card is absent from `completed` (BH-618);
   the commitment figure is unchanged by a cancellation (BH-619); withdrawn
@@ -205,18 +205,18 @@ and are absent from completed work.
   never) reports no withdrawal (BH-623); a card with time accrued still
   reports that time after cancellation (BH-622, via `elapsed-time.ts`
   unaffected by `cancelled_at`).
-- [ ] T718 [P] [US3] `tests/unit/burndown.test.ts` — extend: the day a
+- [X] T718 [P] [US3] `tests/unit/burndown.test.ts` — extend: the day a
   committed card is cancelled shows `withdrawnThatDay` equal to its points,
   and `outstanding` falls by exactly that amount (BH-617).
-- [ ] T719 [P] [US3] `tests/contract/iteration-report.test.ts` — extend:
+- [X] T719 [P] [US3] `tests/contract/iteration-report.test.ts` — extend:
   `points.withdrawn` present (and `0`, not omitted, when nothing was
   cancelled) via a real cancel against a real DB fixture.
-- [ ] T720 [P] [US3] `tests/contract/burndown.test.ts` — extend:
+- [X] T720 [P] [US3] `tests/contract/burndown.test.ts` — extend:
   `withdrawnThatDay` present per point, same fixture shape.
 
 ### Implementation for User Story 3
 
-- [ ] T721 [US3] Extend `src/domain/iteration-report.ts`: a card whose
+- [X] T721 [US3] Extend `src/domain/iteration-report.ts`: a card whose
   `cancelledAt` falls within `[startsOn, endsOnExclusive)` contributes its
   points to a new `withdrawn` accumulator when its `firstWorkingEntry`
   precedes `committedAt` (was part of the original commitment); otherwise
@@ -225,14 +225,14 @@ and are absent from completed work.
   cancelled and mid-iteration-scope-added in the same report). Unpointed
   cancelled cards still count toward `touchesIteration` and
   `excludedUnpointed`.
-- [ ] T722 [US3] Extend `src/domain/burndown.ts`: the mirror of T721,
+- [X] T722 [US3] Extend `src/domain/burndown.ts`: the mirror of T721,
   bucketing `withdrawn` points by the local calendar day of `cancelledAt`,
   netted into `outstanding` alongside the three existing figures.
-- [ ] T723 [US3] `src/server/repositories/report-repository.ts`'s
+- [X] T723 [US3] `src/server/repositories/report-repository.ts`'s
   `allCards()` — extend the card-row `SELECT` to include `cancelled_at`,
   and thread it through to `ReportInputCard.cancelledAt` in
   `report-service.ts`'s two call sites (`iterationReport`, `burndown`).
-- [ ] T724 [P] [US3] `src/web/reports/ReportDialog.tsx` — extend the
+- [X] T724 [P] [US3] `src/web/reports/ReportDialog.tsx` — extend the
   points section with a "Withdrawn" row alongside committed/completed/scope
   change, present whenever non-zero.
 

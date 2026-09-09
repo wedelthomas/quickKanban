@@ -26,6 +26,18 @@ const toIsoDate = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 /**
+ * The LOCAL calendar day an ISO timestamp falls on — not its first ten
+ * characters. `occurredAt` and `cancelledAt` arrive as UTC ISO strings
+ * (Postgres timestamptz round-tripped through `toISOString()`); slicing
+ * them directly reads the UTC date, which disagrees with the day-loop
+ * below (built from `atLocalMidnight`/local `Date` accessors) for any host
+ * west of Greenwich — including this app's own documented default
+ * timezone, America/Costa_Rica (UTC-6), where anything from 6pm onward
+ * local time has already rolled to the next UTC day.
+ */
+const localDay = (occurredAt: string): string => toIsoDate(new Date(occurredAt));
+
+/**
  * Outstanding committed points at the close of each working day (FR-531),
  * with every movement attributed to completion or scope (FR-532, R-5) —
  * the same derivation `iteration-report.ts` uses for its cumulative
@@ -43,6 +55,7 @@ export const buildBurndown = (input: BurndownInput): BurndownPoint[] => {
   const completedByDay = new Map<string, number>();
   const scopeAddedByDay = new Map<string, number>();
   const scopeRemovedByDay = new Map<string, number>();
+  const withdrawnByDay = new Map<string, number>();
 
   for (const card of cards) {
     if (card.points === null) continue;
@@ -52,14 +65,27 @@ export const buildBurndown = (input: BurndownInput): BurndownPoint[] => {
     const last = lastMovement(card.movements);
 
     if (done) {
-      const key = done.occurredAt.slice(0, 10);
+      const key = localDay(done.occurredAt);
       completedByDay.set(key, (completedByDay.get(key) ?? 0) + points);
+      continue;
+    }
+
+    // Cancelled after being part of the original commitment: withdrawn,
+    // dated the day of cancellation (FR-617..FR-619) — reported separately
+    // from scopeRemoved, the same distinction iteration-report.ts's own
+    // derivation makes (R-3). A card added mid-iteration and then cancelled
+    // contributes to neither: never committed scope to withdraw (FR-625).
+    if (card.cancelledAt !== null) {
+      if (entry && entry.occurredAt <= committedAt) {
+        const key = localDay(card.cancelledAt);
+        withdrawnByDay.set(key, (withdrawnByDay.get(key) ?? 0) + points);
+      }
       continue;
     }
 
     // Joined a working column after the commitment was taken: scope added.
     if (entry && entry.occurredAt > committedAt) {
-      const key = entry.occurredAt.slice(0, 10);
+      const key = localDay(entry.occurredAt);
       scopeAddedByDay.set(key, (scopeAddedByDay.get(key) ?? 0) + points);
     }
 
@@ -72,7 +98,7 @@ export const buildBurndown = (input: BurndownInput): BurndownPoint[] => {
       last !== entry &&
       !WORKING_COLUMN_KEYS.has(last.columnKey)
     ) {
-      const key = last.occurredAt.slice(0, 10);
+      const key = localDay(last.occurredAt);
       scopeRemovedByDay.set(key, (scopeRemovedByDay.get(key) ?? 0) + points);
     }
   }
@@ -94,9 +120,7 @@ export const buildBurndown = (input: BurndownInput): BurndownPoint[] => {
     const completedThatDay = completedByDay.get(iso) ?? 0;
     const scopeAddedThatDay = scopeAddedByDay.get(iso) ?? 0;
     const scopeRemovedThatDay = scopeRemovedByDay.get(iso) ?? 0;
-    // withdrawnThatDay is 0 until slice 7 US3 (T722) wires the cancellation
-    // derivation in — correct today, since no card can be cancelled yet.
-    const withdrawnThatDay = 0;
+    const withdrawnThatDay = withdrawnByDay.get(iso) ?? 0;
     outstanding =
       outstanding - completedThatDay + scopeAddedThatDay - scopeRemovedThatDay - withdrawnThatDay;
     points.push({

@@ -49,6 +49,7 @@ const doneCard = (
     { toColumnId: 0, columnKey: 'done', occurredAt: '2026-08-25T13:00:00' },
   ],
   blockedEvents: [],
+  cancelledAt: null,
 });
 
 const workingCard = (
@@ -63,6 +64,24 @@ const workingCard = (
   points,
   movements: [{ toColumnId: 0, columnKey: 'in_progress', occurredAt: enteredAt }],
   blockedEvents: [],
+  cancelledAt: null,
+});
+
+/** A card that entered a working column and was later cancelled. */
+const cancelledCard = (
+  cardId: string,
+  project: string,
+  points: number | null,
+  enteredAt: string,
+  cancelledAt: string,
+): ReportInputCard => ({
+  cardId,
+  title: cardId,
+  project,
+  points,
+  movements: [{ toColumnId: 0, columnKey: 'in_progress', occurredAt: enteredAt }],
+  blockedEvents: [],
+  cancelledAt,
 });
 
 const COMMITMENT: IterationCommitment = {
@@ -191,6 +210,92 @@ describe('determineIncomplete — blocked-tracking gap (BH-536, FR-548)', () => 
 
   it('is complete when blocked tracking has never fired but the iteration has no movements either', () => {
     expect(determineIncomplete('2026-08-24', null, null, false)).toBe(false);
+  });
+});
+
+describe('iteration report — withdrawn scope (US3, slice 7)', () => {
+  it('reports a committed card’s points as withdrawn, dated the day cancelled (BH-616)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [cancelledCard('withdrawn-1', 'local', 5, '2026-08-20T09:00:00', '2026-08-26T14:00:00')],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ committed: 10, withdrawn: 5 });
+  });
+
+  it('excludes a cancelled card from completed work (BH-618)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [cancelledCard('withdrawn-1', 'local', 5, '2026-08-20T09:00:00', '2026-08-26T14:00:00')],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ completed: 0 });
+  });
+
+  it('leaves the commitment unchanged by a cancellation (BH-619)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [cancelledCard('withdrawn-1', 'local', 5, '2026-08-20T09:00:00', '2026-08-26T14:00:00')],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ committed: 10 });
+  });
+
+  it('reports withdrawn and added scope separately in the same report (BH-620)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [
+          cancelledCard('withdrawn-1', 'local', 5, '2026-08-20T09:00:00', '2026-08-26T14:00:00'),
+          workingCard('added-1', 'local', 3, '2026-08-27T09:00:00'),
+        ],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ withdrawn: 5, scopeAdded: 3 });
+  });
+
+  it('contributes no points from an unestimated cancellation, and counts it excluded (BH-621)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [cancelledCard('unpointed-cancelled', 'local', null, '2026-08-20T09:00:00', '2026-08-26T14:00:00')],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ withdrawn: 0, excludedUnpointed: 1 });
+  });
+
+  it('reports no withdrawal for a card never committed to any iteration (BH-623)', () => {
+    // Entered a working column AFTER the commitment was taken (mid-iteration
+    // scope), then cancelled before ever completing — never committed scope
+    // to withdraw from, and it never became scope added either.
+    const report = buildIterationReport(
+      baseInput(
+        [cancelledCard('never-committed', 'local', 4, '2026-08-26T09:00:00', '2026-08-27T14:00:00')],
+        COMMITMENT,
+      ),
+    );
+
+    expect(report.points).toMatchObject({ withdrawn: 0, scopeAdded: 0 });
+  });
+
+  it('still reports accrued time for a cancelled card (BH-622)', () => {
+    const report = buildIterationReport(
+      baseInput(
+        [cancelledCard('timed-then-cancelled', 'local', 5, '2026-08-20T09:00:00', '2026-08-26T14:00:00')],
+        COMMITMENT,
+      ),
+    );
+
+    const row = report.time.byCard.find((c) => c.cardId === 'timed-then-cancelled');
+    expect(row?.seconds).toBeGreaterThan(0);
   });
 });
 

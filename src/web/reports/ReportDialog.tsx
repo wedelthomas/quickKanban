@@ -32,17 +32,19 @@ const BurndownChart = ({ points }: { points: BurndownPoint[] }) => {
         strokeWidth={2}
       />
       {points.map((p, i) => {
-        if (p.completedThatDay === 0 && p.scopeAddedThatDay === 0) return null;
+        if (p.completedThatDay === 0 && p.scopeAddedThatDay === 0 && p.withdrawnThatDay === 0) {
+          return null;
+        }
         const [x, y] = coords[i]!;
-        return (
-          <circle
-            key={p.date}
-            cx={x}
-            cy={y}
-            r={3}
-            fill={p.completedThatDay > 0 ? 'var(--column-done)' : 'var(--warning)'}
-          />
-        );
+        // Completed wins visually when a day carries more than one cause —
+        // the text list beside this chart is what states all of them.
+        const fill =
+          p.completedThatDay > 0
+            ? 'var(--column-done)'
+            : p.withdrawnThatDay > 0
+              ? 'var(--text-muted)'
+              : 'var(--warning)';
+        return <circle key={p.date} cx={x} cy={y} r={3} fill={fill} />;
       })}
     </svg>
   );
@@ -198,6 +200,14 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
                       </span>
                     </p>
                   )}
+                  {report.points.withdrawn > 0 && (
+                    // Distinct from scope change (FR-622): cancelled work,
+                    // not scope that was silently dropped or added.
+                    <p className="report-row" data-testid="report-points-withdrawn">
+                      <span>Withdrawn</span>
+                      <span>{report.points.withdrawn}</span>
+                    </p>
+                  )}
                   <p className="field-note" data-testid="report-points-share">
                     {formatShare(report.points.localShare)} local, {formatShare(report.points.jiraShare)} Jira
                   </p>
@@ -226,6 +236,7 @@ export const ReportDialog = ({ onClose }: { onClose: () => void }) => {
                       {p.completedThatDay > 0 && `, ${p.completedThatDay} completed`}
                       {p.scopeAddedThatDay > 0 && `, +${p.scopeAddedThatDay} scope added`}
                       {p.scopeRemovedThatDay > 0 && `, -${p.scopeRemovedThatDay} scope removed`}
+                      {p.withdrawnThatDay > 0 && `, ${p.withdrawnThatDay} withdrawn`}
                     </li>
                   ))}
                 </ul>

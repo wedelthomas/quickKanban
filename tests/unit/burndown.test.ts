@@ -22,7 +22,30 @@ const card = (
   cardId: string,
   points: number | null,
   movements: ReportInputCard['movements'],
-): ReportInputCard => ({ cardId, title: cardId, project: 'local', points, movements, blockedEvents: [] });
+): ReportInputCard => ({
+  cardId,
+  title: cardId,
+  project: 'local',
+  points,
+  movements,
+  blockedEvents: [],
+  cancelledAt: null,
+});
+
+const cancelledCard = (
+  cardId: string,
+  points: number | null,
+  enteredAt: string,
+  cancelledAt: string,
+): ReportInputCard => ({
+  cardId,
+  title: cardId,
+  project: 'local',
+  points,
+  movements: [{ toColumnId: 0, columnKey: 'in_progress', occurredAt: enteredAt }],
+  blockedEvents: [],
+  cancelledAt,
+});
 
 const baseInput = (
   cards: ReportInputCard[],
@@ -97,6 +120,28 @@ describe('burndown', () => {
     expect(thu.scopeAddedThatDay).toBe(5);
     expect(thu.scopeRemovedThatDay).toBe(2);
     expect(thu.outstanding).toBe(13); // 10 + 5 - 2, not zero net hidden as "no change"
+  });
+
+  it('attributes a fall to withdrawn scope, dated the day of cancellation (BH-617, slice 7)', () => {
+    const points = buildBurndown(
+      baseInput([cancelledCard('withdrawn-wed', 4, '2026-08-20T09:00:00', '2026-08-26T14:00:00')]),
+    );
+    const wed = points.find((p) => p.date === '2026-08-26')!;
+    expect(wed.withdrawnThatDay).toBe(4);
+    expect(wed.completedThatDay).toBe(0);
+    expect(wed.outstanding).toBe(6);
+    // The fall persists — it is not undone the following day.
+    expect(points.find((p) => p.date === '2026-08-27')!.outstanding).toBe(6);
+  });
+
+  it('reports no withdrawal for a card never committed to any iteration (slice 7)', () => {
+    const points = buildBurndown(
+      baseInput([cancelledCard('never-committed', 4, '2026-08-26T09:00:00', '2026-08-27T14:00:00')]),
+    );
+    const thu = points.find((p) => p.date === '2026-08-27')!;
+    expect(thu.withdrawnThatDay).toBe(0);
+    expect(thu.scopeAddedThatDay).toBe(0);
+    expect(thu.outstanding).toBe(10);
   });
 
   it('covers only elapsed working days for a running iteration (BH-525)', () => {

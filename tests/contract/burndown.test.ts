@@ -72,4 +72,44 @@ describe('GET /api/iterations/:ordinalName/burndown', () => {
     expect(body.points).toHaveLength(5);
     expect(body.points[0]).toMatchObject({ date: '2026-08-24', outstanding: 10 });
   });
+
+  it('reports a cancelled card’s points as withdrawnThatDay (slice 7)', async () => {
+    await pool.query(
+      `INSERT INTO iterations (ordinal_name, starts_on, ends_on, source)
+       VALUES ($1, '2026-08-24', '2026-08-28', 'read')`,
+      [ORDINAL],
+    );
+    await pool.query(
+      `INSERT INTO iteration_commitments (ordinal_name, committed_points, committed_at)
+       VALUES ($1, 10, '2026-08-24T00:00:00')`,
+      [ORDINAL],
+    );
+
+    const { rows } = await pool.query<{ id: string }>(
+      `INSERT INTO cards (source, title, priority, column_id, position, points)
+       VALUES ('local', 'Withdrawn', 'medium', 1, 1, 4)
+       RETURNING id`,
+    );
+    const cardId = rows[0]!.id;
+    await pool.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, occurred_at)
+       VALUES ($1, 1, 2, 'user', '2026-08-23T09:00:00')`,
+      [cardId],
+    );
+    await pool.query(
+      `UPDATE cards SET cancelled_at = '2026-08-26T14:00:00', cancellation_reason = 'test',
+              archived_at = '2026-08-26T14:00:00'
+        WHERE id = $1`,
+      [cardId],
+    );
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/iterations/${encodeURIComponent(ORDINAL)}/burndown`,
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as Burndown;
+    const wed = body.points.find((p) => p.date === '2026-08-26');
+    expect(wed).toMatchObject({ withdrawnThatDay: 4, outstanding: 6 });
+  });
 });
