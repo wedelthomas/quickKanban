@@ -254,7 +254,7 @@ cancelled with its reason, and restore it to the board.
 
 ### Tests for User Story 4 — write first, confirm they FAIL
 
-- [ ] T725 [P] [US4] `tests/features/restoring.feature` + steps — cancelled
+- [X] T725 [P] [US4] `tests/features/restoring.feature` + steps — cancelled
   and completed cards retained together are distinguishable without
   opening them (BH-624); the reason is shown when a cancelled card is
   viewed (already partly covered by T707/BH-603 — extend for the archive
@@ -264,14 +264,14 @@ cancelled with its reason, and restore it to the board.
   when the iteration report is re-read (BH-627); restoring writes nothing
   to Jira and, when the issue still carries the cancellation status, the
   card displays the disagreement (BH-628).
-- [ ] T726 [P] [US4] `tests/contract/board-payload.test.ts` — extend:
+- [X] T726 [P] [US4] `tests/contract/board-payload.test.ts` — extend:
   `cancellationDivergesFromJira` present on the card payload, `true` only
   for a restored, Jira-sourced, active card whose `jira_links.status_name`
   equals the configured cancellation status.
 
 ### Implementation for User Story 4
 
-- [ ] T727 [US4] `src/server/repositories/card-repository.ts` — a
+- [X] T727 [US4] `src/server/repositories/card-repository.ts` — a
   `restore(id, { now })` method: refuses if `cancelled_at IS NULL`;
   resolves the target column via `columnState(cancelled_from_column_id)`
   (retired or absent → `BACKLOG`, per T706); clears `cancelled_at`,
@@ -280,21 +280,21 @@ cancelled with its reason, and restore it to the board.
   with `cancellationDivergesFromJira` (R-5): `true` only when
   `source = 'jira'`, the card is active (not archived), and
   `jira_links.status_name` equals the configured `cancellationStatus`.
-- [ ] T728 [US4] `src/server/services/card-service.ts` — `restore(id)`:
+- [X] T728 [US4] `src/server/services/card-service.ts` — `restore(id)`:
   throws `validationFailed(...)` if the card is not cancelled; calls the
   repository's `restore`, appends the `'restored'` event via
   `EventRepository.appendRestoration` in the same transaction. No Jira
   call of any kind (FR-632).
-- [ ] T729 [US4] `src/server/routes/cards.ts` — `POST
+- [X] T729 [US4] `src/server/routes/cards.ts` — `POST
   /api/cards/:id/restore`, no body; registered in `app.ts`.
-- [ ] T730 [US4] `src/server/repositories/archive-repository.ts`'s
+- [X] T730 [US4] `src/server/repositories/archive-repository.ts`'s
   `archiveByRange` — extend the `SELECT` to include `cancelled_at IS NOT
   NULL AS cancelled` and `cancellation_reason`, mapped into
   `ArchivedCard.cancelled`/`cancellationReason`.
-- [ ] T731 [P] [US4] `src/web/archive/` — a cancelled badge distinct from
+- [X] T731 [P] [US4] `src/web/archive/` — a cancelled badge distinct from
   a completed one, the reason shown, and a Restore action, keyboard-
   reachable, on each cancelled entry.
-- [ ] T732 [P] [US4] `src/web/board/CardView.tsx` — a
+- [X] T732 [P] [US4] `src/web/board/CardView.tsx` — a
   `cancellationDivergesFromJira` badge, mirroring
   `badge--blocked-diverges`'s exact treatment (dashed, not styled as an
   error) for a restored card Jira still reports as cancelled.

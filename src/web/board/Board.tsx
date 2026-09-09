@@ -61,6 +61,7 @@ export const Board = () => {
     updateCard,
     deleteCard,
     cancelCard,
+    restoreCard,
   } = useBoard();
   const { status: syncStatus, syncNow } = useSync(refresh);
   const { author, reloadAuthor } = useAuthor();
@@ -330,7 +331,9 @@ export const Board = () => {
       )}
       {dialogs.isOpen('summary') && <SummaryDialog onClose={() => dialogs.hide()} />}
       {dialogs.isOpen('report') && <ReportDialog onClose={() => dialogs.hide()} />}
-      {dialogs.isOpen('archive') && <ArchiveView onClose={() => dialogs.hide()} />}
+      {dialogs.isOpen('archive') && (
+        <ArchiveView onClose={() => dialogs.hide()} restoreCard={restoreCard} />
+      )}
       {dialogs.isOpen('conflicts') && (
         <ConflictDialog
           conflicts={conflicts}

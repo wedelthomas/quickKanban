@@ -27,7 +27,13 @@ const dayHeading = (iso: string): string => {
   });
 };
 
-const Entry = ({ card }: { card: ArchivedCard }) => (
+const Entry = ({
+  card,
+  onRestore,
+}: {
+  card: ArchivedCard;
+  onRestore: (cardId: string) => Promise<void>;
+}) => (
   <article className="archive-card" data-testid="archive-card">
     <div className="archive-card-main">
       {card.issueKey && (
@@ -41,6 +47,14 @@ const Entry = ({ card }: { card: ArchivedCard }) => (
         </a>
       )}
       <span className="archive-card-title">{card.title}</span>
+      {card.cancelled && (
+        // Distinguishable from a completed card without opening either
+        // (FR-627) — dashed rather than solid, the same "this is a fact,
+        // not an alarm" treatment blocked/points divergence already use.
+        <span className="badge badge--cancelled" data-testid="archive-cancelled">
+          Cancelled
+        </span>
+      )}
     </div>
     <div className="archive-card-meta">
       {card.tags.map((tag) => (
@@ -48,12 +62,30 @@ const Entry = ({ card }: { card: ArchivedCard }) => (
           {tag}
         </span>
       ))}
+      {card.cancellationReason && (
+        // The user's own reason, shown wherever a cancelled card is viewed
+        // (FR-628) — kept visually distinct from archivedReason below, since
+        // the two can never both apply to the same card.
+        <span className="archive-reason" data-testid="archive-cancellation-reason">
+          {card.cancellationReason}
+        </span>
+      )}
       {card.archivedReason && (
         // "I finished it" and "it was reassigned away from me" look identical
         // in an archive that does not say which (FR-322).
         <span className="archive-reason" data-testid="archive-reason">
           {card.archivedReason}
         </span>
+      )}
+      {card.cancelled && (
+        <button
+          type="button"
+          className="button"
+          data-testid="restore-card"
+          onClick={() => void onRestore(card.id)}
+        >
+          Restore
+        </button>
       )}
     </div>
   </article>
@@ -66,13 +98,20 @@ const Entry = ({ card }: { card: ArchivedCard }) => (
  * that finish" or "what did that week hold", and both are date questions. Full
  * text search over the archive is explicitly out of scope.
  */
-export const ArchiveView = ({ onClose }: { onClose: () => void }) => {
+export const ArchiveView = ({
+  onClose,
+  restoreCard,
+}: {
+  onClose: () => void;
+  /** Shared with the board's own hook, so a restore refreshes it too. */
+  restoreCard: (cardId: string) => Promise<void>;
+}) => {
   const [from, setFrom] = useState(() => isoDaysAgo(30));
   const [to, setTo] = useState(() => isoDaysAgo(0));
   const [result, setResult] = useState<ArchiveResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = (): void => {
     setError(null);
     fetch(`/api/archive?from=${from}&to=${to}`)
       .then(async (r) => {
@@ -89,7 +128,18 @@ export const ArchiveView = ({ onClose }: { onClose: () => void }) => {
         setResult(null);
         setError(cause.message);
       });
-  }, [from, to]);
+  };
+
+  useEffect(load, [from, to]);
+
+  const restore = async (cardId: string): Promise<void> => {
+    try {
+      await restoreCard(cardId);
+      load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The card could not be restored.');
+    }
+  };
 
   return (
     <div className="dialog-backdrop" onKeyDown={(e) => e.key === 'Escape' && onClose()}>
@@ -138,7 +188,7 @@ export const ArchiveView = ({ onClose }: { onClose: () => void }) => {
           <section className="archive-day" data-testid="archive-day" key={day.date}>
             <h3 className="field-label">{dayHeading(day.date)}</h3>
             {day.cards.map((card) => (
-              <Entry card={card} key={card.id} />
+              <Entry card={card} onRestore={restore} key={card.id} />
             ))}
           </section>
         ))}

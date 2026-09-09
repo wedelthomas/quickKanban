@@ -104,6 +104,20 @@ export class CardService {
   }
 
   /**
+   * Restores a cancelled card. Never contacts Jira (FR-632) — any
+   * disagreement that leaves is exactly what `cancellationDivergesFromJira`
+   * surfaces on the restored card (R-5).
+   */
+  async restore(id: string): Promise<{ card: Card }> {
+    const outcome = await this.cards.restore(id, { now: this.now() });
+    if (outcome === 'not-found') throw cardNotFound(id);
+    if (outcome === 'not-cancelled') {
+      throw validationFailed('This card is not cancelled, so there is nothing to restore.');
+    }
+    return outcome;
+  }
+
+  /**
    * Best-effort only — every branch here returns rather than throws, since
    * by the time this runs the local cancellation has already succeeded and
    * nothing about Jira may undo that.

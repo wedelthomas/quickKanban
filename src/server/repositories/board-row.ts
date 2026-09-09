@@ -28,9 +28,20 @@ export interface BoardRow {
   carried_iterations: number | null;
   points: number | null;
   jira_points: number | null;
+  /** Last status sync observed for this issue, or null if never synced. */
+  status_name?: string | null;
 }
 
-export const toCard = (row: BoardRow, today: Date): Card => ({
+/**
+ * `cancellationStatus` is the tracker status configured to mean cancelled
+ * (`Settings.cancellationStatus`), read once by the caller — not part of
+ * the row, since it is one value for every card, not a per-card fact.
+ */
+export const toCard = (
+  row: BoardRow,
+  today: Date,
+  cancellationStatus: string | null = null,
+): Card => ({
   id: row.card_id!,
   source: row.source!,
   title: row.title!,
@@ -60,10 +71,15 @@ export const toCard = (row: BoardRow, today: Date): Card => ({
     row.jira_points !== null &&
     row.jira_points !== undefined &&
     row.jira_points !== row.points,
-  // false until slice 7 US4 (T727) threads status_name and the configured
-  // cancellation status into this projection — correct today, since no
-  // card can be cancelled or restored yet.
-  cancellationDivergesFromJira: false,
+  // True only for an active, Jira-sourced card whose issue still carries
+  // the configured cancellation status (FR-633) — a live comparison, not a
+  // stored flag (research.md R-5), the same shape blockedDivergesFromJira
+  // and pointsDivergesFromJira already are.
+  cancellationDivergesFromJira:
+    row.source === 'jira' &&
+    cancellationStatus !== null &&
+    row.status_name != null &&
+    row.status_name.trim().toLowerCase() === cancellationStatus.trim().toLowerCase(),
   createdAt: row.created_at!.toISOString(),
   updatedAt: row.updated_at!.toISOString(),
 });

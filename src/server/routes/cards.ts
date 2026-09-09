@@ -58,6 +58,10 @@ export const registerCardRoutes = (
     return cards.cancel(request.params.id, parsed.data.reason);
   });
 
+  app.post<{ Params: { id: string } }>('/api/cards/:id/restore', async (request) =>
+    cards.restore(request.params.id),
+  );
+
   // Exists so the movement history can be asserted without reading the
   // database directly. Nothing in slice 1 displays it; slice 4's archive and
   // summary are what eventually read it.

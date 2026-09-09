@@ -108,6 +108,19 @@ export const CardView = ({
             ≠ Jira
           </span>
         )}
+        {card.cancellationDivergesFromJira && (
+          // A restored card whose issue Jira still reports as cancelled
+          // (FR-633) — visible without opening the card, never styled as a
+          // conflict: restoring never writes to Jira (FR-632), so there is
+          // nothing to resolve, only a fact to know.
+          <span
+            className="badge badge--cancellation-diverges"
+            data-testid="card-cancellation-diverges"
+            title="Jira still reports this issue as cancelled. This card is active here."
+          >
+            ≠ Jira
+          </span>
+        )}
         {card.carriedIterations > 0 && (
           // Only when it has actually carried. A "0" on every card would be
           // noise on the one row the board can least afford to crowd, and would

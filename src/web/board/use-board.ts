@@ -150,6 +150,14 @@ export const useBoard = () => {
     [refresh],
   );
 
+  const restoreCard = useCallback(
+    async (cardId: string): Promise<void> => {
+      await request<{ card: Card }>(`/api/cards/${cardId}/restore`, { method: 'POST' });
+      await refresh();
+    },
+    [refresh],
+  );
+
   return {
     board,
     error,
@@ -161,5 +169,6 @@ export const useBoard = () => {
     updateCard,
     deleteCard,
     cancelCard,
+    restoreCard,
   };
 };

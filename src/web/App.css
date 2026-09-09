@@ -522,6 +522,23 @@ kbd {
   background: transparent;
 }
 
+/* A statement of fact in the archive, not a warning — cancelled is one of
+   three ordinary endings this board recognises (FR-627). */
+.badge--cancelled {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* A restored card whose issue still carries the cancellation status
+   (FR-633). Dashed for the same reason every other divergence badge is:
+   the two sources differ, not that anything is broken. */
+.badge--cancellation-diverges {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-muted);
+}
+
 .badge--carried {
   border-color: var(--warning);
   color: var(--warning);
