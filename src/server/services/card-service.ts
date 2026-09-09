@@ -12,6 +12,7 @@ import {
   columnRetired,
   deleteForbiddenNonLocal,
   editForbiddenJiraOwned,
+  validationFailed,
 } from '../errors.js';
 import type { TransitionService } from '../sync/transition-service.js';
 import type { MappingRepository } from '../repositories/mapping-repository.js';
@@ -57,6 +58,29 @@ export class CardService {
     const outcome = await this.cards.softDelete(id);
     if (outcome === 'not-found') throw cardNotFound(id);
     if (outcome === 'not-local') throw deleteForbiddenNonLocal();
+  }
+
+  /**
+   * Cancels a card, locally. A conflicted card is frozen against this the
+   * same as it is against a move (FR-609) — checked first, and regardless
+   * of Jira, for the exact reason `move()`'s own check is checked first.
+   *
+   * Never touches Jira (slice 7 US2 extends this).
+   */
+  async cancel(id: string, reason: string): Promise<{ card: Card }> {
+    if (reason.trim() === '') {
+      throw validationFailed('A cancellation reason is required.');
+    }
+    if (await this.conflicts.hasOpen(id)) throw cardConflicted();
+
+    const outcome = await this.cards.cancel(id, { reason: reason.trim(), now: this.now() });
+    if (outcome === 'not-found') throw cardNotFound(id);
+    if (outcome === 'already-archived') {
+      throw validationFailed(
+        'This card has already left the board and cannot be cancelled.',
+      );
+    }
+    return { card: outcome.card };
   }
 
   async move(

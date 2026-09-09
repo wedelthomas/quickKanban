@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import {
+  cancelCardSchema,
   createCardSchema,
   moveCardSchema,
   updateCardSchema,
@@ -49,6 +50,12 @@ export const registerCardRoutes = (
     // browser reconciles its optimistic guess against fact rather than
     // assuming the move landed where it drew it.
     return cards.move(request.params.id, parsed.data);
+  });
+
+  app.post<{ Params: { id: string } }>('/api/cards/:id/cancel', async (request) => {
+    const parsed = cancelCardSchema.safeParse(request.body);
+    if (!parsed.success) throw validationFailed(parsed.error.issues[0]!.message);
+    return cards.cancel(request.params.id, parsed.data.reason);
   });
 
   // Exists so the movement history can be asserted without reading the

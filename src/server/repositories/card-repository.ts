@@ -201,6 +201,73 @@ export class CardRepository {
   }
 
   /**
+   * Cancels a card: leaves the board via the same `archived_at` retention
+   * path a completed card already uses (research.md R-1), remembering why
+   * and which column to restore it to.
+   *
+   * Cancelling an already-cancelled card is a no-op that still succeeds
+   * (FR-610) — the conflict check and every other guard already ran in the
+   * service before this is called, so by the time a row is locked here the
+   * only remaining question is whether there is anything left to do.
+   */
+  async cancel(
+    id: string,
+    input: { reason: string; now: Date },
+  ): Promise<{ card: Card; alreadyCancelled: boolean } | 'not-found' | 'already-archived'> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const { rows } = await client.query<{
+        column_id: number;
+        cancelled_at: Date | null;
+        archived_at: Date | null;
+      }>(
+        `SELECT column_id, cancelled_at, archived_at FROM cards
+          WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`,
+        [id],
+      );
+      const current = rows[0];
+      if (!current) {
+        await client.query('ROLLBACK');
+        return 'not-found';
+      }
+
+      if (current.cancelled_at !== null) {
+        await client.query('ROLLBACK');
+        const card = await this.findById(id, input.now);
+        return { card: card!, alreadyCancelled: true };
+      }
+
+      // Archived for a reason other than cancellation (completed, or sync
+      // found the issue gone) — not cancellable (spec.md Edge Cases: "A
+      // card in Done is cancelled" is not a use case this feature serves).
+      if (current.archived_at !== null) {
+        await client.query('ROLLBACK');
+        return 'already-archived';
+      }
+
+      await client.query(
+        `UPDATE cards
+            SET cancelled_at = $2, cancellation_reason = $3,
+                cancelled_from_column_id = $4, archived_at = $2, updated_at = $2
+          WHERE id = $1`,
+        [id, input.now, input.reason, current.column_id],
+      );
+      await this.events.appendCancellation(client, { cardId: id, columnId: current.column_id });
+
+      await client.query('COMMIT');
+      const card = await this.findById(id, input.now);
+      return { card: card!, alreadyCancelled: false };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
    * Updates only the fields present in the patch. Tags are replaced wholesale
    * rather than merged, because `tags: []` has to be able to mean "no tags" —
    * a merge would make clearing them impossible.

@@ -139,6 +139,17 @@ export const useBoard = () => {
     [refresh],
   );
 
+  const cancelCard = useCallback(
+    async (cardId: string, reason: string): Promise<void> => {
+      await request<{ card: Card }>(`/api/cards/${cardId}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      });
+      await refresh();
+    },
+    [refresh],
+  );
+
   return {
     board,
     error,
@@ -149,5 +160,6 @@ export const useBoard = () => {
     moveCard,
     updateCard,
     deleteCard,
+    cancelCard,
   };
 };

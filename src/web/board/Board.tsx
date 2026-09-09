@@ -60,6 +60,7 @@ export const Board = () => {
     moveCard,
     updateCard,
     deleteCard,
+    cancelCard,
   } = useBoard();
   const { status: syncStatus, syncNow } = useSync(refresh);
   const { author, reloadAuthor } = useAuthor();
@@ -360,6 +361,11 @@ export const Board = () => {
           onDelete={async () => {
             await deleteCard(editing.id);
             setEditing(null);
+          }}
+          onCancelCard={async (reason) => {
+            await cancelCard(editing.id, reason);
+            setEditing(null);
+            focusCardById(focusRestoreRef.current);
           }}
         />
       )}

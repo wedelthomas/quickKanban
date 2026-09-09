@@ -30,15 +30,24 @@ export const CardDialog = ({
   onSubmit,
   onCancel,
   onDelete,
+  onCancelCard,
   jiraOwned = false,
 }: {
   initial?: Partial<CardDraft>;
   /** True when Jira owns this card's title, so the field is shown read-only. */
   jiraOwned?: boolean;
   onSubmit: (draft: CardDraft) => Promise<void>;
+  /** Dismisses the dialog without saving — distinct from `onCancelCard`. */
   onCancel: () => void;
   /** Absent when creating — there is nothing to delete yet. */
   onDelete?: () => Promise<void>;
+  /**
+   * Cancels the card itself (FR-601) — distinct from `onCancel`, which only
+   * dismisses this dialog. Absent when creating, and available regardless
+   * of `jiraOwned`: unlike delete, cancelling a Jira-sourced card is exactly
+   * what US2 exists for.
+   */
+  onCancelCard?: (reason: string) => Promise<void>;
 }) => {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
@@ -49,6 +58,8 @@ export const CardDialog = ({
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [error, setError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [confirmingCancelCard, setConfirmingCancelCard] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
 
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -191,13 +202,23 @@ export const CardDialog = ({
         </p>
 
         <div className="dialog-actions">
-          {onDelete && !jiraOwned && !confirmingDelete && (
+          {onDelete && !jiraOwned && !confirmingDelete && !confirmingCancelCard && (
             <button
               type="button"
               className="button button--danger"
               onClick={() => setConfirmingDelete(true)}
             >
               Delete
+            </button>
+          )}
+          {onCancelCard && !confirmingDelete && !confirmingCancelCard && (
+            <button
+              type="button"
+              className="button button--danger"
+              data-testid="cancel-card-button"
+              onClick={() => setConfirmingCancelCard(true)}
+            >
+              Cancel work
             </button>
           )}
           {onDelete && !jiraOwned && confirmingDelete && (
@@ -226,6 +247,49 @@ export const CardDialog = ({
                 }}
               >
                 Delete
+              </button>
+            </div>
+          )}
+          {onCancelCard && confirmingCancelCard && (
+            <div className="confirm" role="group" aria-label="Confirm cancelling this card">
+              <label className="field">
+                <span className="field-label">Reason</span>
+                <textarea
+                  className="input"
+                  rows={2}
+                  data-testid="cancel-reason-input"
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Why is this being cancelled?"
+                />
+              </label>
+              <button
+                type="button"
+                className="button"
+                data-testid="keep-card"
+                onClick={() => {
+                  setConfirmingCancelCard(false);
+                  setCancelReason('');
+                }}
+              >
+                Keep it
+              </button>
+              <button
+                type="button"
+                className="button button--danger"
+                data-testid="confirm-cancel-card"
+                disabled={cancelReason.trim() === ''}
+                onClick={() => {
+                  onCancelCard(cancelReason).catch((failure: unknown) =>
+                    setError(
+                      failure instanceof Error
+                        ? failure.message
+                        : 'The card could not be cancelled.',
+                    ),
+                  );
+                }}
+              >
+                Cancel work
               </button>
             </div>
           )}

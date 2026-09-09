@@ -88,7 +88,7 @@ history attributed to the user.
 
 ### Tests for User Story 1 — write first, confirm they FAIL
 
-- [ ] T707 [P] [US1] `tests/features/cancelling.feature` + steps — a card
+- [X] T707 [P] [US1] `tests/features/cancelling.feature` + steps — a card
   is cancelled from any column and leaves the board (BH-601); declining the
   confirmation changes nothing (BH-602); the reason is kept and shown later
   (BH-603); the card is retained, not deleted (BH-604); the cancellation
@@ -97,20 +97,20 @@ history attributed to the user.
   both exist, only one is retrievable (BH-607); a conflicted card refuses
   cancellation, naming the conflict (BH-608); cancelling an already-
   cancelled card has no further effect (BH-609, the local half — FR-610).
-- [ ] T708 [P] [US1] `tests/e2e/cancel-card.spec.ts` — cancelling is
+- [X] T708 [P] [US1] `tests/e2e/cancel-card.spec.ts` — cancelling is
   reachable and completable by keyboard alone, and the outcome (card gone
   from the board) is conveyed by more than colour (BH-605).
 
 ### Implementation for User Story 1
 
-- [ ] T709 [US1] `src/server/repositories/card-repository.ts` — a
+- [X] T709 [US1] `src/server/repositories/card-repository.ts` — a
   `cancel(id, { reason, now })` method: refuses (returns a sentinel) if
   already cancelled or archived; otherwise sets `cancelled_at = now`,
   `cancellation_reason = reason`, `cancelled_from_column_id = <current
   column_id>`, `archived_at = now` in one statement. Read methods
   (`findById`, board query) already exclude `archived_at IS NOT NULL` —
   confirmed, not re-implemented (R-1).
-- [ ] T710 [US1] `src/server/services/card-service.ts` — `cancel(id,
+- [X] T710 [US1] `src/server/services/card-service.ts` — `cancel(id,
   reason)`: throws `cardConflicted()` if `conflicts.hasOpen(id)` (the exact
   guard `move()` already makes, FR-609); validates `reason` is non-empty
   after trimming; calls the repository's `cancel`, appends the
@@ -118,10 +118,10 @@ history attributed to the user.
   transaction; returns `{ card }` with no `jira` key yet (US2 adds it).
   Calling `cancel` on an already-cancelled card is a no-op that still
   returns 200 with the current card (FR-610).
-- [ ] T711 [US1] `src/server/routes/cards.ts` — `POST
+- [X] T711 [US1] `src/server/routes/cards.ts` — `POST
   /api/cards/:id/cancel`, body `{ reason: string }` validated non-empty via
   zod, 422 `VALIDATION_FAILED` otherwise; registered in `app.ts`.
-- [ ] T712 [P] [US1] `src/web/cards/CardDialog.tsx` — a `Cancel` action
+- [X] T712 [P] [US1] `src/web/cards/CardDialog.tsx` — a `Cancel` action
   beside `Delete`, mirroring its two-step confirm exactly
   (`confirmingDelete`'s sibling state) but with a required reason textarea
   before the confirm step, keyboard-reachable throughout.

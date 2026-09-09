@@ -107,7 +107,12 @@ test.describe('a full working cycle', () => {
     await page.getByTestId('card').filter({ hasText: 'Spared' }).dblclick();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
     await page.getByTestId('cancel-delete').click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+    // Exact: slice 7 added a "Cancel work" button, whose accessible name is
+    // otherwise a substring match for this one too.
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Cancel', exact: true })
+      .click();
 
     await expect.poll(() => cardTitlesIn(page, 'backlog')).toEqual(['Spared']);
   });
