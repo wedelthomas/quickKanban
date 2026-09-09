@@ -349,11 +349,11 @@ Gate.**
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T736 [P] `tests/e2e/cancel-card.spec.ts` — extend: cancelling never
+- [X] T736 [P] `tests/e2e/cancel-card.spec.ts` — extend: cancelling never
   blocks board interaction, including while a slow/failing tracker is
   being contacted (BH-633, FR-638) — assert the dialog closes and the
   board is interactive before any Jira-dependent state resolves.
-- [ ] T737 [P] `tests/e2e/restoring.spec.ts` — restoring is reachable and
+- [X] T737 [P] `tests/e2e/restoring.spec.ts` — restoring is reachable and
   completable by keyboard alone (SC-10), from the archive view.
 - [ ] T738 Run `quickstart.md` end to end against a running stack; record
   any deviation.
