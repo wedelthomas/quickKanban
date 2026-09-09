@@ -41,6 +41,16 @@ curl -s -X POST http://localhost:3000/api/cards/<card-id>/cancel \
 
 `jira.attempted` is `false`; the card is cancelled regardless.
 
+> Validated against a running stack (T738): when Jira integration itself is
+> unconfigured (no credentials at all, distinct from "configured but no
+> cancellation status set"), the response carries no `jira` key rather than
+> `{attempted: false, ...}` — `attemptJiraCancellation` returns early for a
+> null Jira port before it can build that shape. The card still cancels
+> locally either way; the `{attempted: false}` shape this step describes was
+> confirmed instead via the acceptance suite (`cancelling-jira.feature`,
+> "No configured status still cancels locally"), which runs against a stub
+> Jira adapter rather than requiring live credentials.
+
 ## 4. Cancelled points report as scope withdrawn
 
 Commit a pointed card to the running iteration, cancel it, then:

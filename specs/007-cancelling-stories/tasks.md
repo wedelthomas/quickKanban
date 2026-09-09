@@ -355,9 +355,9 @@ Gate.**
   board is interactive before any Jira-dependent state resolves.
 - [X] T737 [P] `tests/e2e/restoring.spec.ts` — restoring is reachable and
   completable by keyboard alone (SC-10), from the archive view.
-- [ ] T738 Run `quickstart.md` end to end against a running stack; record
+- [X] T738 Run `quickstart.md` end to end against a running stack; record
   any deviation.
-- [ ] T739 Duplicate-code review across the cancel/restore paths in
+- [X] T739 Duplicate-code review across the cancel/restore paths in
   `card-repository.ts`, `card-service.ts`, `iteration-report.ts` and
   `burndown.ts` before marking the slice complete (constitution,
   Development Workflow & Quality Gates) — in particular, confirm the
