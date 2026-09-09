@@ -315,7 +315,7 @@ reports; confirm it survives a restart.
 
 ### Tests for User Story 5 — write first, confirm they FAIL
 
-- [ ] T733 [P] [US5] `tests/contract/settings-api.test.ts` — extend:
+- [X] T733 [P] [US5] `tests/contract/settings-api.test.ts` — extend:
   `PUT /api/settings` accepts `cancellationStatus`, validated against
   `GET /api/jira/statuses` the same way a mapping's status name already is
   (BH-629); rejects a status the tracker does not report; `null` is
@@ -329,14 +329,14 @@ reports; confirm it survives a restart.
 
 ### Implementation for User Story 5
 
-- [ ] T734 [US5] `src/server/routes/settings.ts` — `updateSchema` gains
+- [X] T734 [US5] `src/server/routes/settings.ts` — `updateSchema` gains
   `cancellationStatus: z.string().trim().min(1).max(120).nullable().
   optional()`; when Jira is configured and a non-null value is sent,
   validate it against `jira.listStatuses()` exactly as
   `PUT /api/settings/mappings` already does, 422 `VALIDATION_FAILED`
   otherwise; unvalidated when Jira is not configured (same existing
   exception the mapping route already carries).
-- [ ] T735 [P] [US5] `src/web/settings/SettingsDialog.tsx` — a
+- [X] T735 [P] [US5] `src/web/settings/SettingsDialog.tsx` — a
   cancellation-status dropdown fed by the existing `GET /api/jira/statuses`
   fetch already used for the mapping editor, with an explicit "none" option
   representing the unconfigured state.

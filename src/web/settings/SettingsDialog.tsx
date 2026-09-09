@@ -21,6 +21,7 @@ export const SettingsDialog = ({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [mappings, setMappings] = useState<Mapping[] | null>(null);
+  const [statuses, setStatuses] = useState<string[] | null>(null);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -32,6 +33,19 @@ export const SettingsDialog = ({
       .then((r) => r.json())
       .then((body: { mappings: Mapping[] }) => setMappings(body.mappings))
       .catch(() => setError('The column mapping could not be loaded.'));
+
+    // Failing quietly, same as MappingEditor: without Jira reachable there are
+    // no statuses to offer, but the existing setting is still worth showing.
+    void (async () => {
+      try {
+        const response = await fetch('/api/jira/statuses');
+        if (!response.ok) return;
+        const body = (await response.json()) as { statuses: string[] };
+        setStatuses(body.statuses);
+      } catch {
+        setStatuses(null);
+      }
+    })();
   }, []);
 
   const save = async (event: React.FormEvent): Promise<void> => {
@@ -194,6 +208,33 @@ export const SettingsDialog = ({
                 edit rather than a release. There is no credential here and nowhere to put
                 one.
               </span>
+              <label className="field">
+                <span className="field-label">Cancellation status</span>
+                <select
+                  className="input"
+                  data-testid="field-cancellationStatus"
+                  value={settings?.cancellationStatus ?? ''}
+                  disabled={!settings}
+                  onChange={(e) =>
+                    settings &&
+                    setSettings({
+                      ...settings,
+                      cancellationStatus: e.target.value === '' ? null : e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Not attempted — local cancel only</option>
+                  {(statuses ?? []).map((status) => (
+                    <option value={status} key={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+                <span className="field-note">
+                  The status a cancelled card's Jira issue is moved to, best-effort
+                  (FR-609). Left unset, cancelling never contacts Jira.
+                </span>
+              </label>
             </fieldset>)}
           </div>
 

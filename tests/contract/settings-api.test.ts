@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import pg from 'pg';
 import { buildApp } from '../../src/server/app.js';
 import { runMigrations } from '../../src/server/db/migrate.js';
+import type { JiraPort } from '../../src/server/jira/jira-port.js';
 
 /**
  * TEST for the jiraEnabled master toggle (see
@@ -52,5 +53,57 @@ describe('the jiraEnabled setting', () => {
 
     const res = await app.inject({ method: 'GET', url: '/api/settings' });
     expect((res.json() as { jiraEnabled: boolean }).jiraEnabled).toBe(true);
+  });
+});
+
+/**
+ * TEST-733: the cancellation status is checked against the tracker's own
+ * statuses, mirroring the column mapping's validation exactly (FR-634).
+ */
+describe('the cancellationStatus setting', () => {
+  // Its own pool: the outer describe's afterAll ends the module-level `pool`,
+  // which would otherwise already be closed by the time this suite runs.
+  let jiraPool: pg.Pool;
+  let jiraApp: FastifyInstance;
+  const fakeJira: Pick<JiraPort, 'listStatuses'> = {
+    listStatuses: async () => ['Cancelled', 'Done', 'In Progress'],
+  };
+
+  beforeAll(async () => {
+    jiraPool = new pg.Pool({ connectionString: CONNECTION, statement_timeout: 5_000 });
+    jiraApp = buildApp({ pool: jiraPool, logger: false, jira: fakeJira as JiraPort });
+    await jiraApp.ready();
+  }, 60_000);
+
+  afterAll(async () => {
+    await jiraApp?.close();
+    await jiraPool?.end();
+  });
+
+  it('accepts a status the tracker reports', async () => {
+    const put = await jiraApp.inject({
+      method: 'PUT',
+      url: '/api/settings',
+      payload: { cancellationStatus: 'Cancelled' },
+    });
+    expect(put.statusCode).toBe(200);
+  });
+
+  it('rejects a status the tracker does not report', async () => {
+    const put = await jiraApp.inject({
+      method: 'PUT',
+      url: '/api/settings',
+      payload: { cancellationStatus: 'Not A Real Status' },
+    });
+    expect(put.statusCode).toBe(422);
+  });
+
+  it('clearing the setting (null) is never checked against the tracker', async () => {
+    const put = await jiraApp.inject({
+      method: 'PUT',
+      url: '/api/settings',
+      payload: { cancellationStatus: null },
+    });
+    expect(put.statusCode).toBe(200);
   });
 });

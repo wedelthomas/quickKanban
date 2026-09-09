@@ -245,7 +245,7 @@ export const buildApp = ({
       )
     : null;
   registerSyncRoutes(app, { sync, lock, runs, settings });
-  registerSettingsRoutes(app, settings, onIntervalChanged, onArchiveIntervalChanged);
+  registerSettingsRoutes(app, settings, onIntervalChanged, onArchiveIntervalChanged, jira);
 
   registerSummaryRoutes(
     app,
