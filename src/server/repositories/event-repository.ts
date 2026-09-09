@@ -49,6 +49,37 @@ export class EventRepository {
     );
   }
 
+  /**
+   * Records that a card was cancelled (FR-607).
+   *
+   * Same shape as `appendArchival`: both column ids are the column the card
+   * was sitting in — cancelling does not move it, `kind` carries the
+   * meaning. `actor` is always `'user'`: a cancellation is always something
+   * the person at the keyboard did, never sync or the archival pass.
+   */
+  async appendCancellation(
+    client: pg.PoolClient,
+    event: { cardId: string; columnId: number },
+  ): Promise<void> {
+    await client.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, kind)
+       VALUES ($1, $2, $2, 'user', 'cancelled')`,
+      [event.cardId, event.columnId],
+    );
+  }
+
+  /** Records that a cancelled card was restored (FR-629). Mirrors `appendCancellation`. */
+  async appendRestoration(
+    client: pg.PoolClient,
+    event: { cardId: string; columnId: number },
+  ): Promise<void> {
+    await client.query(
+      `INSERT INTO card_events (card_id, from_column_id, to_column_id, actor, kind)
+       VALUES ($1, $2, $2, 'user', 'restored')`,
+      [event.cardId, event.columnId],
+    );
+  }
+
   /** Oldest first, which is the order a history is read in. */
   async listForCard(cardId: string): Promise<CardEvent[]> {
     const { rows } = await this.pool.query<{

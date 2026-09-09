@@ -94,8 +94,19 @@ export const buildBurndown = (input: BurndownInput): BurndownPoint[] => {
     const completedThatDay = completedByDay.get(iso) ?? 0;
     const scopeAddedThatDay = scopeAddedByDay.get(iso) ?? 0;
     const scopeRemovedThatDay = scopeRemovedByDay.get(iso) ?? 0;
-    outstanding = outstanding - completedThatDay + scopeAddedThatDay - scopeRemovedThatDay;
-    points.push({ date: iso, outstanding, completedThatDay, scopeAddedThatDay, scopeRemovedThatDay });
+    // withdrawnThatDay is 0 until slice 7 US3 (T722) wires the cancellation
+    // derivation in — correct today, since no card can be cancelled yet.
+    const withdrawnThatDay = 0;
+    outstanding =
+      outstanding - completedThatDay + scopeAddedThatDay - scopeRemovedThatDay - withdrawnThatDay;
+    points.push({
+      date: iso,
+      outstanding,
+      completedThatDay,
+      scopeAddedThatDay,
+      scopeRemovedThatDay,
+      withdrawnThatDay,
+    });
   }
 
   return points;

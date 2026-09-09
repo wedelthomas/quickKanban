@@ -19,6 +19,7 @@ const KEYS = {
   jiraFieldSprint: 'jira.field.sprint',
   jiraFieldStoryPoints: 'jira.field.story_points',
   author: 'board.author',
+  cancellationStatus: 'jira.cancellation_status',
 } as const;
 
 const DEFAULT_WORKING_DAYS: WorkingDay[] = ['mon', 'tue', 'wed', 'thu', 'fri'];
@@ -62,6 +63,10 @@ export class SettingsRepository {
         byKey.get(KEYS.jiraFieldStoryPoints) ?? 'customfield_10005',
       ),
       author: String(byKey.get(KEYS.author) ?? ''),
+      // Absent means unconfigured (FR-635) — a supported state, not
+      // coerced to the string "null" the way String(undefined ?? null)
+      // would read.
+      cancellationStatus: (byKey.get(KEYS.cancellationStatus) as string | undefined) ?? null,
     };
   }
 
@@ -93,6 +98,7 @@ export class SettingsRepository {
       'jiraFieldSprint',
       'jiraFieldStoryPoints',
       'author',
+      'cancellationStatus',
     ] as const) {
       if (patch[name] !== undefined) entries.push([KEYS[name], patch[name]]);
     }

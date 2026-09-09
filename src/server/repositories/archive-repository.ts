@@ -152,5 +152,10 @@ export const archiveByRange = async (
     issueUrl: r.url,
     archivedAt: r.archived_at.toISOString(),
     archivedReason: r.archived_reason,
+    // false/null until slice 7 US4 (T730) selects cancelled_at/
+    // cancellation_reason — correct today, since no card can be
+    // cancelled yet.
+    cancelled: false,
+    cancellationReason: null,
   }));
 };

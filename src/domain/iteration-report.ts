@@ -169,6 +169,9 @@ export const buildIterationReport = (input: ReportInput): IterationReport => {
           completed,
           scopeAdded,
           scopeRemoved,
+          // 0 until slice 7 US3 (T721) wires the cancellation derivation
+          // in — correct today, since no card can be cancelled yet.
+          withdrawn: 0,
           localShare: share(completedLocal, completed),
           jiraShare: completed > 0 ? 1 - share(completedLocal, completed) : 0,
           excludedUnpointed,

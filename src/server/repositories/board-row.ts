@@ -60,6 +60,10 @@ export const toCard = (row: BoardRow, today: Date): Card => ({
     row.jira_points !== null &&
     row.jira_points !== undefined &&
     row.jira_points !== row.points,
+  // false until slice 7 US4 (T727) threads status_name and the configured
+  // cancellation status into this projection — correct today, since no
+  // card can be cancelled or restored yet.
+  cancellationDivergesFromJira: false,
   createdAt: row.created_at!.toISOString(),
   updatedAt: row.updated_at!.toISOString(),
 });
