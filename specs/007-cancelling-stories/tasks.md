@@ -145,7 +145,7 @@ is cancelled locally regardless.
 
 ### Tests for User Story 2 — write first, confirm they FAIL
 
-- [ ] T713 [P] [US2] `tests/features/cancelling-jira.feature` + steps,
+- [X] T713 [P] [US2] `tests/features/cancelling-jira.feature` + steps,
   patterned directly on `push-refusals.feature`'s fixtures — the issue
   moves to the configured status (BH-610); no configured status still
   cancels locally and reports nothing was sent (BH-612, FR-613); a workflow
@@ -154,7 +154,7 @@ is cancelled locally regardless.
   reports the failure (BH-614, FR-615); a card the user created locally
   contacts nothing (BH-615, FR-616); Jira integration toggled off still
   cancels locally and contacts nothing (BH-634, FR-640).
-- [ ] T714 [P] [US2] `tests/unit/no-jira-writes.test.ts` — extend: confirm
+- [X] T714 [P] [US2] `tests/unit/no-jira-writes.test.ts` — extend: confirm
   cancellation's Jira call is `TransitionService.moveTo`, the same single
   entry point `move()` already uses, so the existing structural guard (only
   `transitionIssue` ever POSTs, nothing else touches a field but status)
@@ -163,7 +163,7 @@ is cancelled locally regardless.
 
 ### Implementation for User Story 2
 
-- [ ] T715 [US2] Extend `src/server/services/card-service.ts`'s `cancel`:
+- [X] T715 [US2] Extend `src/server/services/card-service.ts`'s `cancel`:
   after the local write succeeds (R-4 — never before, never conditional on
   it), if the card is Jira-linked, Jira is enabled, and a cancellation
   status is configured, call `this.jira.transitions.moveTo(issueKey,
@@ -172,7 +172,7 @@ is cancelled locally regardless.
   transitioned, toStatus?, message }` result per contracts/api.md's table.
   Absent entirely for a local card (FR-616). On a successful transition,
   record the new status via `links.recordStatus` exactly as `move()` does.
-- [ ] T716 [US2] `src/server/routes/cards.ts` — the cancel route returns
+- [X] T716 [US2] `src/server/routes/cards.ts` — the cancel route returns
   the `jira` key from the service unchanged.
 
 **Checkpoint**: cancelling an imported card best-effort reaches Jira, and

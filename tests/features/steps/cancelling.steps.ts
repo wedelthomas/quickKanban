@@ -82,8 +82,10 @@ When(
 When(
   'the card for issue {string} is cancelled with reason {string}',
   async function (this: BoardWorld, issueKey: string, reason: string) {
-    const card = await cardForIssue(this, issueKey);
-    await cancel(this, card.id, reason);
+    // Found and stored BEFORE cancelling — the card leaves the board the
+    // moment this succeeds, so it cannot be found by this same query again.
+    this.lastCard = await cardForIssue(this, issueKey);
+    await cancel(this, this.lastCard.id, reason);
   },
 );
 

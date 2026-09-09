@@ -133,3 +133,22 @@ describe('slice 6 reads story points and never writes them', () => {
     expect(port).not.toMatch(/setPoints|updatePoints|writePoints|storyPoints\(/i);
   });
 });
+
+/**
+ * BH-611, FR-612. Slice 7's cancellation reuses TransitionService.moveTo
+ * unchanged rather than composing a second request — this is the
+ * structural half of that guarantee (the behavioural half is
+ * cancelling-jira.feature's own scenarios).
+ */
+describe('slice 7 cancels through the one existing transition path', () => {
+  const cardService = readFileSync('src/server/services/card-service.ts', 'utf8');
+
+  it('calls transitions.moveTo, not the Jira port directly', () => {
+    const start = cardService.indexOf('attemptJiraCancellation');
+    expect(start).toBeGreaterThan(-1);
+    const body = cardService.slice(start);
+    expect(body).toMatch(/this\.jira\.transitions\.moveTo\(/);
+    // No direct call to a lower-level write — moveTo is the only door.
+    expect(body).not.toMatch(/this\.jira\.transitions\.jira\b/);
+  });
+});

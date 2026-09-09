@@ -57,6 +57,12 @@ const updateSchema = z
       .string()
       .regex(/^customfield_\d+$/)
       .optional(),
+
+    // `null` clears it — a supported, ordinary state (FR-635). Validated
+    // against the tracker's own statuses in the route body below (US5,
+    // FR-634); the shape accepted here is deliberately permissive so the
+    // setting is at least writable before that check exists.
+    cancellationStatus: z.string().trim().min(1).max(120).nullable().optional(),
   })
   .refine((v) => Object.keys(v).length > 0, 'Nothing to change.')
   .refine(
