@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { SettingsRepository } from '../repositories/settings-repository.js';
 import { validationFailed } from '../errors.js';
 import { validateJql } from '../../domain/jql.js';
+import type { JiraPort } from '../jira/jira-port.js';
 
 /**
  * Below a minute the poll is pointless against Jira's rate limits; above an
@@ -57,6 +58,10 @@ const updateSchema = z
       .string()
       .regex(/^customfield_\d+$/)
       .optional(),
+
+    // `null` clears it — a supported, ordinary state (FR-635). Validated
+    // against the tracker's own statuses in the route body below (FR-634).
+    cancellationStatus: z.string().trim().min(1).max(120).nullable().optional(),
   })
   .refine((v) => Object.keys(v).length > 0, 'Nothing to change.')
   .refine(
@@ -74,6 +79,7 @@ export const registerSettingsRoutes = (
   onIntervalChanged: () => void = () => {},
   /** Same reasoning, for the archival pass's own cadence. */
   onArchiveIntervalChanged: () => void = () => {},
+  jira: JiraPort | null = null,
 ): void => {
   // Returns the query and the interval. There is no credential here and no
   // field for one — anything the interface can display, it can leak (FR-102).
@@ -87,6 +93,22 @@ export const registerSettingsRoutes = (
       const check = validateJql(parsed.data.jiraJql);
       if (!check.ok) throw validationFailed(check.reason!);
     }
+
+    // Checked here, mirroring the mapping route (FR-634): the API is the
+    // boundary, and a guarantee that lives only in the client is not one. Left
+    // unchecked when Jira is unconfigured, and skipped when clearing the value
+    // (null) since there is nothing to validate.
+    if (jira && parsed.data.cancellationStatus) {
+      const known = new Set(
+        (await jira.listStatuses()).map((name) => name.toLowerCase()),
+      );
+      if (!known.has(parsed.data.cancellationStatus.trim().toLowerCase())) {
+        throw validationFailed(
+          `Jira reports no status named "${parsed.data.cancellationStatus}".`,
+        );
+      }
+    }
+
     const updated = await settings.write(parsed.data);
     if (parsed.data.syncIntervalSeconds !== undefined) onIntervalChanged();
     // Changing which board or team the iteration comes from takes effect on the

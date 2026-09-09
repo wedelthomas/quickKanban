@@ -1,6 +1,7 @@
 import type pg from 'pg';
 import type { BoardColumn } from '../../shared/types.js';
 import { type BoardRow, toCard } from './board-row.js';
+import type { SettingsRepository } from './settings-repository.js';
 
 /**
  * The read model for the whole board.
@@ -11,7 +12,10 @@ import { type BoardRow, toCard } from './board-row.js';
  * repository is how a persistence class quietly becomes the whole application.
  */
 export class BoardRepository {
-  constructor(private readonly pool: pg.Pool) {}
+  constructor(
+    private readonly pool: pg.Pool,
+    private readonly settings: SettingsRepository,
+  ) {}
 
   /**
    * The whole board in one query. Empty columns are preserved by the LEFT JOIN
@@ -20,6 +24,7 @@ export class BoardRepository {
    * holds after slice 5 retired one and added another.
    */
   async readBoard(today: Date): Promise<BoardColumn[]> {
+    const { cancellationStatus } = await this.settings.read();
     const { rows } = await this.pool.query<BoardRow>(`
       SELECT
         col.id       AS column_id,
@@ -37,7 +42,7 @@ export class BoardRepository {
           ARRAY[]::text[]
         ) AS tags,
         jl.issue_key, jl.url AS issue_url,
-        jl.blocked_in_jira,
+        jl.blocked_in_jira, jl.status_name,
         c.blocked, c.carried_iterations, c.points, c.jira_points,
         (cf.card_id IS NOT NULL) AS has_conflict
       FROM columns col
@@ -65,7 +70,9 @@ export class BoardRepository {
           cards: [],
         });
       }
-      if (row.card_id) columns.get(row.column_id)!.cards.push(toCard(row, today));
+      if (row.card_id) {
+        columns.get(row.column_id)!.cards.push(toCard(row, today, cancellationStatus));
+      }
     }
     return [...columns.values()].sort((a, b) => a.position - b.position);
   }

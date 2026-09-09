@@ -75,6 +75,13 @@ export const moveCardSchema = z.object({
   toIndex: z.number().int().min(1),
 });
 
+export const cancelCardSchema = z.object({
+  // Trimmed and re-checked for emptiness in the service, not here — the
+  // route's job is shape, the service's is the business rule (FR-603).
+  reason: z.string(),
+});
+
 export type CreateCardInput = z.infer<typeof createCardSchema>;
 export type UpdateCardInput = z.infer<typeof updateCardSchema>;
+export type CancelCardInput = z.infer<typeof cancelCardSchema>;
 export type MoveCardInput = z.infer<typeof moveCardSchema>;

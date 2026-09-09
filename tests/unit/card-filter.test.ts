@@ -34,6 +34,7 @@ const card = (over: Partial<Card> = {}): Card => ({
   carriedIterations: 0,
   points: null,
   pointsDivergesFromJira: false,
+  cancellationDivergesFromJira: false,
   createdAt: '2026-08-01T00:00:00.000Z',
   updatedAt: '2026-08-01T00:00:00.000Z',
   ...over,

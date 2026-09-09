@@ -19,6 +19,7 @@ import type {
 import { planMove, type ColumnOrder } from '../../domain/ordering.js';
 import { TagRepository } from './tag-repository.js';
 import { EventRepository } from './event-repository.js';
+import { SettingsRepository } from './settings-repository.js';
 
 /** Backlog. New cards land here (FR-009). */
 const BACKLOG_COLUMN_ID = 1;
@@ -26,6 +27,7 @@ const BACKLOG_COLUMN_ID = 1;
 export class CardRepository {
   constructor(
     private readonly pool: pg.Pool,
+    private readonly settings: SettingsRepository = new SettingsRepository(pool),
     private readonly tags = new TagRepository(pool),
     private readonly events = new EventRepository(pool),
   ) {}
@@ -192,6 +194,130 @@ export class CardRepository {
         fromColumnId: plan.fromColumnId,
         toColumnId: plan.toColumnId,
       };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Cancels a card: leaves the board via the same `archived_at` retention
+   * path a completed card already uses (research.md R-1), remembering why
+   * and which column to restore it to.
+   *
+   * Cancelling an already-cancelled card is a no-op that still succeeds
+   * (FR-610) — the conflict check and every other guard already ran in the
+   * service before this is called, so by the time a row is locked here the
+   * only remaining question is whether there is anything left to do.
+   */
+  async cancel(
+    id: string,
+    input: { reason: string; now: Date },
+  ): Promise<{ card: Card; alreadyCancelled: boolean } | 'not-found' | 'already-archived'> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const { rows } = await client.query<{
+        column_id: number;
+        cancelled_at: Date | null;
+        archived_at: Date | null;
+      }>(
+        `SELECT column_id, cancelled_at, archived_at FROM cards
+          WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`,
+        [id],
+      );
+      const current = rows[0];
+      if (!current) {
+        await client.query('ROLLBACK');
+        return 'not-found';
+      }
+
+      if (current.cancelled_at !== null) {
+        await client.query('ROLLBACK');
+        const card = await this.findById(id, input.now);
+        return { card: card!, alreadyCancelled: true };
+      }
+
+      // Archived for a reason other than cancellation (completed, or sync
+      // found the issue gone) — not cancellable (spec.md Edge Cases: "A
+      // card in Done is cancelled" is not a use case this feature serves).
+      if (current.archived_at !== null) {
+        await client.query('ROLLBACK');
+        return 'already-archived';
+      }
+
+      await client.query(
+        `UPDATE cards
+            SET cancelled_at = $2, cancellation_reason = $3,
+                cancelled_from_column_id = $4, archived_at = $2, updated_at = $2
+          WHERE id = $1`,
+        [id, input.now, input.reason, current.column_id],
+      );
+      await this.events.appendCancellation(client, { cardId: id, columnId: current.column_id });
+
+      await client.query('COMMIT');
+      const card = await this.findById(id, input.now);
+      return { card: card!, alreadyCancelled: false };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Restores a cancelled card to the column it left, or to Backlog if that
+   * column has since been retired (FR-630, BH-626). Clears every
+   * cancellation column — the permanent record survives regardless, in
+   * `card_events` (Principle II), not here.
+   */
+  async restore(
+    id: string,
+    input: { now: Date },
+  ): Promise<{ card: Card } | 'not-found' | 'not-cancelled'> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const { rows } = await client.query<{
+        cancelled_at: Date | null;
+        cancelled_from_column_id: number | null;
+      }>(
+        `SELECT cancelled_at, cancelled_from_column_id FROM cards
+          WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`,
+        [id],
+      );
+      const current = rows[0];
+      if (!current) {
+        await client.query('ROLLBACK');
+        return 'not-found';
+      }
+      if (current.cancelled_at === null) {
+        await client.query('ROLLBACK');
+        return 'not-cancelled';
+      }
+
+      const wanted = current.cancelled_from_column_id ?? BACKLOG_COLUMN_ID;
+      const state = await this.columnState(wanted);
+      const target = state === 'open' ? wanted : BACKLOG_COLUMN_ID;
+
+      await client.query(
+        `UPDATE cards
+            SET cancelled_at = NULL, cancellation_reason = NULL,
+                cancelled_from_column_id = NULL, archived_at = NULL,
+                column_id = $2, updated_at = $3
+          WHERE id = $1`,
+        [id, target, input.now],
+      );
+      await this.events.appendRestoration(client, { cardId: id, columnId: target });
+
+      await client.query('COMMIT');
+      const card = await this.findById(id, input.now);
+      return { card: card! };
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -370,7 +496,7 @@ export class CardRepository {
              WHERE ct.card_id = c.id),
            ARRAY[]::text[]
          ) AS tags,
-         jl.issue_key, jl.url AS issue_url, jl.blocked_in_jira,
+         jl.issue_key, jl.url AS issue_url, jl.blocked_in_jira, jl.status_name,
          c.blocked, c.carried_iterations, c.points, c.jira_points,
          (cf.card_id IS NOT NULL) AS has_conflict
        FROM cards c
@@ -381,6 +507,8 @@ export class CardRepository {
       [id],
     );
     const row = rows[0];
-    return row ? toCard(row, today) : null;
+    if (!row) return null;
+    const { cancellationStatus } = await this.settings.read();
+    return toCard(row, today, cancellationStatus);
   }
 }

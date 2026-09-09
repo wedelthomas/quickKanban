@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import {
+  cancelCardSchema,
   createCardSchema,
   moveCardSchema,
   updateCardSchema,
@@ -50,6 +51,16 @@ export const registerCardRoutes = (
     // assuming the move landed where it drew it.
     return cards.move(request.params.id, parsed.data);
   });
+
+  app.post<{ Params: { id: string } }>('/api/cards/:id/cancel', async (request) => {
+    const parsed = cancelCardSchema.safeParse(request.body);
+    if (!parsed.success) throw validationFailed(parsed.error.issues[0]!.message);
+    return cards.cancel(request.params.id, parsed.data.reason);
+  });
+
+  app.post<{ Params: { id: string } }>('/api/cards/:id/restore', async (request) =>
+    cards.restore(request.params.id),
+  );
 
   // Exists so the movement history can be asserted without reading the
   // database directly. Nothing in slice 1 displays it; slice 4's archive and

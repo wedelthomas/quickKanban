@@ -120,11 +120,14 @@ export const archiveByRange = async (
     priority: Priority;
     archived_at: Date;
     archived_reason: string | null;
+    cancelled_at: Date | null;
+    cancellation_reason: string | null;
     issue_key: string | null;
     url: string | null;
     tags: string[] | null;
   }>(
     `SELECT c.id, c.source, c.title, c.priority, c.archived_at, c.archived_reason,
+            c.cancelled_at, c.cancellation_reason,
             jl.issue_key, jl.url,
             -- ::text is required, not cosmetic. Tag names are citext, and pg
             -- has no parser registered for citext[], so without the cast the
@@ -152,5 +155,7 @@ export const archiveByRange = async (
     issueUrl: r.url,
     archivedAt: r.archived_at.toISOString(),
     archivedReason: r.archived_reason,
+    cancelled: r.cancelled_at !== null,
+    cancellationReason: r.cancellation_reason,
   }));
 };

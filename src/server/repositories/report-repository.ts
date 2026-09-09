@@ -24,6 +24,8 @@ export interface ReportCard {
   points: number | null;
   movements: MovementRow[];
   blockedEvents: BlockedRow[];
+  /** ISO timestamp, or null if never cancelled (slice 7, FR-617). */
+  cancelledAt: string | null;
 }
 
 /**
@@ -52,8 +54,9 @@ export class ReportRepository {
       source: CardSource;
       issue_key: string | null;
       points: number | null;
+      cancelled_at: Date | null;
     }>(
-      `SELECT id, title, source, jl.issue_key, c.points
+      `SELECT id, title, source, jl.issue_key, c.points, c.cancelled_at
          FROM cards c
          LEFT JOIN jira_links jl ON jl.card_id = c.id
         WHERE c.deleted_at IS NULL`,
@@ -104,6 +107,7 @@ export class ReportRepository {
       points: row.points,
       movements: movementsByCard.get(row.id) ?? [],
       blockedEvents: blockedByCard.get(row.id) ?? [],
+      cancelledAt: row.cancelled_at ? row.cancelled_at.toISOString() : null,
     }));
   }
 

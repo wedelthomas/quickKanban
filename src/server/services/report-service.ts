@@ -55,6 +55,7 @@ export class ReportService {
         points: c.points,
         movements: c.movements,
         blockedEvents: c.blockedEvents,
+        cancelledAt: c.cancelledAt,
       })),
       calendar: {
         workingDays: settings.workingDays,
@@ -90,6 +91,7 @@ export class ReportService {
           points: c.points,
           movements: c.movements,
           blockedEvents: c.blockedEvents,
+          cancelledAt: c.cancelledAt,
         })),
         calendar: { workingDays: settings.workingDays },
         now: this.now(),

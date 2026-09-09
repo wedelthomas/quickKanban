@@ -23,7 +23,12 @@ const CONNECTION =
 let app: FastifyInstance;
 let pool: pg.Pool;
 
-const NEW_FIELDS = ['blocked', 'blockedDivergesFromJira', 'carriedIterations'] as const;
+const NEW_FIELDS = [
+  'blocked',
+  'blockedDivergesFromJira',
+  'carriedIterations',
+  'cancellationDivergesFromJira',
+] as const;
 
 describe('the card payload carries slice 5 fields from every path', () => {
   beforeAll(async () => {

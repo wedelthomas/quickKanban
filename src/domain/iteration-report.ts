@@ -49,6 +49,8 @@ export interface ReportInputCard {
   points: number | null;
   movements: Movement[];
   blockedEvents: BlockedInterval[];
+  /** ISO timestamp, or null if never cancelled (slice 7, FR-617). */
+  cancelledAt: string | null;
 }
 
 export interface ReportInput {
@@ -111,6 +113,7 @@ export const buildIterationReport = (input: ReportInput): IterationReport => {
   let completedLocal = 0;
   let scopeAdded = 0;
   let scopeRemoved = 0;
+  let withdrawn = 0;
   let excludedUnpointed = 0;
   let anyPointedContribution = false;
 
@@ -119,11 +122,14 @@ export const buildIterationReport = (input: ReportInput): IterationReport => {
     const done = card.movements.find(
       (m) => m.columnKey === 'done' && withinSpan(m.occurredAt, startsOn, endsOnExclusive),
     );
+    const cancelledInSpan =
+      card.cancelledAt !== null && withinSpan(card.cancelledAt, startsOn, endsOnExclusive);
     const entry = firstWorkingEntry(card.movements);
     const last = lastMovement(card.movements);
 
     const touchesIteration =
       Boolean(done) ||
+      cancelledInSpan ||
       (entry !== null && withinSpan(entry.occurredAt, startsOn, endsOnExclusive)) ||
       (entry !== null && entry.occurredAt <= committedAt);
     if (!touchesIteration) continue;
@@ -137,6 +143,20 @@ export const buildIterationReport = (input: ReportInput): IterationReport => {
       completed += points;
       if (card.project === 'local') completedLocal += points;
       anyPointedContribution = true;
+      continue;
+    }
+
+    // Cancelled after being part of the original commitment: scope
+    // withdrawn (FR-617, FR-622) — reported separately from scopeRemoved,
+    // which means a card silently left every working column without being
+    // cancelled. A card added mid-iteration and then cancelled before ever
+    // completing contributes to neither: it was never committed scope to
+    // withdraw from (FR-625, R-3).
+    if (cancelledInSpan) {
+      if (entry && entry.occurredAt <= committedAt) {
+        withdrawn += points;
+        anyPointedContribution = true;
+      }
       continue;
     }
 
@@ -169,6 +189,7 @@ export const buildIterationReport = (input: ReportInput): IterationReport => {
           completed,
           scopeAdded,
           scopeRemoved,
+          withdrawn,
           localShare: share(completedLocal, completed),
           jiraShare: completed > 0 ? 1 - share(completedLocal, completed) : 0,
           excludedUnpointed,

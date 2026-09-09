@@ -155,12 +155,12 @@ export const buildApp = ({
   });
 
   registerHealthRoutes(app, pool);
-  const cardRepository = new CardRepository(pool);
+  const settings = new SettingsRepository(pool);
+  const cardRepository = new CardRepository(pool, settings);
   const events = new EventRepository(pool);
-  registerBoardRoutes(app, new BoardService(new BoardRepository(pool)));
+  registerBoardRoutes(app, new BoardService(new BoardRepository(pool, settings)));
   const mappings = new MappingRepository(pool);
   const conflicts = new ConflictRepository(pool);
-  const settings = new SettingsRepository(pool);
   // Every attempt to change something in Jira leaves a line, whatever the
   // outcome. Never the credential — only the issue, the target and what
   // happened.
@@ -245,7 +245,7 @@ export const buildApp = ({
       )
     : null;
   registerSyncRoutes(app, { sync, lock, runs, settings });
-  registerSettingsRoutes(app, settings, onIntervalChanged, onArchiveIntervalChanged);
+  registerSettingsRoutes(app, settings, onIntervalChanged, onArchiveIntervalChanged, jira);
 
   registerSummaryRoutes(
     app,

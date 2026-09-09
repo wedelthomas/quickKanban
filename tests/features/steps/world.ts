@@ -37,6 +37,10 @@ const SEEDED_SETTINGS: Record<string, unknown> = {
   'jira.field.sprint': 'customfield_10000',
   'jira.field.story_points': 'customfield_10005',
   'board.author': '',
+  // Slice 7. Unconfigured by default (FR-635) — named here for the same
+  // reason every other setting is: left out, a scenario that configures it
+  // leaks the value into every scenario that runs after.
+  'jira.cancellation_status': null,
 };
 
 export class BoardWorld extends World {

@@ -91,6 +91,14 @@ export interface Card {
    * differ from. Mirrors blockedDivergesFromJira's shape exactly.
    */
   pointsDivergesFromJira: boolean;
+  /**
+   * True only for a restored, Jira-sourced, currently active card whose
+   * issue still carries the configured cancellation status (FR-633). A
+   * live comparison, not a stored flag — it resolves itself the moment
+   * sync (or another transition) moves the issue on. Mirrors
+   * blockedDivergesFromJira's shape exactly (research.md R-5).
+   */
+  cancellationDivergesFromJira: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -183,6 +191,13 @@ export interface Settings {
   jiraFieldBlockedOption: string;
   jiraFieldSprint: string;
   jiraFieldStoryPoints: string;
+
+  /**
+   * The tracker status a cancellation transitions an issue to. `null` is a
+   * supported, ordinary state (FR-635) — the feature works locally with no
+   * status configured at all.
+   */
+  cancellationStatus: string | null;
 }
 
 export interface BoardColumn extends Column {
@@ -198,7 +213,7 @@ export interface Board {
  * `archived` arrives with slice 4, where the card does not change column but
  * something still happened to it (FR-317).
  */
-export type CardEventKind = 'moved' | 'archived';
+export type CardEventKind = 'moved' | 'archived' | 'cancelled' | 'restored';
 
 export interface CardEvent {
   id: number;
@@ -227,6 +242,10 @@ export interface ArchivedCard {
   archivedAt: string;
   /** Slice 2's reason where one was recorded; null for the window rule. */
   archivedReason: string | null;
+  /** True when this card left the board by cancellation, not completion (FR-627). */
+  cancelled: boolean;
+  /** The user's own reason, shown wherever a cancelled card is viewed (FR-628). */
+  cancellationReason: string | null;
 }
 
 export type SummaryPeriod = 'daily' | 'weekly' | 'iteration';
@@ -356,6 +375,12 @@ export interface IterationReportPoints {
   completed: number;
   scopeAdded: number;
   scopeRemoved: number;
+  /**
+   * Points cancelled after being committed to this iteration (FR-617,
+   * FR-622) — reported separately from scopeRemoved, which means a card
+   * silently left every working column without being cancelled.
+   */
+  withdrawn: number;
   localShare: number;
   jiraShare: number;
   excludedUnpointed: number;
@@ -387,6 +412,7 @@ export interface BurndownPoint {
   completedThatDay: number;
   scopeAddedThatDay: number;
   scopeRemovedThatDay: number;
+  withdrawnThatDay: number;
 }
 
 export interface Burndown {

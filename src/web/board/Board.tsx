@@ -60,6 +60,8 @@ export const Board = () => {
     moveCard,
     updateCard,
     deleteCard,
+    cancelCard,
+    restoreCard,
   } = useBoard();
   const { status: syncStatus, syncNow } = useSync(refresh);
   const { author, reloadAuthor } = useAuthor();
@@ -329,7 +331,9 @@ export const Board = () => {
       )}
       {dialogs.isOpen('summary') && <SummaryDialog onClose={() => dialogs.hide()} />}
       {dialogs.isOpen('report') && <ReportDialog onClose={() => dialogs.hide()} />}
-      {dialogs.isOpen('archive') && <ArchiveView onClose={() => dialogs.hide()} />}
+      {dialogs.isOpen('archive') && (
+        <ArchiveView onClose={() => dialogs.hide()} restoreCard={restoreCard} />
+      )}
       {dialogs.isOpen('conflicts') && (
         <ConflictDialog
           conflicts={conflicts}
@@ -360,6 +364,11 @@ export const Board = () => {
           onDelete={async () => {
             await deleteCard(editing.id);
             setEditing(null);
+          }}
+          onCancelCard={async (reason) => {
+            await cancelCard(editing.id, reason);
+            setEditing(null);
+            focusCardById(focusRestoreRef.current);
           }}
         />
       )}
